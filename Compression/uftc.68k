@@ -1,0 +1,52 @@
+;****************************************************************************
+; DecompressUftc
+; Decompresses UFTC data
+;----------------------------------------------------------------------------
+; input a0.l .... Pointer to UFTC data
+; input a1.l .... Pointer to output buffer
+; input d0.w .... ID of first tile to decompress (counting from 0)
+; input d1.w .... How many tiles to decompress
+; output a1.l ... Right after output buffer
+; breaks: d2, d1, d0, a4, a0
+;****************************************************************************
+
+DecompressUftc:
+    move.l  a2, -(sp)			; Save registers
+    move.l  a3, -(sp)
+    moveq   #0, d2			; Get size of dictionary
+    move.w  (a0)+, d2
+    lea     (a0,d2.l),a4		; Get address of data with first tile
+    and.l   #$FFFF,d0			; to be decompressed (using a dword
+    lsl.l   #3,d0			; so we can have up to 8192 tiles)
+    lea     (a4,d0.l),a4
+    bra.s   .LoopEnd			; Start decompressing
+.Loop:
+    move.w  (a4)+, d2			; Fetch addresses of dictionary
+    lea     (a0,d2.l),a3		; entries for the first two 4x4
+    move.w  (a4)+, d2			; blocks of this tile
+    lea     (a0,d2.l),a2
+    move.w  (a3)+,(a1)+			; Decompress first pair of 4x4 blocks
+    move.w  (a2)+,(a1)+			; into the output buffer
+    move.w  (a3)+,(a1)+
+    move.w  (a2)+,(a1)+
+    move.w  (a3)+,(a1)+
+    move.w  (a2)+,(a1)+
+    move.w  (a3)+,(a1)+
+    move.w  (a2)+,(a1)+
+    move.w  (a4)+, d2			; Fetch addresses of dictionary
+    lea     (a0,d2.l),a3		; entries for the last two 4x4
+    move.w  (a4)+,d2			; blocks of this tile
+    lea     (a0,d2.l),a2
+    move.w  (a3)+,(a1)+			; Decompress last pair of 4x4 blocks
+    move.w  (a2)+,(a1)+			; into the output buffer
+    move.w  (a3)+,(a1)+
+    move.w  (a2)+,(a1)+
+    move.w  (a3)+,(a1)+
+    move.w  (a2)+,(a1)+
+    move.w  (a3)+,(a1)+
+    move.w  (a2)+,(a1)+
+.LoopEnd:
+    dbf     d1,.Loop			; Go for next tile
+    move.l  (sp)+,a3			; Restore registers
+    move.l  (sp)+,a2
+    rts 				; End of subroutine
