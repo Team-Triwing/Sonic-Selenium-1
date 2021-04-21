@@ -73,7 +73,7 @@ sfx		macro id
 		dc.b 'A mini-hack of Sonic 1 Proto because reasons lol'; International name (blank)
 		dc.b 'GM 00000000-00'				; Serial code
 
-Checksum:	dc.w 0                                          ; Checksum (incorrect, but it's not checked so not relevant)
+Checksum:	dc.w 0                          ; Checksum (incorrect, but it's not checked so not relevant)
 		dc.b 'J               '				; I/O support (3-button joypad)
 
 dword_1A0:	dc.l 0, $7FFFF					; ROM region (512 KB)
@@ -87,7 +87,7 @@ dword_1A0:	dc.l 0, $7FFFF					; ROM region (512 KB)
 oldErrorTrap:
 		nop
 		nop
-		bra.s	oldErrorTrap
+		nop
 ; ---------------------------------------------------------------------------
 
 GameInit:
@@ -116,7 +116,7 @@ loc_23C:
 		move.w	d5,(a4)
 		add.w	d7,d5
 		dbf	d1,loc_23C
-		move.l	#$40000080,(a4)
+		move.l	#VRAM_DMA_CMD,(a4)
 		move.w	d0,(a3)
 		move.w	d7,(a1)
 		move.w	d7,(a2)
@@ -137,13 +137,13 @@ loc_264:
 		move.l	d0,-(a6)
 		dbf	d6,loc_264
 		move.l	#$81048F02,(a4)
-		move.l	#$C0000000,(a4)
+		move.l	#CRAM_ADDR_CMD,(a4)
 		moveq	#$1F,d3
 
 loc_278:
 		move.l	d0,(a3)
 		dbf	d3,loc_278
-		move.l	#$40000010,(a4)
+		move.l	#VSRAM_ADDR_CMD,(a4)
 		moveq	#$13,d4
 
 loc_286:
@@ -161,11 +161,11 @@ loc_28E:
 ; ---------------------------------------------------------------------------
 
 InitValues:	dc.l $8000, $3FFF, $100
-		dc.l $A00000					; Z80 RAM
-		dc.l $A11100					; Z80 bus release
-		dc.l $A11200					; Z80 reset
-		dc.l $C00000					; VDP data port
-		dc.l $C00004					; VDP command port
+		dc.l z80_ram					; Z80 RAM
+		dc.l z80_bus_request					; Z80 bus release
+		dc.l z80_reset					; Z80 reset
+		dc.l VdpData					; VDP data port
+		dc.l VdpCtrl					; VDP command port
 		dc.b 4, $14, $30, $3C, 7, $6C, 0, 0, 0, 0, $FF, 0, $81	; VDP values
 		dc.b $37, 0, 1, 1, 0, 0, $FF, $FF, 0, 0, $80
 
@@ -247,11 +247,11 @@ ScreensArray:
 
 ChecksumError:
 		bsr.w	vdpInit			; not used, since the place where it'd branch to this is nop'd out
-		move.l	#$C0000000,($C00004).l
+		move.l	#CRAM_ADDR_CMD,(VdpCtrl).l
 		moveq	#$3F,d7
 
 loc_3C2:
-		move.w	#$E,($C00000).l
+		move.w	#$E,(VdpData).l
 		dbf	d7,loc_3C2
 		bra.s	*
 ; ---------------------------------------------------------------------------
@@ -343,8 +343,8 @@ loc_472:
 ; ---------------------------------------------------------------------------
 
 oldErrorPrint:
-		lea	($C00000).l,a6
-		move.l	#$78000003,($C00004).l
+		lea	(VdpData).l,a6
+		move.l	#$78000003,(VdpCtrl).l
 		lea	(ArtText).l,a0
 		move.w	#$27F,d1
 
@@ -355,7 +355,7 @@ oldErrorPrint:
 		move.b	(byte_FFFC00+$44).w,d0
 		move.w	ErrorMessages(pc,d0.w),d0
 		lea	ErrorMessages(pc,d0.w),a0
-		move.l	#$46040003,($C00004).l
+		move.l	#$46040003,(VdpCtrl).l
 		moveq	#$12,d1
 
 @loadtext:
@@ -423,9 +423,9 @@ vint:
 		movem.l	d0-a6,-(sp)
 		tst.b	(VintRoutine).w
 		beq.s	loc_B58
-		move.w	($C00004).l,d0
-		move.l	#$40000010,($C00004).l
-		move.l	(dword_FFF616).w,($C00000).l
+		move.w	(VdpCtrl).l,d0
+		move.l	#VSRAM_ADDR_CMD,(VdpCtrl).l
+		move.l	(dword_FFF616).w,(VdpData).l
 		btst	#6,(ConsoleRegion).w	; is this a PAL machine?
 		beq.s	loc_B3C			; if not, continue
 		move.w	#$700,d0
@@ -488,14 +488,14 @@ sub_BB0:
 loc_BBA:
 		bsr.w	padRead
 		stopZ80
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
 		move.w	#$977F,(a5)
 		move.w	#$C000,(a5)
 		move.w	#$80,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$940193C0,(a5)
 		move.l	#$96E69500,(a5)
 		move.w	#$977F,(a5)
@@ -505,7 +505,7 @@ loc_BBA:
 		move.w	#$8407,(a5)
 		move.w	(word_FFF624).w,(a5)
 		move.w	(word_FFF61E).w,(word_FFF622).w
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94019340,(a5)
 		move.l	#$96FC9500,(a5)
 		move.w	#$977F,(a5)
@@ -514,7 +514,7 @@ loc_BBA:
 		move.w	(word_FFF644).w,(a5)
 		tst.b	(SonicVRAMReset).w
 		beq.s	loc_C7A
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94019370,(a5)
 		move.l	#$96E49500,(a5)
 		move.w	#$977F,(a5)
@@ -549,21 +549,21 @@ locret_CBA:
 loc_CBC:
 		bsr.w	padRead
 		stopZ80
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
 		move.w	#$977F,(a5)
 		move.w	#$C000,(a5)
 		move.w	#$80,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94019340,(a5)
 		move.l	#$96FC9500,(a5)
 		move.w	#$977F,(a5)
 		move.w	#$7800,(a5)
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$940193C0,(a5)
 		move.l	#$96E69500,(a5)
 		move.w	#$977F,(a5)
@@ -574,7 +574,7 @@ loc_CBC:
 		bsr.w	sSpecialPalCyc
 		tst.b	(SonicVRAMReset).w
 		beq.s	loc_D7A
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94019370,(a5)
 		move.l	#$96E49500,(a5)
 		move.w	#$977F,(a5)
@@ -595,21 +595,21 @@ locret_D86:
 sub_D88:
 		bsr.w	padRead
 		stopZ80
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
 		move.w	#$977F,(a5)
 		move.w	#$C000,(a5)
 		move.w	#$80,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94019340,(a5)
 		move.l	#$96FC9500,(a5)
 		move.w	#$977F,(a5)
 		move.w	#$7800,(a5)
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$940193C0,(a5)
 		move.l	#$96E69500,(a5)
 		move.w	#$977F,(a5)
@@ -618,7 +618,7 @@ sub_D88:
 		move.w	(word_FFF644).w,(a5)
 		tst.b	(SonicVRAMReset).w
 		beq.s	loc_E3A
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94019370,(a5)
 		move.l	#$96E49500,(a5)
 		move.w	#$977F,(a5)
@@ -653,21 +653,21 @@ sub_E70:
 sub_E78:
 		bsr.w	padRead
 		stopZ80
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
 		move.w	#$977F,(a5)
 		move.w	#$C000,(a5)
 		move.w	#$80,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94019340,(a5)
 		move.l	#$96FC9500,(a5)
 		move.w	#$977F,(a5)
 		move.w	#$7800,(a5)
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$940193C0,(a5)
 		move.l	#$96E69500,(a5)
 		move.w	#$977F,(a5)
@@ -682,7 +682,7 @@ hint:
 		tst.w	(HintFlag).w
 		beq.s	locret_F3A
 		move.l	a5,-(sp)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD95C0,(a5)
 		move.w	#$977F,(a5)
@@ -694,16 +694,17 @@ hint:
 
 locret_F3A:
 		rte
+		;nop
 ; ---------------------------------------------------------------------------
 		tst.w	(HintFlag).w		; earlier version of hint?
 		beq.s	locret_F7E
 		movem.l	d0/a0/a5,-(sp)
 		move.w	#0,(HintFlag).w
-		move.w	#$8405,($C00004).l
-		move.w	#$857C,($C00004).l
-		move.l	#$78000003,($C00004).l
+		move.w	#$8405,(VdpCtrl).l
+		move.w	#$857C,(VdpCtrl).l
+		move.l	#$78000003,(VdpCtrl).l
 		lea	(SprTableBuff).w,a0
-		lea	($C00000).l,a5
+		lea	(VdpData).l,a5
 		move.w	#$9F,d0
 
 loc_F74:
@@ -759,8 +760,8 @@ sub_FDC:
 ; ---------------------------------------------------------------------------
 
 vdpInit:
-		lea	($C00004).l,a0
-		lea	($C00000).l,a1
+		lea	(VdpCtrl).l,a0
+		lea	(VdpData).l,a1
 		lea	($1080).l,a2
 		moveq	#$12,d7
 
@@ -770,7 +771,7 @@ loc_101E:
 		move.w	(vdpInitRegs+2).l,d0
 		move.w	d0,(ModeReg2).w
 		moveq	#0,d0
-		move.l	#$C0000000,($C00004).l
+		move.l	#CRAM_ADDR_CMD,(VdpCtrl).l
 		move.w	#$3F,d7
 
 loc_103E:
@@ -779,12 +780,12 @@ loc_103E:
 		clr.l	(dword_FFF616).w
 		clr.l	(dword_FFF61A).w
 		move.l	d1,-(sp)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.w	#$8F01,(a5)
 		move.l	#$94FF93FF,(a5)
 		move.w	#$9780,(a5)
-		move.l	#$40000080,(a5)
-		move.w	#0,($C00000).l
+		move.l	#VRAM_DMA_CMD,(a5)
+		move.w	#0,(VdpData).l
 
 loc_1070:
 		move.w	(a5),d1
@@ -802,24 +803,24 @@ vdpInitRegs:	dc.w $8004, $8134, $8230, $8328, $8407
 ; ---------------------------------------------------------------------------
 
 sub_10A6:
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.w	#$8F01,(a5)
 		move.l	#$940F93FF,(a5)
 		move.w	#$9780,(a5)
 		move.l	#$40000083,(a5)
-		move.w	#0,($C00000).l
+		move.w	#0,(VdpData).l
 
 loc_10C8:
 		move.w	(a5),d1
 		btst	#1,d1
 		bne.s	loc_10C8
 		move.w	#$8F02,(a5)
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.w	#$8F01,(a5)
 		move.l	#$940F93FF,(a5)
 		move.w	#$9780,(a5)
 		move.l	#$60000083,(a5)
-		move.w	#0,($C00000).l
+		move.w	#0,(VdpData).l
 
 loc_10F6:
 		move.w	(a5),d1
@@ -891,7 +892,7 @@ loc_120E:
 ; ---------------------------------------------------------------------------
 
 LoadPlaneMaps:
-		lea	($C00000).l,a6
+		lea	(VdpData).l,a6
 		move.l	#$800000,d4
 
 loc_1222:
@@ -909,7 +910,7 @@ loc_1228:
 NemesisDec:
 		movem.l	d0-a1/a3-a5,-(sp)
 		lea	(sub_12F8).l,a3
-		lea	($C00000).l,a4
+		lea	(VdpData).l,a4
 		bra.s	loc_1252
 ; ---------------------------------------------------------------------------
 		movem.l	d0-a1/a3-a5,-(sp)	; for RAM, not used
@@ -1195,7 +1196,7 @@ loc_1454:
 		addi.w	#$60,(plcList+4).w
 
 loc_146C:
-		lea	($C00004).l,a4
+		lea	(VdpCtrl).l,a4
 		lsl.l	#2,d0
 		lsr.w	#2,d0
 		ori.w	#$4000,d0
@@ -1257,7 +1258,7 @@ loc_14F4:
 		lsr.w	#2,d0
 		ori.w	#$4000,d0
 		swap	d0
-		move.l	d0,($C00004).l
+		move.l	d0,(VdpCtrl).l
 		bsr.w	NemesisDec
 		dbf	d1,loc_14F4
 		rts
@@ -1767,7 +1768,7 @@ sSega:
 		command	mus_FadeOut
 		bsr.w	ClearPLC
 		bsr.w	Pal_FadeFrom
-		lea	($C00004).l,a6
+		lea	(VdpCtrl).l,a6
 		move.w	#$8004,(a6)
 		move.w	#$8230,(a6)
 		move.w	#$8407,(a6)
@@ -1775,11 +1776,11 @@ sSega:
 		move.w	#$8B00,(a6)
 		move.w	(ModeReg2).w,d0
 		andi.b	#$BF,d0
-		move.w	d0,($C00004).l
+		move.w	d0,(VdpCtrl).l
 
 loc_24BC:
 		bsr.w	sub_10A6
-		move.l	#$40000000,($C00004).l
+		move.l	#VRAM_ADDR_CMD,(VdpCtrl).l
 		lea	(ArtSega).l,a0
 		bsr.w	NemesisDec
 		lea	((Chunks)&$FFFFFF).l,a1
@@ -1797,7 +1798,7 @@ loc_24BC:
 		move.w	#$B4,(GlobalTimer).w
 		move.w	(ModeReg2).w,d0
 		ori.b	#$40,d0
-		move.w	d0,($C00004).l
+		move.w	d0,(VdpCtrl).l
 		music	mus_SEGA
 
 loc_2528:
@@ -1818,7 +1819,7 @@ sTitle:
 		command	mus_FadeOut
 		bsr.w	ClearPLC
 		bsr.w	Pal_FadeFrom
-		lea	($C00004).l,a6
+		lea	(VdpCtrl).l,a6
 		move.w  #$8100|%01110100,(a6)
 		move.w	#$8004,(a6)
 		move.w	#$8230,(a6)
@@ -1833,7 +1834,7 @@ sTitle:
 @cont:
 		move.w	(ModeReg2).w,d0
 		andi.b	#$BF,d0
-		move.w	d0,($C00004).l
+		move.w	d0,(VdpCtrl).l
 		bsr.w	sub_10A6
 		lea	(ObjectsList).w,a1
 		moveq	#0,d0
@@ -1842,13 +1843,13 @@ sTitle:
 loc_2592:
 		move.l	d0,(a1)+
 		dbf	d1,loc_2592
-		move.l	#$40000001,($C00004).l
+		move.l	#$40000001,(VdpCtrl).l
 		lea	(ArtTitleMain).l,a0
 		bsr.w	NemesisDec
-		move.l	#$60000001,($C00004).l
+		move.l	#$60000001,(VdpCtrl).l
 		lea	(ArtTitleSonic).l,a0
 		bsr.w	NemesisDec
-		lea	($C00000).l,a6
+		lea	(VdpData).l,a6
 		move.l	#$50000003,4(a6)
 		lea	(ArtText).l,a5
 		move.w	#$28F,d1
@@ -1866,7 +1867,7 @@ loc_25D8:
 		clr.w	(curzone).w
 		bsr.w	LoadLevelBounds
 		bsr.w	LevelScroll
-		move.l	#$40000000,($C00004).l
+		move.l	#VRAM_ADDR_CMD,(VdpCtrl).l
 		lea	(TilesGHZ_1).l,a0
 		bsr.w	NemesisDec
 		lea	(BlocksGHZ).l,a0
@@ -1880,8 +1881,8 @@ loc_25D8:
 		lea	((Chunks)&$FFFFFF).l,a1
 		bsr.w	KosinskiDec
 		bsr.w	LoadLayout
-		lea	($C00004).l,a5
-		lea	($C00000).l,a6
+		lea	(VdpCtrl).l,a5
+		lea	(VdpData).l,a6
 		lea	(unk_FFF708).w,a3
 		lea	((Layout+$40)).w,a4
 		move.w	#$6000,d2
@@ -1899,7 +1900,7 @@ loc_25D8:
 		bsr.w	plcReplace
 		move.w	(ModeReg2).w,d0
 		ori.b	#$40,d0
-		move.w	d0,($C00004).l
+		move.w	d0,(VdpCtrl).l
 		bsr.w	Pal_FadeTo
 
 loc_26AE:
@@ -1937,8 +1938,8 @@ loc_2710:
 		dbf	d1,loc_2710
 		move.l	d0,(dword_FFF616).w
 		disable_ints
-		lea	($C00000).l,a6
-		move.l	#$60000003,($C00004).l
+		lea	(VdpData).l,a6
+		move.l	#$60000003,(VdpCtrl).l
 		move.w	#$3FF,d1
 
 loc_2732:
@@ -2120,7 +2121,7 @@ locret_292A:
 
 sub_292C:
 		lea	(LevelSelectText).l,a1
-		lea	($C00000).l,a6
+		lea	(VdpData).l,a6
 		move.l	#$62100003,d4
 		move.w	#$E680,d3
 		moveq	#$13,d1
@@ -2152,7 +2153,7 @@ loc_2944:
 		move.w	#$C680,d3
 
 loc_2996:
-		move.l	#$6BB00003,($C00004).l
+		move.l	#$6BB00003,(VdpCtrl).l
 		move.w	(LevSelSound).w,d0
 		;addi.w	#$80,d0
 		move.b	d0,d2
@@ -2248,7 +2249,7 @@ MusicList:	dc.b mus_GHZ, mus_LZ, mus_MZ, mus_SLZ, mus_SYZ, mus_SBZ
 
 sLevel:
 		command mus_FadeOut
-		move.l	#$70000002,($C00004).l
+		move.l	#$70000002,(VdpCtrl).l
 		lea	(ArtTitleCards).l,a0
 		bsr.w	NemesisDec
 		bsr.w	ClearPLC
@@ -2267,7 +2268,7 @@ loc_2C0A:
 		bsr.w	plcAdd
 		bsr.w	Pal_FadeFrom
 		bsr.w	sub_10A6
-		lea	($C00004).l,a6
+		lea	(VdpCtrl).l,a6
 		move.w	#$8B03,(a6)
 		move.w	#$8230,(a6)
 		move.w	#$8407,(a6)
@@ -2758,7 +2759,7 @@ word_31D6:	dc.w $517E, $519E, $51BE, $5360, $5362, $5364, $5380, $5382
 nullsub_3300:
 		rts
 ; ---------------------------------------------------------------------------
-		move.l	#$5E000002,($C00004).l		; leftover debug function
+		move.l	#$5E000002,(VdpCtrl).l		; leftover debug function
 		lea	(ArtText).l,a0
 		move.w	#$9F,d1
 		bsr.s	sub_3326
@@ -2768,7 +2769,7 @@ nullsub_3300:
 ; ---------------------------------------------------------------------------
 
 sub_3326:
-		move.w	(a0)+,($C00000).l
+		move.w	(a0)+,(VdpData).l
 		dbf	d1,sub_3326
 		rts
 ; ---------------------------------------------------------------------------
@@ -2786,7 +2787,7 @@ ConvertPalInds:
 		lsr.b	#3,d0
 		rol.w	#1,d0
 		move.b	@1bpp(pc,d0.w),d2
-		move.w	d2,($C00000).l
+		move.w	d2,(VdpData).l
 		dbf	d1,sub_3326
 		rts
 ; ---------------------------------------------------------------------------
@@ -2941,14 +2942,14 @@ sSpecial:
 		bsr.w	Pal_FadeFrom
 		move.w	(ModeReg2).w,d0
 		andi.b	#$BF,d0
-		move.w	d0,($C00004).l
+		move.w	d0,(VdpCtrl).l
 		bsr.w	sub_10A6
-		lea	($C00004).l,a5
+		lea	(VdpCtrl).l,a5
 		move.w	#$8F01,(a5)
 		move.l	#$946F93FF,(a5)
 		move.w	#$9780,(a5)
 		move.l	#$50000081,(a5)
-		move.w	#0,($C00000).l
+		move.w	#0,(VdpData).l
 
 loc_3534:
 		move.w	(a5),d1
@@ -2994,7 +2995,7 @@ loc_3584:
 		move.b	#9,(ObjectsList).w
 		move.w	#$458,(ObjectsList+8).w
 		move.w	#$4A0,(ObjectsList+$C).w
-		lea	($C00004).l,a6
+		lea	(VdpCtrl).l,a6
 		move.w	#$8B03,(a6)
 		move.w	#$8004,(a6)
 		move.w	#$8AAF,(word_FFF624).w
@@ -3014,7 +3015,7 @@ loc_3584:
 		move.w	#$708,(GlobalTimer).w
 		move.w	(ModeReg2).w,d0
 		ori.b	#$40,d0
-		move.w	d0,($C00004).l
+		move.w	d0,(VdpCtrl).l
 		bsr.w	Pal_FadeTo
 
 loc_3620:
@@ -3115,7 +3116,7 @@ sSpecialPalCyc:
 		bmi.s	locret_37B4
 		subq.w	#1,(unk_FFF79C).w
 		bpl.s	locret_37B4
-		lea	($C00004).l,a6
+		lea	(VdpCtrl).l,a6
 		move.w	(unk_FFF79A).w,d0
 		addq.w	#1,(unk_FFF79A).w
 		andi.w	#$1F,d0
@@ -3140,8 +3141,8 @@ loc_3760:
 		move.w	#$8400,d0
 		move.b	(a0)+,d0
 		move.w	d0,(a6)
-		move.l	#$40000010,($C00004).l
-		move.l	(dword_FFF616).w,($C00000).l
+		move.l	#VSRAM_ADDR_CMD,(VdpCtrl).l
+		move.l	(dword_FFF616).w,(VdpData).l
 		moveq	#0,d0
 		move.b	(a0)+,d0
 		bmi.s	loc_37B6
@@ -4206,8 +4207,8 @@ locret_43B4:
 ; ---------------------------------------------------------------------------
 
 sub_43B6:
-		lea	($C00004).l,a5
-		lea	($C00000).l,a6
+		lea	(VdpCtrl).l,a5
+		lea	(VdpData).l,a6
 		lea	(unk_FFF756).w,a2
 		lea	(unk_FFF708).w,a3
 		lea	((Layout+$40)).w,a4
@@ -4219,8 +4220,8 @@ sub_43B6:
 ; ---------------------------------------------------------------------------
 
 mapLevelLoad:
-		lea	($C00004).l,a5
-		lea	($C00000).l,a6
+		lea	(VdpCtrl).l,a5
+		lea	(VdpData).l,a6
 		lea	(unk_FFF756).w,a2
 		lea	(unk_FFF708).w,a3
 		lea	((Layout+$40)).w,a4
@@ -4621,8 +4622,8 @@ sub_476E:
 ; ---------------------------------------------------------------------------
 
 mapLevelLoadFull:
-		lea	($C00004).l,a5
-		lea	($C00000).l,a6
+		lea	(VdpCtrl).l,a5
+		lea	(VdpData).l,a6
 		lea	(CameraX).w,a3
 		lea	(Layout).w,a4
 		move.w	#$4000,d2
@@ -4714,11 +4715,11 @@ locret_485A:
 		move.b	#4,d0
 
 loc_4876:
-		lea	($C00000).l,a6
-		move.l	#$6CBE0002,($C00004).l
+		lea	(VdpData).l,a6
+		move.l	#$6CBE0002,(VdpCtrl).l
 		move.l	#$8579857A,d2
 		bsr.s	sub_489E
-		move.l	#$6D3E0002,($C00004).l
+		move.l	#$6D3E0002,(VdpCtrl).l
 		move.l	#$857B857C,d2
 ; ---------------------------------------------------------------------------
 
@@ -20580,7 +20581,7 @@ loc_11286:
 ZoneAnimTiles:
 		tst.w	(PauseFlag).w
 		bmi.s	locret_112A8
-		lea	($C00000).l,a6
+		lea	(VdpData).l,a6
 		moveq	#0,d0
 		move.b	(curzone).w,d0
 		add.w	d0,d0
@@ -20608,7 +20609,7 @@ loc_112B8:
 		lea	$100(a1),a1
 
 loc_112DC:
-		move.l	#$6F000001,($C00004).l
+		move.l	#$6F000001,(VdpCtrl).l
 		move.w	#7,d1
 		bra.w	LoadAnimTiles
 ; ---------------------------------------------------------------------------
@@ -20625,7 +20626,7 @@ loc_112EE:
 		lea	$200(a1),a1
 
 loc_11312:
-		move.l	#$6B800001,($C00004).l
+		move.l	#$6B800001,(VdpCtrl).l
 		move.w	#$F,d1
 		bra.w	LoadAnimTiles
 ; ---------------------------------------------------------------------------
@@ -20647,7 +20648,7 @@ loc_1134C:
 		move.w	d0,d1
 		add.w	d0,d0
 		add.w	d1,d0
-		move.l	#$6D800001,($C00004).l
+		move.l	#$6D800001,(VdpCtrl).l
 		lea	(byte_6B618).l,a1
 		lea	(a1,d0.w),a1
 		move.w	#$B,d1
@@ -20676,7 +20677,7 @@ loc_11398:
 		move.b	d0,(unk_FFF7B0).w
 		mulu.w	#$100,d0
 		adda.w	d0,a1
-		move.l	#$5C400001,($C00004).l
+		move.l	#$5C400001,(VdpCtrl).l
 		move.w	#7,d1
 		bsr.w	LoadAnimTiles
 
@@ -20689,7 +20690,7 @@ loc_113B4:
 		lea	(byte_6BD98).l,a4
 		ror.w	#7,d0
 		adda.w	d0,a4
-		move.l	#$5A400001,($C00004).l
+		move.l	#$5A400001,(VdpCtrl).l
 		moveq	#0,d3
 		move.b	(unk_FFF7B2).w,d3
 		addq.b	#1,(unk_FFF7B2).w
@@ -20727,7 +20728,7 @@ loc_11436:
 		move.b	d0,(unk_FFF7B4).w
 		mulu.w	#$100,d0
 		adda.w	d0,a1
-		move.l	#$5D400001,($C00004).l
+		move.l	#$5D400001,(VdpCtrl).l
 		move.w	#7,d1
 		bsr.s	LoadAnimTiles
 		lea	(byte_6C998).l,a1
@@ -20737,7 +20738,7 @@ loc_11436:
 		andi.b	#3,(unk_FFF7B6).w
 		mulu.w	#$C0,d0
 		adda.w	d0,a1
-		move.l	#$5E400001,($C00004).l
+		move.l	#$5E400001,(VdpCtrl).l
 		move.w	#5,d1
 		bra.s	LoadAnimTiles
 ; ---------------------------------------------------------------------------
@@ -21015,7 +21016,7 @@ loc_1171C:
 		tst.b	(byte_FFFE58).w
 		beq.s	locret_11744
 		clr.b	(byte_FFFE58).w
-		move.l	#$6E000002,($C00004).l
+		move.l	#$6E000002,(VdpCtrl).l
 		moveq	#0,d1
 		move.w	(word_FFFE54).w,d1
 		bsr.w	sub_11958
@@ -21055,7 +21056,7 @@ loc_11788:
 		tst.b	(byte_FFFE58).w
 		beq.s	locret_117B0
 		clr.b	(byte_FFFE58).w
-		move.l	#$6E000002,($C00004).l
+		move.l	#$6E000002,(VdpCtrl).l
 		moveq	#0,d1
 		move.w	(word_FFFE54).w,d1
 		bsr.w	sub_11958
@@ -21068,16 +21069,16 @@ locret_117B0:
 ; ---------------------------------------------------------------------------
 
 sub_117B2:
-		move.l	#$5F400003,($C00004).l
+		move.l	#$5F400003,(VdpCtrl).l
 		lea	byte_1181A(pc),a2
 		move.w	#2,d2
 		bra.s	loc_117E2
 ; ---------------------------------------------------------------------------
 
 sub_117C6:
-		lea	($C00000).l,a6
+		lea	(VdpData).l,a6
 		bsr.w	sub_119BA
-		move.l	#$5C400003,($C00004).l
+		move.l	#$5C400003,(VdpCtrl).l
 		lea	byte_1180E(pc),a2
 		move.w	#$E,d2
 
@@ -21113,7 +21114,7 @@ byte_1181A:	dc.b $FF, $FF, 0, 0
 ; ---------------------------------------------------------------------------
 
 sub_1181E:
-		move.l	#$5C400003,($C00004).l
+		move.l	#$5C400003,(VdpCtrl).l
 		move.w	(CameraX).w,d1
 		swap	d1
 		move.w	(ObjectsList+8).w,d1

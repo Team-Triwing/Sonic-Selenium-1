@@ -1,4 +1,5 @@
 *.md
 *.lst
 *.log
+AMPS/.Data
 SONLVL/dllcache/*
