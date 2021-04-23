@@ -1,4 +1,3 @@
-
 ; ===============================================================
 ; ---------------------------------------------------------------
 ; Error handling and debugging modules
@@ -20,62 +19,60 @@
 ; ---------------------------------------------------------------
 
 FormatHex_Handlers:
-	jmp		FormatHex_Word(pc)			; $00		; handler for word
-; ---------------------------------------------------------------
-	jmp		FormatHex_LongWord(pc)		; $04		; handler for longword
-; ---------------------------------------------------------------
-;	jmp		FormatHex_Byte(pc)			; $08		; handler for byte
+		jmp		FormatHex_Word(pc)		; $00		; handler for word
+		jmp		FormatHex_LongWord(pc)		; $04		; handler for longword
+	;	jmp		FormatHex_Byte(pc)		; $08		; handler for byte
 
 FormatHex_Byte:
-	moveq	#$F,d3
-	move.w	d1,d2
-	lsr.w	#4,d2
-	and.w	d3,d2
-	move.b	HexDigitToChar(pc,d2), (a0)+
-	
-	dbf		d7, .buffer_ok
-	jsr		(a4)
-	bcs.s	FormatHex_Return
+		moveq	#$F,d3
+		move.w	d1,d2
+		lsr.w	#4,d2
+		and.w	d3,d2
+		move.b	HexDigitToChar(pc,d2.w),(a0)+
+
+		dbf	d7,.buffer_ok
+		jsr	(a4)
+		bcs.s	FormatHex_Return
 .buffer_ok
 
-	and.w	d3,d1
-	move.b	HexDigitToChar(pc,d1), (a0)+
-	dbf		d7, FormatHex_Return
-	jmp		(a4)						; call buffer flush function and return buffer status
+		and.w	d3,d1
+		move.b	HexDigitToChar(pc,d1.w),(a0)+
+		dbf	d7,FormatHex_Return
+		jmp	(a4)					; call buffer flush function and return buffer status
 
 ; ---------------------------------------------------------------
 FormatHex_LongWord:
-	swap	d1
-	bsr.s	FormatHex_Word
-	bcs.s	FormatHex_Return			; if buffer terminated, branch
+		swap	d1
+		bsr.s	FormatHex_Word
+		bcs.s	FormatHex_Return			; if buffer terminated, branch
 
 FormatHex_Word_Swap:
-	swap	d1
-
+		swap	d1
 ; ---------------------------------------------------------------
+
 FormatHex_Word:
-	moveq	#4,d2
-	moveq	#$F,d3
+		moveq	#4,d2
+		moveq	#$F,d3
 
 	rept 4-1
 		rol.w	d2,d1
 		move.b	d1,d4
-		and.w	d3,d4						; get digit
-		move.b	HexDigitToChar(pc,d4), (a0)+
-		dbf		d7, *+6
-		jsr		(a4)						; call buffer flush function
+		and.w	d3,d4					; get digit
+		move.b	HexDigitToChar(pc,d4.w),(a0)+
+		dbf	d7,*+6
+		jsr	(a4)					; call buffer flush function
 		bcs.s	FormatHex_Return			; if buffer terminated, branch
 	endr
 
-	rol.w	d2,d1
-	move.b	d1,d4
-	and.w	d3,d4						; get digit
-	move.b	HexDigitToChar(pc,d4), (a0)+
-	dbf		d7, FormatHex_Return
-	jmp		(a4)						; call buffer flush function and return buffer status
+		rol.w	d2,d1
+		move.b	d1,d4
+		and.w	d3,d4					; get digit
+		move.b	HexDigitToChar(pc,d4.w),(a0)+
+		dbf	d7, FormatHex_Return
+		jmp	(a4)					; call buffer flush function and return buffer status
 
 FormatHex_Return:
-	rts									; return buffer status
+		rts						; return buffer status
 
 ; ---------------------------------------------------------------
 HexDigitToChar:

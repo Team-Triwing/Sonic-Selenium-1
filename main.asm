@@ -69,8 +69,8 @@ sfx		macro id
 		dc.l ErrorTrap, ErrorTrap
 		dc.b 'SEGA MEGA DRIVE '				; Console name
 		dc.b 'RPLNMLD APR.2021'				; Copyright/release date
-		dc.b 'A mini-hack of Sonic 1 Proto because reasons lol'; Domestic name (blank)
-		dc.b 'A mini-hack of Sonic 1 Proto because reasons lol'; International name (blank)
+		dc.b 'Was Hänschen nicht lernt, lernt Hans nimmermehr'; Domestic name (blank)
+		dc.b 'Was Hänschen nicht lernt, lernt Hans nimmermehr'; International name (blank)
 		dc.b 'GM 00000000-00'				; Serial code
 
 Checksum:	dc.w 0                          ; Checksum (incorrect, but it's not checked so not relevant)
@@ -1268,8 +1268,11 @@ EnigmaDec:
 		include	"compression/Enigma.asm"
 ; ---------------------------------------------------------------------------
 
-KosinskiDec:				; only used for the chunks
+KosinskiDec:
 		include	"compression/Kosinski.asm"
+		
+KosinskiPlusDec:
+		include "compression/KosinskiPlus.asm"
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
@@ -1868,18 +1871,14 @@ loc_25D8:
 		bsr.w	LoadLevelBounds
 		bsr.w	LevelScroll
 		move.l	#VRAM_ADDR_CMD,(VdpCtrl).l
-		lea	(TilesGHZ_1).l,a0
+		lea	(TilesTS).l,a0
 		bsr.w	NemesisDec
-		lea	(BlocksGHZ).l,a0
-		lea	(Blocks).w,a4
-		move.w	#$5FF,d0
-
-@loadblocks:
-		move.l	(a0)+,(a4)+
-		dbf	d0,@loadblocks
-		lea	(ChunksGHZ).l,a0
+		lea	(BlocksTS).l,a0
+		lea	(Blocks).w,a1
+		bsr.w	KosinskiPlusDec
+		lea	(ChunksTS).l,a0
 		lea	((Chunks)&$FFFFFF).l,a1
-		bsr.w	KosinskiDec
+		bsr.w	KosinskiPlusDec
 		bsr.w	LoadLayout
 		lea	(VdpCtrl).l,a5
 		lea	(VdpData).l,a6
@@ -2274,9 +2273,9 @@ loc_2C0A:
 		move.w	#$8407,(a6)
 		move.w	#$857C,(a6)
 		btst	#6,(ConsoleRegion).w	; is this a PAL machine?
-		beq.s	@cont			; if not, continue
+		beq.s	.cont			; if not, continue
 		move.w  #$8100|%01111100,(a6)
-@cont:
+.cont:
 		clr.w	(word_FFFFE8).w
 		move.w	#$8AAF,(word_FFF624).w
 		move.w	#$8004,(a6)
@@ -4680,12 +4679,9 @@ LoadLevelData:
 		move.l	a2,-(sp)
 		addq.l	#4,a2
 		movea.l	(a2)+,a0
-		lea	(Blocks).w,a4
-		move.w	#$5FF,d0
-
-@loadblocks:
-		move.l	(a0)+,(a4)+
-		dbf	d0,@loadblocks
+		lea	(Blocks).w,a1
+		moveq	#0,d0
+		bsr.w	EnigmaDec
 		movea.l	(a2)+,a0
 		lea	((Chunks)&$FFFFFF).l,a1
 		bsr.w	KosinskiDec
@@ -17054,8 +17050,8 @@ ObjSonic_ChgJumpDirection:
 		move.w	(PlayerTopSpeed).w,d6
 		move.w	(PlayerAccel).w,d5
 		asl.w	#1,d5
-		btst	#4,$22(a0)
-		bne.s	ObjSonic_ResetScroll2
+	;	btst	#4,$22(a0)
+	;	bne.s	ObjSonic_ResetScroll2
 		move.w	$10(a0),d0
 		btst	#2,(padHeld1).w
 		beq.s	loc_ED6E
@@ -17238,8 +17234,8 @@ ObjSonic_Jump:
 		move.b	#9,$17(a0)
 		tst.b	(byte_FFD600).w
 		bne.s	loc_EF48
-		btst	#2,$22(a0)
-		bne.s	loc_EF50
+	;	btst	#2,$22(a0)
+	;	bne.s	loc_EF50
 		move.b	#$E,$16(a0)
 		move.b	#7,$17(a0)
 		move.b	#2,$1C(a0)
@@ -17255,9 +17251,9 @@ loc_EF48:
 		rts
 ; ---------------------------------------------------------------------------
 
-loc_EF50:
-		bset	#4,$22(a0)
-		rts
+;loc_EF50:
+;		bset	#4,$22(a0)
+;		rts
 ; ---------------------------------------------------------------------------
 
 ObjSonic_JumpHeight:
@@ -17570,16 +17566,16 @@ locret_F216:
 ; ---------------------------------------------------------------------------
 
 ObjSonic_ResetOnFloor:
-		btst	#4,$22(a0)
-		beq.s	loc_F226
-		nop
-		nop
-		nop
+	;	btst	#4,$22(a0)
+	;	beq.s	loc_F226
+	;	nop
+	;	nop
+	;	nop
 
-loc_F226:
+;loc_F226:
 		bclr	#5,$22(a0)
 		bclr	#1,$22(a0)
-		bclr	#4,$22(a0)
+	;	bclr	#4,$22(a0)
 		btst	#2,$22(a0)
 		beq.s	loc_F25C
 		bclr	#2,$22(a0)
@@ -20501,81 +20497,40 @@ locret_111C0:
 
 ObjAniTest:
 		moveq	#0,d0
-		move.b	$24(a0),d0
-		move.w	off_111D0(pc,d0.w),d1
-		jmp	off_111D0(pc,d1.w)
+		move.b	act(a0),d0
+		move.w	Obj8A_Index(pc,d0.w),d1
+		jmp		Obj8A_Index(pc,d1.w)
+; ===========================================================================
+Obj8A_Index:	dc.w Obj8A_Main-Obj8A_Index
+		dc.w Obj8A_Display-Obj8A_Index
+; ===========================================================================
+
+Obj8A_Main:				; XREF: Obj8A_Index
+		addq.b	#2,act(a0)
+		move.w	#$120,xpos(a0)
+		move.w	#$F0,xpix(a0)
+		move.l	#Map_obj8A,map(a0)
+		move.w	#$5A0,tile(a0)
+		move.w	(word_FFF660).w,d0	; load	credits	index number
+		move.b	d0,frame(a0)			; display appropriate sprite
+		move.b	#0,render(a0)
+		move.b	#16,xdisp(a0)
+		move.b	#0,prio(a0)
+		cmpi.b	#4,(GameMode).w	; is the scene	number 04 (title screen)?
+		jne		ObjectDisplay		; if not, branch
+		move.w	#$A6,tile(a0)
+		move.b	#$A,frame(a0)			; display "SONIC TEAM PRESENTS"
+; ===========================================================================
+
+Obj8A_Display:				; XREF: Obj8A_Index
+		jmp		ObjectDisplay
+; ===========================================================================
 ; ---------------------------------------------------------------------------
-
-off_111D0:	dc.w loc_111D8-off_111D0, loc_11202-off_111D0, loc_11286-off_111D0, loc_11286-off_111D0
+; Sprite mappings - "SONIC TEAM	PRESENTS" and credits
 ; ---------------------------------------------------------------------------
-
-loc_111D8:
-		addq.b	#2,$24(a0)
-		move.b	#$12,$16(a0)
-		move.b	#9,$17(a0)
-		move.l	#MapSonic,4(a0)
-		move.w	#$780,2(a0)
-		move.b	#4,1(a0)
-		move.b	#2,$19(a0)
-
-loc_11202:
-		bsr.w	sub_11210
-		bsr.w	ObjSonic_DynTiles
-		jmp	ObjectDisplay
-; ---------------------------------------------------------------------------
-
-sub_11210:
-		move.b	(padHeldPlayer).w,d4
-		move.w	$C(a0),d2
-		move.w	8(a0),d3
-		moveq	#1,d1
-		btst	#0,d4
-		beq.s	loc_11226
-		sub.w	d1,d2
-
-loc_11226:
-		btst	#1,d4
-		beq.s	loc_1122E
-		add.w	d1,d2
-
-loc_1122E:
-		btst	#2,d4
-		beq.s	loc_11236
-		sub.w	d1,d3
-
-loc_11236:
-		btst	#3,d4
-		beq.s	loc_1123E
-		add.w	d1,d3
-
-loc_1123E:
-		move.w	d2,$C(a0)
-		move.w	d3,8(a0)
-		btst	#4,(padPressPlayer).w
-		beq.s	loc_11264
-		move.b	1(a0),d0
-		move.b	d0,d1
-		addq.b	#1,d0
-		andi.b	#3,d0
-		andi.b	#$FC,d1
-		or.b	d1,d0
-		move.b	d0,1(a0)
-
-loc_11264:
-		btst	#5,(padPressPlayer).w
-		beq.s	loc_1127E
-		addq.b	#1,$1C(a0)
-		cmpi.b	#$19,$1C(a0)
-		bcs.s	loc_1127E
-		move.b	#0,$1C(a0)
-
-loc_1127E:
-		jmp	ObjSonic_Animate
-		;rts
-; ---------------------------------------------------------------------------
-
-loc_11286:
-		jmp	ObjectDelete
+Map_obj8A:
+		include	"screens\title\CreditsText\Sprite.map"
+		even
 ; ---------------------------------------------------------------------------
 
 ZoneAnimTiles:
@@ -21728,7 +21683,7 @@ DebugList_SBZ:	dc.w 3
 		dc.l ($2D<<24)|MapBurrobot
 		dc.b 0, 0, $24, $7B
 
-LevelDataArray:	dc.l ($4<<24)|TilesGHZ_2, ($5<<24)|BlocksGHZ, ChunksGHZ
+LevelDataArray:	dc.l ($4<<24)|TilesGHZ, ($5<<24)|BlocksGHZ, ChunksGHZ
 		dc.b 0, $81, 4, 4
 		dc.l ($6<<24)|TilesLZ, ($7<<24)|BlocksLZ, ChunksLZ
 		dc.b 0, $82, 5, 5
@@ -21777,11 +21732,9 @@ plcGameOver:	dc.w 0
 		dc.l ArtGameOver
 		dc.w $B000
 
-plcGHZ1:	dc.w $B
-		dc.l TilesGHZ_1
+plcGHZ1:	dc.w $A
+		dc.l TilesGHZ
 		dc.w 0
-		dc.l TilesGHZ_2
-		dc.w $39A0
 		dc.l byte_27400
 		dc.w $6B00
 		dc.l ArtPurpleRock
@@ -22027,8 +21980,8 @@ plcSBZAnimals:	dc.w 1
 		dc.l ArtAnimalFlicky
 		dc.w $B240
 		;align	$8000					; Unnecessary alignment
-	;	incbin "unknown/18000.nem"
-	;	even
+ArtCred:	incbin "screens/title/CreditsText/Sprite.nem"
+		even
 ArtSega:	incbin "screens/sega/Main.nem"
 		even
 MapSega:	incbin "unknown/18A56.eni"
@@ -22162,21 +22115,19 @@ ArtAnimalFlicky:incbin "levels/shared/Animals/Flicky.nem"
 ArtAnimalRicky:	incbin "levels/shared/Animals/Ricky.nem"
 		even
 		;align	$8000					; Unnecessary alignment
-BlocksGHZ:	incbin "levels/GHZ/Blocks.unc"
+BlocksGHZ:	incbin "levels/GHZ/Blocks.eni"
 		even
-TilesGHZ_1:	incbin "levels/GHZ/Tiles1.nem"
-		even
-TilesGHZ_2:	incbin "levels/GHZ/Tiles2.nem"
+TilesGHZ:	incbin "levels/GHZ/Tiles.nem"
 		even
 ChunksGHZ:	incbin "levels/GHZ/Chunks.kos"
 		even
-BlocksLZ:	incbin "levels/LZ/Blocks.unc"
+BlocksLZ:	incbin "levels/LZ/Blocks.eni"
 		even
 TilesLZ:	incbin "levels/LZ/Tiles.nem"
 		even
 ChunksLZ:	incbin "levels/LZ/Chunks.kos"
 		even
-BlocksMZ:	incbin "levels/MZ/Blocks.unc"
+BlocksMZ:	incbin "levels/MZ/Blocks.eni"
 		even
 TilesMZ:	incbin "levels/MZ/Tiles.nem"
 		even
@@ -22184,23 +22135,29 @@ ChunksMZ:	incbin "levels/MZ/Chunks.kos"
 		even
 		;incbin "unknown/3DB70.dat"
 		;even
-BlocksSLZ:	incbin "levels/SLZ/Blocks.unc"
+BlocksSLZ:	incbin "levels/SLZ/Blocks.eni"
 		even
 TilesSLZ:	incbin "levels/SLZ/Tiles.nem"
 		even
 ChunksSLZ:	incbin "levels/SLZ/Chunks.kos"
 		even
-BlocksSYZ:	incbin "levels/SYZ/Blocks.unc"
+BlocksSYZ:	incbin "levels/SYZ/Blocks.eni"
 		even
 TilesSYZ:	incbin "levels/SYZ/Tiles.nem"
 		even
 ChunksSYZ:	incbin "levels/SYZ/Chunks.kos"
 		even
-BlocksSBZ:	incbin "levels/SBZ/Blocks.unc"
+BlocksSBZ:	incbin "levels/SBZ/Blocks.eni"
 		even
 TilesSBZ:	incbin "levels/SBZ/Tiles.nem"
 		even
 ChunksSBZ:	incbin "levels/SBZ/Chunks.kos"
+		even
+BlocksTS:	incbin "levels/TS/Blocks.kosp"
+		even
+TilesTS:	incbin "levels/TS/Tiles.nem"
+		even
+ChunksTS:	incbin "levels/TS/Chunks.kosp"
 		even
 		;incbin "unknown/570D2.dat"
 		;even

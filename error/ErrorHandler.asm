@@ -14,6 +14,7 @@
 ; Screen appearence flags
 _eh_address_error	equ	$01		; use for address and bus errors only (tells error handler to display additional "Address" field)
 _eh_show_sr_usp		equ	$02		; displays SR and USP registers content on error screen
+_eh_disassemble		equ	$10		; disassembles the instruction where the error happened + vint and hint handlers
 
 ; Advanced execution flags
 ; WARNING! For experts only, DO NOT USE them unless you know what you're doing
@@ -31,45 +32,45 @@ _eh_default			equ	0 ;_eh_show_sr_usp
 ; ---------------------------------------------------------------
 BusErr:
 BusError:
-	__ErrorMessage "BUS ERROR", _eh_default|_eh_address_error
+	__ErrorMessage "BUS ERROR", _eh_default|_eh_address_error|_eh_disassemble
 
 AddressErr:
 AddressError:
-	__ErrorMessage "ADDRESS ERROR", _eh_default|_eh_address_error
+	__ErrorMessage "ADDRESS ERROR", _eh_default|_eh_address_error|_eh_disassemble
 
 IllegalInstr:
-	__ErrorMessage "ILLEGAL INSTRUCTION", _eh_default
+	__ErrorMessage "ILLEGAL INSTRUCTION", _eh_default|_eh_disassemble
 
 ZeroDiv:
 ZeroDivide:
-	__ErrorMessage "ZERO DIVIDE", _eh_default
+	__ErrorMessage "ZERO DIVIDE", _eh_default|_eh_disassemble
 
 ChkInstr:
-	__ErrorMessage "CHK INSTRUCTION", _eh_default
+	__ErrorMessage "CHK INSTRUCTION", _eh_default|_eh_disassemble
 
 TrapvInstr:
-	__ErrorMessage "TRAPV INSTRUCTION", _eh_default
+	__ErrorMessage "TRAPV INSTRUCTION", _eh_default|_eh_disassemble
 
 PrivilegeViol:
-	__ErrorMessage "PRIVILEGE VIOLATION", _eh_default
+	__ErrorMessage "PRIVILEGE VIOLATION", _eh_default|_eh_disassemble
 
 Trace:
-	__ErrorMessage "TRACE", _eh_default
+	__ErrorMessage "TRACE", _eh_default|_eh_disassemble
 
 LineAEmu:
 Line1010Emu:
-	__ErrorMessage "LINE 1010 EMULATOR", _eh_default
+	__ErrorMessage "LINE 1010 EMULATOR", _eh_default|_eh_disassemble
 
 LineFEmu:
 Line1111Emu:
-	__ErrorMessage "LINE 1111 EMULATOR", _eh_default
+	__ErrorMessage "LINE 1111 EMULATOR", _eh_default|_eh_disassemble
 
 ErrorException:
 ErrorExcept:
-	__ErrorMessage "ERROR EXCEPTION", _eh_default
+	__ErrorMessage "ERROR EXCEPTION", _eh_default|_eh_disassemble
 
 ErrorTrap:
-	__ErrorMessage "ERROR TRAP", _eh_default
+	__ErrorMessage "ERROR TRAP", _eh_default|_eh_disassemble
 
 
 
@@ -91,6 +92,7 @@ ErrorHandler.__global__console_writeline equ Console_WriteLine
 ErrorHandler.__global__console_write equ Console_Write
 ErrorHandler.__global__console_writeline_formatted equ Console_WriteLine_Formatted
 ErrorHandler.__global__console_write_formatted equ Console_Write_Formatted
+ErrorHandler.__global__decode68k equ Decode68k
 
 
 ; ---------------------------------------------------------------
