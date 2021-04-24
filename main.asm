@@ -21,7 +21,7 @@
 
 ROM		section org(0)
 
-Z80_Space =	$810			; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
+Z80_Space =	$82B			; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
 z80_ram:	equ $A00000
 z80_bus_request	equ $A11100
 z80_reset:	equ $A11200
@@ -85,9 +85,9 @@ dword_1A0:	dc.l 0, $7FFFF					; ROM region (512 KB)
 ; ---------------------------------------------------------------------------
 
 oldErrorTrap:
-		nop
-		nop
-		nop
+		illegal
+		illegal
+		illegal
 ; ---------------------------------------------------------------------------
 
 GameInit:
@@ -242,7 +242,7 @@ ScreensArray:
 ; ---------------------------------------------------------------------------
 		bra.w	sSpecial
 ; ---------------------------------------------------------------------------
-		rts
+		illegal
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
@@ -1270,9 +1270,6 @@ EnigmaDec:
 
 KosinskiDec:
 		include	"compression/Kosinski.asm"
-		
-KosinskiPlusDec:
-		include "compression/KosinskiPlus.asm"
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
@@ -1783,9 +1780,9 @@ sSega:
 
 loc_24BC:
 		bsr.w	sub_10A6
-		move.l	#VRAM_ADDR_CMD,(VdpCtrl).l
 		lea	(ArtSega).l,a0
-		bsr.w	NemesisDec
+        move.w	#0,d0
+		jsr	TwimDec
 		lea	((Chunks)&$FFFFFF).l,a1
 		lea	(MapSega).l,a0
 		move.w	#0,d0
@@ -1831,10 +1828,6 @@ sTitle:
 		move.w	#$9200,(a6)
 		move.w	#$8B03,(a6)
 		move.w	#$8720,(a6)
-		btst	#6,(ConsoleRegion).w	; is this a PAL machine?
-		beq.s	@cont			; if not, continue
-		move.w  #$8100|%01111100,(a6)
-@cont:
 		move.w	(ModeReg2).w,d0
 		andi.b	#$BF,d0
 		move.w	d0,(VdpCtrl).l
@@ -1846,12 +1839,12 @@ sTitle:
 loc_2592:
 		move.l	d0,(a1)+
 		dbf	d1,loc_2592
-		move.l	#$40000001,(VdpCtrl).l
 		lea	(ArtTitleMain).l,a0
-		bsr.w	NemesisDec
-		move.l	#$60000001,(VdpCtrl).l
+		move.w	#$4000,d0
+		jsr	TwimDec
 		lea	(ArtTitleSonic).l,a0
-		bsr.w	NemesisDec
+		move.w	#$6000,d0
+		jsr	TwimDec
 		lea	(VdpData).l,a6
 		move.l	#$50000003,4(a6)
 		lea	(ArtText).l,a5
@@ -1870,15 +1863,15 @@ loc_25D8:
 		clr.w	(curzone).w
 		bsr.w	LoadLevelBounds
 		bsr.w	LevelScroll
-		move.l	#VRAM_ADDR_CMD,(VdpCtrl).l
 		lea	(TilesTS).l,a0
-		bsr.w	NemesisDec
+		move.w	#0,d0
+		jsr	TwimDec
 		lea	(BlocksTS).l,a0
 		lea	(Blocks).w,a1
-		bsr.w	KosinskiPlusDec
+		jsr	TwizDec
 		lea	(ChunksTS).l,a0
 		lea	((Chunks)&$FFFFFF).l,a1
-		bsr.w	KosinskiPlusDec
+		jsr	TwizDec
 		bsr.w	LoadLayout
 		lea	(VdpCtrl).l,a5
 		lea	(VdpData).l,a6
@@ -1947,7 +1940,7 @@ loc_2732:
 		bsr.w	sub_292C
 
 loc_273C:
-		move.b	#4,(VintRoutine).w
+		move.b	#2,(VintRoutine).w
 		bsr.w	vsync
 		bsr.w	sub_28A6
 		bsr.w	ProcessPLC
@@ -3379,6 +3372,10 @@ LevelBoundArray:
 		dc.w 4, 0, $2FFF, 0, $320, $60
 		dc.w 4, 0, $2FFF, 0, $320, $60
 		dc.w 4, 0, $2FFF, 0, $320, $60
+		dc.w 4, 0, $2FFF, 0, $320, $60
+		dc.w 4, 0, $2FFF, 0, $320, $60
+		dc.w 4, 0, $2FFF, 0, $320, $60
+		dc.w 4, 0, $2FFF, 0, $320, $60
 ; ---------------------------------------------------------------------------
 
 loc_3C6E:
@@ -3588,7 +3585,7 @@ loc_3E18:
 ; ---------------------------------------------------------------------------
 
 @scroll:	dc.w HScrollGHZ-@scroll, HScrollLZ-@scroll, HScrollMZ-@scroll, HScrollSLZ-@scroll
-		dc.w HScrollSYZ-@scroll, HScrollSBZ-@scroll
+		dc.w HScrollSYZ-@scroll, HScrollSBZ-@scroll, HScrollGHZ-@scroll
 ; ---------------------------------------------------------------------------
 
 HScrollGHZ:
@@ -4815,7 +4812,7 @@ locret_495C:
 ; ---------------------------------------------------------------------------
 
 off_495E:	dc.w EventsGHZ-off_495E, EventsNull-off_495E, EventsMZ-off_495E, EventsSLZ-off_495E
-		dc.w EventsNull-off_495E, EventsNull-off_495E
+		dc.w EventsNull-off_495E, EventsNull-off_495E, EventsNull-off_495E
 ; ---------------------------------------------------------------------------
 
 EventsNull:
@@ -19857,7 +19854,7 @@ loc_10B7A:
 		clr.l	(a1)+
 		dbf	d0,loc_10B7A
 		lea	((byte_FF172E)&$FFFFFF).l,a1
-		lea	(byte_6AB08).l,a0
+		lea	(Spec_Layout).l,a0
 		moveq	#$23,d1
 
 loc_10B8E:
@@ -19961,7 +19958,7 @@ byte_10C92:	dc.b 1
 		dc.b $F4, $A, $20, 9, $F4
 ; ---------------------------------------------------------------------------
 		lea	((byte_FF1020)&$FFFFFF).l,a1
-		lea	(byte_6AB08).l,a0
+		lea	(Spec_Layout).l,a0
 		moveq	#$3F,d1
 
 loc_10CA6:
@@ -21539,7 +21536,7 @@ sub_11FCE:
 ; ---------------------------------------------------------------------------
 
 DebugLists:	dc.w DebugList_GHZ-DebugLists, DebugList_LZ-DebugLists, DebugList_MZ-DebugLists, DebugList_SLZ-DebugLists
-		dc.w DebugList_SYZ-DebugLists, DebugList_SBZ-DebugLists
+		dc.w DebugList_SYZ-DebugLists, DebugList_SBZ-DebugLists, DebugList_Ending-DebugLists
 
 DebugList_GHZ:	dc.w $D
 		dc.l ($25<<24)|MapRing
@@ -21569,13 +21566,17 @@ DebugList_GHZ:	dc.w $D
 		dc.l ($19<<24)|MapRollingBall
 		dc.b 0, 0, $43, $AA
 
-DebugList_LZ:	dc.w 3
+DebugList_LZ:	dc.w 5
 		dc.l ($25<<24)|MapRing
 		dc.b 0, 0, $27, $B2
 		dc.l ($26<<24)|MapMonitor
 		dc.b 0, 0, 6, $80
-		dc.l ($1F<<24)|MapCrabmeat
-		dc.b 0, 0, 4, 0
+		dc.l ($2C<<24)|MapJaws
+		dc.b 0, 0, $2C, 0
+		dc.l ($2D<<24)|MapBurrobot
+		dc.b 0, 0, $2D, 0
+		dc.l ($1B<<24)|Map1B
+		dc.b 0, 0, $1B, 0
 
 DebugList_MZ:	dc.w $11
 		dc.l ($25<<24)|MapRing
@@ -21669,7 +21670,7 @@ DebugList_SYZ:	dc.w $D
 		dc.l ($32<<24)|MapSwitch
 		dc.b 0, 0, 5, $13
 
-DebugList_SBZ:	dc.w 3
+DebugList_SBZ:	dc.w 6
 		dc.l ($25<<24)|MapRing
 		dc.b 0, 0, $27, $B2
 		dc.l ($26<<24)|MapMonitor
@@ -21682,6 +21683,24 @@ DebugList_SBZ:	dc.w 3
 		dc.b 0, 0, 4, $7B
 		dc.l ($2D<<24)|MapBurrobot
 		dc.b 0, 0, $24, $7B
+	
+DebugList_Ending:	dc.w $D
+		dc.l ($25<<24)|MapRing
+		dc.b 0, 0, $27, $B2
+		dc.l ($26<<24)|MapMonitor
+		dc.b 0, 0, 6, $80
+		dc.l ($02<<24)|Map02
+		dc.b 0, 0, 2, $B2
+		dc.l ($03<<24)|Map05
+		dc.b 0, 0, 3, $B2
+		dc.l ($04<<24)|Map02
+		dc.b 0, 0, 4, $B2
+		dc.l ($06<<24)|Map02
+		dc.b 0, 0, 6, $B2
+		dc.l ($10<<24)|MapRing
+		dc.b 0, 0, $10, $B2
+		dc.l ($1B<<24)|Map1B
+		dc.b 0, 0, $1B, $B2
 
 LevelDataArray:	dc.l ($4<<24)|TilesGHZ, ($5<<24)|BlocksGHZ, ChunksGHZ
 		dc.b 0, $81, 4, 4
@@ -21695,6 +21714,8 @@ LevelDataArray:	dc.l ($4<<24)|TilesGHZ, ($5<<24)|BlocksGHZ, ChunksGHZ
 		dc.b 0, $85, 8, 8
 		dc.l ($E<<24)|TilesSBZ, ($F<<24)|BlocksSBZ, ChunksSBZ
 		dc.b 0, $86, 9, 9
+		dc.l ($4<<24)|TilesGHZ, ($5<<24)|BlocksGHZ, ChunksGHZ
+		dc.b 0, $81, 4, 4
 
 plcArray:	dc.w plcMain-plcArray, plcMain2-plcArray, plcExplosion-plcArray, plcGameOver-plcArray
 		dc.w plcGHZ1-plcArray, plzGHZ2-plcArray, plcLZ1-plcArray, plcLZ2-plcArray, plcMZ1-plcArray
@@ -21979,18 +22000,24 @@ plcSBZAnimals:	dc.w 1
 		dc.w $B000
 		dc.l ArtAnimalFlicky
 		dc.w $B240
+		
+TwizzlerDec:
+		include "compression/Twizzler.asm"
+		
+KonamiLZSSDec:
+		include	"compression/LZKN1.asm"
 		;align	$8000					; Unnecessary alignment
 ArtCred:	incbin "screens/title/CreditsText/Sprite.nem"
 		even
-ArtSega:	incbin "screens/sega/Main.nem"
+ArtSega:	incbin "screens/sega/Main.twim"
 		even
 MapSega:	incbin "unknown/18A56.eni"
 		even
 byte_18A62:	incbin "unknown/18A62.unc"
 		even
-ArtTitleMain:	incbin "screens/title/Main.nem"
+ArtTitleMain:	incbin "screens/title/Main.twim"
 		even
-ArtTitleSonic:	incbin "screens/title/Sonic.nem"
+ArtTitleSonic:	incbin "screens/title/Sonic.twim"
 		even
 		include "levels/shared/Sonic/sprite.map"
 		include "levels/shared/Sonic/dynamic.map"
@@ -22153,11 +22180,11 @@ TilesSBZ:	incbin "levels/SBZ/Tiles.nem"
 		even
 ChunksSBZ:	incbin "levels/SBZ/Chunks.kos"
 		even
-BlocksTS:	incbin "levels/TS/Blocks.kosp"
+BlocksTS:	incbin "levels/TS/Blocks.twiz"
 		even
-TilesTS:	incbin "levels/TS/Tiles.nem"
+TilesTS:	incbin "levels/TS/Tiles.twim"
 		even
-ChunksTS:	incbin "levels/TS/Chunks.kosp"
+ChunksTS:	incbin "levels/TS/Chunks.twiz"
 		even
 		;incbin "unknown/570D2.dat"
 		;even
@@ -22242,28 +22269,28 @@ ArtSpecialGoal:	incbin "screens/special stage/Art Goal.nem"
 		even
 ArtSpecialR:	incbin "screens/special stage/Art R Block.nem"
 		even
-ArtSpecialSkull:incbin "screens/special stage/Art Skull.nem"
-		even
-ArtSpecialU:	incbin "screens/special stage/Art U Block.nem"
-		even
+ArtSpecialSkull:;incbin "screens/special stage/Art Skull.nem"
+		;even
+ArtSpecialU:	;incbin "screens/special stage/Art U Block.nem"
+		;even
 ArtSpecial1up:	incbin "screens/special stage/Art 1up.nem"
 		even
 ArtSpecialStars:incbin "screens/special stage/Art Stars.nem"
 		even
 byte_65432:	incbin "screens/special stage/ss red white.nem"
 		even
-ArtSpecialZone1:incbin "screens/special stage/Art Zone 1.nem"
-		even
-ArtSpecialZone2:incbin "screens/special stage/Art Zone 2.nem"
-		even
-ArtSpecialZone3:incbin "screens/special stage/Art Zone 3.nem"
-		even
-ArtSpecialZone4:incbin "screens/special stage/Art Zone 4.nem"
-		even
-ArtSpecialZone5:incbin "screens/special stage/Art Zone 5.nem"
-		even
-ArtSpecialZone6:incbin "screens/special stage/Art Zone 6.nem"
-		even
+ArtSpecialZone1:;incbin "screens/special stage/Art Zone 1.nem"
+		;even
+ArtSpecialZone2:;incbin "screens/special stage/Art Zone 2.nem"
+		;even
+ArtSpecialZone3:;incbin "screens/special stage/Art Zone 3.nem"
+		;even
+ArtSpecialZone4:;incbin "screens/special stage/Art Zone 4.nem"
+		;even
+ArtSpecialZone5:;incbin "screens/special stage/Art Zone 5.nem"
+		;even
+ArtSpecialZone6:;incbin "screens/special stage/Art Zone 6.nem"
+		;even
 ArtSpecialUpDown:incbin "screens/special stage/Art Up Down.nem"
 		even
 ArtSpecialEmerald:incbin "screens/special stage/Art Emerald.nem"
@@ -22287,7 +22314,7 @@ colSYZ:		incbin "levels/SYZ/Collision.dat"
 		even
 colSBZ:		incbin "levels/SBZ/Collision.dat"
 		even
-byte_6AB08:	incbin "unknown/6AB08.dat"
+Spec_Layout:	incbin "unknown/6AB08.dat"
 		even
 byte_6B018:	incbin "unknown/6B018.dat"
 		even
