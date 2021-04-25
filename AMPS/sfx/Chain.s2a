@@ -5,4 +5,5 @@
 
 .FM5	sVoice		pChain
 	dc.b nCs5, $05, nRst, $04, nCs5, $04, nRst, $04
+	sCont	.FM5
 	sStop

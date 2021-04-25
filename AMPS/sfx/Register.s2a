@@ -10,7 +10,7 @@
 	sStop
 
 .FM4	sVoice		pRings
-	dc.b nRst, $12, nA5, $55
+	dc.b nRst, $12, nA5, $7F
 	sStop
 
 .PSG3	sVolEnv		v02

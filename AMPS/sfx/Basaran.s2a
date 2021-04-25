@@ -5,4 +5,5 @@
 
 .FM5	sVoice		pBasaran
 	dc.b nG1, $05, nRst, $05, nG1, $04, nRst, $04
+	sCont	.FM5
 	sStop
