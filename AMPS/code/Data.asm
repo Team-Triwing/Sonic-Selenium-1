@@ -78,12 +78,12 @@ SoundIndex:
 	ptrSFX	0, Signpost, Lamppost, BigRing, Bumper, Spring
 	ptrSFX	0, Collapse, Smash, BuzzExplode, Explode
 	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble
-	ptrSFX	0, Door, Stomp, Lava
+	ptrSFX	0, Door, Stomp
 
 	ptrSFX	0, EnterSS, Goal, ActionBlock, Diamonds, Continue
 
 ; SFX with special features
-	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Score
+	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Score, Lava
 
 ; unused SFX
 	ptrSFX	0, UnkA2, UnkAB, UnkB8

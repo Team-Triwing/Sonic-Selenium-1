@@ -1,6 +1,6 @@
 Invincibility_Header:
 	sHeaderInit
-	sHeaderTempo	$01, $20
+	sHeaderTempo	$01, $06
 	sHeaderCh	$05, $03
 	sHeaderDAC	Invincibility_DAC1
 	sHeaderDAC	Invincibility_DAC2

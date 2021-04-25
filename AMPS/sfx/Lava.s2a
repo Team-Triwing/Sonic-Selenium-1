@@ -6,4 +6,7 @@
 .PSG3:	sVolEnv		vNone
 	sNoisePSG	snWhitePSG3
 	dc.b nD3, $25
+.Loop:
+	dc.b sHold, $0C
+	sCont	.Loop
 	sStop

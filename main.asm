@@ -50,10 +50,11 @@ music		macro id
 sfx		macro id
 	move.b #id,mQueue+2.w
     endm
+	
 		include "macros.asm"
 		include "error/debugger.asm"
 ; ---------------------------------------------------------------------------
-		dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
+StartOfROM:		dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
 		dc.l IllegalInstr, ZeroDiv, ChkInstr, TrapvInstr, PrivilegeViol
 		dc.l Trace, LineAEmu, LineFEmu, ErrorException, ErrorException
 		dc.l ErrorException, ErrorException, ErrorException, ErrorException
@@ -76,7 +77,7 @@ sfx		macro id
 Checksum:	dc.w 0                          ; Checksum (incorrect, but it's not checked so not relevant)
 		dc.b 'J               '				; I/O support (3-button joypad)
 
-dword_1A0:	dc.l 0, $7FFFF					; ROM region (512 KB)
+dword_1A0:	dc.l StartOfROM, $7FFFF					; ROM region (512 KB)
 		dc.l $FF0000, $FFFFFF				; RAM region
 		dc.b '                                                               '	; SRAM/Modem support (none)
 		dc.b ' '
@@ -433,7 +434,8 @@ vint:
 
 loc_B3C:
 		move.b	(VintRoutine).w,d0
-		move.b	#0,(VintRoutine).w
+		clr.b	(VintRoutine).w
+		nop
 		move.w	#1,(HintFlag).w
 		andi.w	#$3E,d0
 		move.w	off_B6A(pc,d0.w),d0
@@ -1882,7 +1884,7 @@ loc_25D8:
 		moveq	#1,d0
 		bsr.w	palLoadFade
 		music	mus_Title
-		move.b	#0,(EditModeFlag).w
+		clr.b	(EditModeFlag).w
 		move.w	#$178,(GlobalTimer).w
 		move.b	#$E,(byte_FFD040).w
 		move.b	#$F,(byte_FFD080).w
@@ -1929,7 +1931,7 @@ loc_2710:
 		move.l	d0,(a1)+
 		dbf	d1,loc_2710
 		move.l	d0,(dword_FFF616).w
-		disable_ints
+		;disable_ints
 		lea	(VdpData).l,a6
 		move.l	#$60000003,(VdpCtrl).l
 		move.w	#$3FF,d1
@@ -1946,16 +1948,32 @@ loc_273C:
 		bsr.w	ProcessPLC
 		tst.l	(plcList).w
 		bne.s	loc_273C
-		andi.b	#$F0,(padPress1).w
-		beq.s	loc_273C
 		move.w	(LevSelOption).w,d0
 		cmpi.w	#$13,d0
-		bne.s	loc_2780
+		bne.s	LevSelLevCheckStart
+		cmpi.b	#$80,(padPress1).w ; is	Start pressed?
+		beq.s	LevSelStartPress	; if true, branch
+		cmpi.b	#$20,(padPress1).w ; is	B pressed?
+		beq.s	LevSelBCPress	; if not, branch
+		cmpi.b	#$10,(padPress1).w ; is	C pressed?
+		beq.s	LevSelBCPress	; if not, branch
+		bra.s	loc_273C
+; ===========================================================================
+LevSelLevCheckStart:				; XREF: LevelSelect
+		andi.b	#$80,(padPress1).w ; is	Start pressed?
+		beq.s	loc_273C	; if not, branch
+		bra.s	loc_2780
+		
+LevSelBCPress:
 		move.w	(LevSelSound).w,d0
 
 loc_277A:
 		move.b d0,mQueue+1.w
 		bra.s	loc_273C
+		
+LevSelStartPress:				; XREF: LevelSelect
+		clr.b	(GameMode).w
+		jmp ScreensLoop ; go to sega screen
 ; ---------------------------------------------------------------------------
 
 loc_2780:
@@ -2086,14 +2104,21 @@ loc_28F0:
 		cmpi.w	#$13,(LevSelOption).w
 		bne.s	locret_292A
 		move.b	(padPress1).w,d1
-		andi.b	#$C,d1
+		andi.b	#$4C,d1
 		beq.s	locret_292A
 		move.w	(LevSelSound).w,d0
+		btst	#6,d1		; is A pressed?
+		bne.s	LevSel_A	; if not, branch
 		btst	#2,d1
 		beq.s	loc_2912
 		subq.w	#1,d0
 	;	bcc.s	loc_2912
 	;	moveq	#79,d0
+	
+LevSel_A:
+		btst	#6,d1		; is A button pressed?
+		beq.s	loc_2912	; if not, branch
+		addi.w	#16,d0		; add $10 to sound test
 
 loc_2912:
 		btst	#3,d1
@@ -2245,6 +2270,8 @@ sLevel:
 		lea	(ArtTitleCards).l,a0
 		bsr.w	NemesisDec
 		bsr.w	ClearPLC
+		bsr.w	Pal_FadeFrom
+		bsr.w	sub_10A6
 		moveq	#0,d0
 		move.b	(curzone).w,d0
 		lsl.w	#4,d0
@@ -2258,8 +2285,6 @@ sLevel:
 loc_2C0A:
 		moveq	#1,d0
 		bsr.w	plcAdd
-		bsr.w	Pal_FadeFrom
-		bsr.w	sub_10A6
 		lea	(VdpCtrl).l,a6
 		move.w	#$8B03,(a6)
 		move.w	#$8230,(a6)
@@ -2323,32 +2348,7 @@ loc_2C92:
 		bsr.w	LoadLevelData
 		bsr.w	mapLevelLoadFull
 		;jsr	LogCollision
-		move.l	#colGHZ,(Collision).w
-		cmpi.b	#1,(curzone).w
-		bne.s	loc_2CFA
-		move.l	#colLZ,(Collision).w
-
-loc_2CFA:
-		cmpi.b	#2,(curzone).w
-		bne.s	loc_2D0A
-		move.l	#colMZ,(Collision).w
-
-loc_2D0A:
-		cmpi.b	#3,(curzone).w
-		bne.s	loc_2D1A
-		move.l	#colSLZ,(Collision).w
-
-loc_2D1A:
-		cmpi.b	#4,(curzone).w
-		bne.s	loc_2D2A
-		move.l	#colSYZ,(Collision).w
-
-loc_2D2A:
-		cmpi.b	#5,(curzone).w
-		bne.s	loc_2D3A
-		move.l	#colSBZ,(Collision).w
-
-loc_2D3A:
+		bsr.w	ColIndexLoad
 		move.b	#1,(ObjectsList).w
 		move.b	#$21,(byte_FFD040).w
 		btst	#6,(padHeld1).w
@@ -4696,7 +4696,27 @@ LoadLevelData:
 
 locret_485A:
 		rts
+		
 ; ---------------------------------------------------------------------------
+; Collision index loading subroutine
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+
+ColIndexLoad:				; XREF: Level
+		moveq	#0,d0
+		move.b	(curzone).w,d0
+		lsl.w	#2,d0
+		move.l	ColPointers(pc,d0.w),(Collision).w
+		rts
+; End of function ColIndexLoad
+
+ColPointers:
+		dc.l	colGHZ, colLZ, colMZ, colSLZ, colSYZ, colSBZ, colGHZ		
+		
+; ---------------------------------------------------------------------------
+CESDebugHUD:
 		moveq	#0,d0
 		move.b	(Lives).w,d1
 		cmpi.b	#2,d1

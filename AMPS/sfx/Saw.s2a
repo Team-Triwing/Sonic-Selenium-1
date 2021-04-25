@@ -1,12 +1,12 @@
 	sHeaderInitSFX
 	sHeaderPrio	$80
 	sHeaderCh	$01
-	sHeaderSFX	$80, ctFM5, .FM5, $00, $05
+	sHeaderSFX	$80, ctFM5, .FM5, $00, $0A
 
 .FM5	sVoice		pSaw
 	sModAMPS	$06, $01, $19, $74
 
 Saw_Jump1:
-	dc.b nB3, $7A
+	dc.b nB2, $7A
 	sCont	Saw_Jump1
 	sStop
