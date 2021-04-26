@@ -346,16 +346,7 @@ loc_BBA:
 		move.w	#$7800,(a5)
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		tst.b	(SonicVRAMReset).w
-		beq.s	loc_C7A
-		lea	(VdpCtrl).l,a5
-		move.l	#$94019370,(a5)
-		move.l	#$96E49500,(a5)
-		move.w	#$977F,(a5)
-		move.w	#$7000,(a5)
-		move.w	#$83,(word_FFF644).w
-		move.w	(word_FFF644).w,(a5)
-		move.b	#0,(SonicVRAMReset).w
+		jsr	(ProcessDMAQueue).l
 
 loc_C7A:
 		bsr.w	mapLevelLoad
@@ -403,16 +394,7 @@ loc_CBC:
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
 		bsr.w	sSpecialPalCyc
-		tst.b	(SonicVRAMReset).w
-		beq.s	loc_D7A
-		lea	(VdpCtrl).l,a5
-		move.l	#$94019370,(a5)
-		move.l	#$96E49500,(a5)
-		move.w	#$977F,(a5)
-		move.w	#$7000,(a5)
-		move.w	#$83,(word_FFF644).w
-		move.w	(word_FFF644).w,(a5)
-		move.b	#0,(SonicVRAMReset).w
+		jsr	(ProcessDMAQueue).l
 
 loc_D7A:
 		tst.w	(GlobalTimer).w
@@ -446,16 +428,7 @@ sub_D88:
 		move.w	#$7C00,(a5)
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		tst.b	(SonicVRAMReset).w
-		beq.s	loc_E3A
-		lea	(VdpCtrl).l,a5
-		move.l	#$94019370,(a5)
-		move.l	#$96E49500,(a5)
-		move.w	#$977F,(a5)
-		move.w	#$7000,(a5)
-		move.w	#$83,(word_FFF644).w
-		move.w	(word_FFF644).w,(a5)
-		move.b	#0,(SonicVRAMReset).w
+		jsr	(ProcessDMAQueue).l
 
 loc_E3A:
 		bsr.w	mapLevelLoad
@@ -603,6 +576,102 @@ vdpInitRegs:	dc.w $8004, $8134, $8230, $8328, $8407
 		dc.w $857C, $8600, $8700, $8800, $8900
 		dc.w $8A00, $8B00, $8C81, $8D3F, $8E00
 		dc.w $8F02, $9001, $9100, $9200
+		
+; ---------------------------------------------------------------------------
+; Subroutine for queueing VDP commands (seems to only queue transfers to VRAM),
+; to be issued the next time ProcessDMAQueue is called.
+; Can be called a maximum of 18 times before the buffer needs to be cleared
+; by issuing the commands (this subroutine DOES check for overflow)
+; ---------------------------------------------------------------------------
+; In case you wish to use this queue system outside of the spin dash, this is the
+; registers in which it expects data in:
+; d1.l: Address to data (In 68k address space)
+; d2.w: Destination in VRAM
+; d3.w: Length of data
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+
+; sub_144E: DMA_68KtoVRAM: QueueCopyToVRAM: QueueVDPCommand: Add_To_DMA_Queue:
+QueueDMATransfer:
+		movea.l	(SonicArtBuf+$FC).w,a1
+		cmpa.w	#$C8FC,a1
+		beq.s	QueueDMATransfer_Done ; return if there's no more room in the buffer
+
+		; piece together some VDP commands and store them for later...
+		move.w	#$9300,d0 ; command to specify DMA transfer length & $00FF
+		move.b	d3,d0
+		move.w	d0,(a1)+ ; store command
+
+		move.w	#$9400,d0 ; command to specify DMA transfer length & $FF00
+		lsr.w	#8,d3
+		move.b	d3,d0
+		move.w	d0,(a1)+ ; store command
+
+		move.w	#$9500,d0 ; command to specify source address & $0001FE
+		lsr.l	#1,d1
+		move.b	d1,d0
+		move.w	d0,(a1)+ ; store command
+
+		move.w	#$9600,d0 ; command to specify source address & $01FE00
+		lsr.l	#8,d1
+		move.b	d1,d0
+		move.w	d0,(a1)+ ; store command
+
+		move.w	#$9700,d0 ; command to specify source address & $FE0000
+		lsr.l	#8,d1
+		move.b	d1,d0
+		move.w	d0,(a1)+ ; store command
+
+		andi.l	#$FFFF,d2 ; command to specify destination address and begin DMA
+		lsl.l	#2,d2
+		lsr.w	#2,d2
+		swap	d2
+		ori.l	#$40000080,d2 ; set bits to specify VRAM transfer
+		move.l	d2,(a1)+ ; store command
+
+		move.l	a1,(SonicArtBuf+$FC).w ; set the next free slot address
+		cmpa.w	#$C8FC,a1
+		beq.s	QueueDMATransfer_Done ; return if there's no more room in the buffer
+		move.w	#0,(a1) ; put a stop token at the end of the used part of the buffer
+; return_14AA:
+QueueDMATransfer_Done:
+		rts
+; End of function QueueDMATransfer
+
+
+; ---------------------------------------------------------------------------
+; Subroutine for issuing all VDP commands that were queued
+; (by earlier calls to QueueDMATransfer)
+; Resets the queue when it's done
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+
+; sub_14AC: CopyToVRAM: IssueVDPCommands: Process_DMA: Process_DMA_Queue:
+ProcessDMAQueue:
+		lea	($C00004).l,a5
+		lea	(SonicArtBuf).w,a1
+; loc_14B6:
+ProcessDMAQueue_Loop:
+		move.w	(a1)+,d0
+		beq.s	ProcessDMAQueue_Done ; branch if we reached a stop token
+		; issue a set of VDP commands...
+		move.w	d0,(a5)		; transfer length
+		move.w	(a1)+,(a5)	; transfer length
+		move.w	(a1)+,(a5)	; source address
+		move.w	(a1)+,(a5)	; source address
+		move.w	(a1)+,(a5)	; source address
+		move.w	(a1)+,(a5)	; destination
+		move.w	(a1)+,(a5)	; destination
+		cmpa.w	#$C8FC,a1
+		bne.s	ProcessDMAQueue_Loop ; loop if we haven't reached the end of the buffer
+; loc_14CE:
+ProcessDMAQueue_Done:
+		move.w	#0,(SonicArtBuf).w
+		move.l	#SonicArtBuf,(SonicArtBuf+$FC).w
+		rts
+; End of function ProcessDMAQueue
 ; ---------------------------------------------------------------------------
 
 sub_10A6:
@@ -2770,6 +2839,8 @@ loc_3584:
 		move.w	#$8004,(a6)
 		move.w	#$8AAF,(word_FFF624).w
 		move.w	#$9011,(a6)
+		clr.w	(SonicArtBuf).w
+		move.l	#SonicArtBuf,(SonicArtBuf+$FC).w
 		bsr.w	sSpecialPalCyc
 		clr.w	(SpecAngle).w
 		move.w	#$40/2,(SpecSpeed).w
@@ -16420,6 +16491,7 @@ sub_E952:
 ; ---------------------------------------------------------------------------
 
 sub_E96C:
+		bsr.w	ObjSonic_SpinDash
 		bsr.w	ObjSonic_Jump
 		bsr.w	ObjSonic_SlopeResist
 		bsr.w	ObjSonic_Move
@@ -17065,6 +17137,115 @@ loc_EF78:
 
 locret_EF86:
 		rts
+; ---------------------------------------------------------------------------
+; Subroutine to make Sonic perform a spindash
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+
+ObjSonic_SpinDash:
+		tst.b	spindashflag(a0)
+		bne.s	loc_1AC8E
+		cmpi.b	#8,ani(a0)
+		bne.s	locret_1AC8C
+		move.b	(padHeldPlayer).w,d0
+		andi.b	#$70,d0
+		beq.w	locret_1AC8C
+		move.b	#9,ani(a0)
+		sfx		sfx_Roll
+		addq.l	#4,sp
+		move.b	#1,spindashflag(a0)
+		move.w	#0,spindashtimer(a0)
+		cmpi.b	#ypos,arg(a0)
+		bcs.s	loc_1AC84
+		move.b	#2,($FFFFD11C).w
+
+loc_1AC84:
+		bsr.w	ObjSonic_LevelBound
+		bsr.w	ObjSonic_AnglePosition
+
+locret_1AC8C:
+		rts	
+; ---------------------------------------------------------------------------
+
+loc_1AC8E:
+		move.b	(padHeldPlayer).w,d0
+		btst	#1,d0
+		bne.w	loc_1AD30
+		move.b	#$E,yrad(a0)
+		move.b	#7,xrad(a0)
+		move.b	#2,ani(a0)
+		addq.w	#5,ypos(a0)
+		move.b	#0,spindashflag(a0)
+		moveq	#0,d0
+		move.b	spindashtimer(a0),d0
+		add.w	d0,d0
+		move.w	Dash_Speeds(pc,d0.w),$14(a0)
+		move.w	$14(a0),d0
+		subi.w	#$800,d0
+		add.w	d0,d0
+		andi.w	#$1F00,d0
+		neg.w	d0
+		addi.w	#$2000,d0
+		move.w	d0,($FFFFEED0).w
+		btst	#0,$22(a0)
+		beq.s	loc_1ACF4
+		neg.w	$14(a0)
+
+loc_1ACF4:
+		bset	#2,$22(a0)
+		move.b	#0,($FFFFD11C).w
+		sfx		sfx_Dash
+		bra.s	loc_1AD78
+; ===========================================================================
+Dash_Speeds:	dc.w  $800		; 0
+		dc.w  $880		; 1
+		dc.w  $900		; 2
+		dc.w  $980		; 3
+		dc.w  $A00		; 4
+		dc.w  $A80		; 5
+		dc.w  $B00		; 6
+		dc.w  $B80		; 7
+		dc.w  $C00		; 8
+; ===========================================================================
+
+loc_1AD30:				; If still charging the dash...
+		tst.w	spindashtimer(a0)
+		beq.s	loc_1AD48
+		move.w	spindashtimer(a0),d0
+		lsr.w	#5,d0
+		sub.w	d0,spindashtimer(a0)
+		bcc.s	loc_1AD48
+		move.w	#0,spindashtimer(a0)
+
+loc_1AD48:
+		move.b	(padPressPlayer).w,d0
+		andi.b	#$70,d0	; 'p'
+		beq.w	loc_1AD78
+		move.w	#$900,ani(a0)
+		sfx		sfx_Roll
+		addi.w	#$200,spindashtimer(a0)
+		cmpi.w	#$800,spindashtimer(a0)
+		bcs.s	loc_1AD78
+		move.w	#$800,spindashtimer(a0)
+
+loc_1AD78:
+		addq.l	#4,sp
+		cmpi.w	#$60,($FFFFEED8).w
+		beq.s	loc_1AD8C
+		bcc.s	loc_1AD88
+		addq.w	#4,($FFFFEED8).w
+
+loc_1AD88:
+		subq.w	#2,($FFFFEED8).w
+
+loc_1AD8C:
+		bsr.w	ObjSonic_LevelBound
+		bsr.w	ObjSonic_AnglePosition
+		move.w	#$60,(unk_FFF73E).w	; reset looking up/down
+		rts
+; End of subroutine ObjSonic_SpinDash
 ; ---------------------------------------------------------------------------
 
 ObjSonic_SlopeResist:
@@ -17747,44 +17928,43 @@ loc_F5FA:
 		even
 ; ---------------------------------------------------------------------------
 
-ObjSonic_DynTiles:
+ObjSonic_DynTiles:			; XREF: Obj01_Control; et al
 		moveq	#0,d0
-		move.b	$1A(a0),d0
+		move.b	frame(a0),d0	; load frame number
 		cmp.b	(SonicLastDPLCID).w,d0
-		beq.s	locret_F744
+		beq.s	locret_13C96
 		move.b	d0,(SonicLastDPLCID).w
 		lea	(DynMapSonic).l,a2
 		add.w	d0,d0
 		adda.w	(a2,d0.w),a2
-		moveq	#0,d1
-		move.b	(a2)+,d1
-		subq.b	#1,d1
-		bmi.s	locret_F744
-		lea	(SonicArtBuf).w,a3
-		move.b	#1,(SonicVRAMReset).w
+		moveq	#0,d5
+		move.b	(a2)+,d5
+		subq.w	#1,d5
+		bmi.s	locret_13C96
+		move.w	#$F000,d4
+		move.l	#ArtSonic,d6
 
 ObjSonic_DynReadEntry:
-		moveq	#0,d2
-		move.b	(a2)+,d2
-		move.w	d2,d0
-		lsr.b	#4,d0
-		lsl.w	#8,d2
-		move.b	(a2)+,d2
-		lsl.w	#5,d2
-		lea	(ArtSonic).l,a1
-		adda.l	d2,a1
+		moveq	#0,d1
+		move.b	(a2)+,d1
+		lsl.w	#8,d1
+		move.b	(a2)+,d1
+		move.w	d1,d3
+		lsr.w	#8,d3
+		andi.w	#$F0,d3
+		addi.w	#$10,d3
+		andi.w	#$FFF,d1
+		lsl.l	#5,d1
+		add.l	d6,d1
+		move.w	d4,d2
+		add.w	d3,d4
+		add.w	d3,d4
+		jsr	(QueueDMATransfer).l
+		dbf	d5,ObjSonic_DynReadEntry	; repeat for number of entries
 
-loc_F730:
-		movem.l	(a1)+,d2-d6/a4-a6
-		movem.l	d2-d6/a4-a6,(a3)
-		lea	$20(a3),a3
-		dbf	d0,loc_F730
-
-loc_F740:
-		dbf	d1,ObjSonic_DynReadEntry
-
-locret_F744:
-		rts
+locret_13C96:
+		rts	
+; End of function LoadSonicDynPLC
 ; ---------------------------------------------------------------------------
 
 ObjShield:

@@ -64,6 +64,8 @@ speedshoes	equ $34
 sensorfront	equ $36
 sensorback	equ $37
 convex		equ $38
+spindashflag equ $39
+spindashtimer equ $3A
 jumping		equ $3C
 platform	equ $3D
 lock		equ $3E
