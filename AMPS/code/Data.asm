@@ -61,9 +61,9 @@
 __mus =		MusOff
 
 MusicIndex:
-	ptrMusic GHZ, $30, LZ, $26, MZ, $1A, SLZ, $20, SYZ, $49, SBZ, $13, FZ, $18
-	ptrMusic Boss, $12, SS, $20, Invincibility, $20, Title, $00, GotThroughAct, $00, ExtraLife, $00
-	ptrMusic GameOver, $00, Continue, $00, Ending, $00, SEGA, $00
+	ptrMusic GHZ, $07, LZ, $72, MZ, $73, SLZ, $26, SYZ, $15, SBZ, $08, FZ, $18
+	ptrMusic Boss, $12, SS, $00, Invincibility, $FF, Title, $00, GotThroughAct, $00, ExtraLife, $05
+	ptrMusic GameOver, $00, Continue, $00, Options, $00, SEGA, $00
 
 MusCount =	__mus-MusOff		; number of installed music tracks
 SFXoff =	__mus			; first SFX ID
@@ -104,7 +104,11 @@ SampleList:
 	sample $00E6, Timpani, Stop, MidTimpani	; 84 - Timpani
 	sample $00C2, Timpani, Stop, LowTimpani	; 85 - Low Timpani
 	sample $00B6, Timpani, Stop, FloorTimpani; 86 - Floor Timpani
-	sample $0100, Sega, Stop		; 87 - SEGA screen
+	sample $0100, Tom, Stop, HiTom	; 87 - Hi Tom
+	sample $00E6, Tom, Stop, MidTom	; 88 - Mid Tom
+	sample $00C2, Tom, Stop, LowTom	; 89 - Low Tom
+	sample $00B6, Tom, Stop, FloorTom; 8A - Floor Tom
+	sample $0100, Sega, Stop		; 8B - SEGA screen
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Define volume envelopes and their data
@@ -115,7 +119,7 @@ __venv =	$01
 
 VolEnvs:
 	volenv 01, 02, 03, 04, 05, 06, 07, 08
-	volenv 09
+	volenv 09, 0A, 0B, 0C, 0D
 VolEnvs_End:
 ; ---------------------------------------------------------------------------
 
@@ -123,7 +127,7 @@ vd01:		dc.b $00, $00, $00, $08, $08, $08, $10, $10
 		dc.b $10, $18, $18, $18, $20, $20, $20, $28
 		dc.b $28, $28, $30, $30, $30, $38, eHold
 
-vd02:		dc.b $00, $10, $20, $30, $40, $7F, eHold
+vd02:		dc.b $00, $10, $20, $30, $40, $7F, eStop
 
 vd03:		dc.b $00, $00, $08, $08, $10, $10, $18, $18
 		dc.b $20, $20, $28, $28, $30, $30, $38, $38
@@ -156,6 +160,39 @@ vd08:		dc.b $00, $00, $00, $00, $00, $08, $08, $08
 vd09:		dc.b $00, $08, $10, $18, $20, $28, $30, $38
 		dc.b $40, $48, $50, $58, $60, $68, $70, $78
 		dc.b eHold
+vd0A:		dc.b $00, $00, $00, $00, $00, $00, $00, $00
+		dc.b $00, $00, $08, $08, $08, $08, $08, $08
+		dc.b $08, $08, $08, $08, $08, $08, $08, $08
+		dc.b $08, $08, $08, $08, $08, $08, $08, $08
+		dc.b $08, $08, $08, $08, $08, $08, $08, $08
+		dc.b $10, $10, $10, $10, $10, $10, $10, $10
+		dc.b $10, $10, $18, $18, $18, $18, $18, $18
+		dc.b $18, $18, $18, $18, $20, eHold
+
+vd0B:		dc.b $20, $20, $20, $18, $18, $18, $10, $10
+		dc.b $10, $08, $08, $08, $08, $08, $08, $08
+		dc.b $10, $10, $10, $10, $10, $18, $18, $18
+		dc.b $18, $18, $20, eHold
+
+vd0C:		dc.b $20, $20, $18, $18, $10, $10, $08, $08
+		dc.b $08, $08, $08, $08, $08, $08, $08, $08
+		dc.b $08, $08, $08, $08, $08, $08, $08, $08
+		dc.b $08, $08, $10, $10, $10, $10, $10, $10
+		dc.b $10, $10, $10, $10, $10, $10, $10, $10
+		dc.b $10, $10, $10, $10, $10, $10, $18, $18
+		dc.b $18, $18, $18, $18, $18, $18, $18, $18
+		dc.b $18, $18, $18, $18, $18, $18, $18, $18
+		dc.b $18, $18, $20, $20, $20, $20, $20, $20
+		dc.b $20, $20, $20, $20, $20, $20, $20, $20
+		dc.b $20, $20, $20, $20, $20, $20, $28, $28
+		dc.b $28, $28, $28, $28, $28, $28, $28, $28
+		dc.b $28, $28, $28, $28, $28, $28, $28, $28
+		dc.b $28, $28, $30, $30, $30, $30, $30, $30
+		dc.b $30, $30, $30, $30, $30, $30, $30, $30
+		dc.b $30, $30, $30, $30, $30, $30, $38, eHold
+
+vd0D:		dc.b $70, $68, $60, $58, $50, $48, $40, $38
+		dc.b $30, $28, $20, $18, $10, $08, $00, eHold
 		even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -200,7 +237,7 @@ SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	Kick, Timpani, Snare, Sega
+	incSWF	Kick, Timpani, Snare, Tom, Sega
 	opt ae+				; enable automatic evens
 	list				; continue source listing
 ; ---------------------------------------------------------------------------

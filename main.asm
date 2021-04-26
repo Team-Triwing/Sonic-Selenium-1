@@ -193,19 +193,6 @@ loc_306:
 		beq.s	loc_36A
 
 DoChecksum:
-		movea.l	#ErrorTrap,a0
-		movea.l	#(dword_1A0+4),a1
-		move.l	(a1),d0
-		moveq	#0,d1
-
-loc_32C:
-		add.w	(a0)+,d1
-		cmp.l	a0,d0
-		bcc.s	loc_32C
-		movea.l	#Checksum,a1
-		cmp.w	(a1),d1
-		nop
-		nop
 		lea	(StackPointer).w,a6
 		moveq	#0,d7
 		moveq	#$7F,d6
@@ -263,166 +250,6 @@ loc_3C2:
 		move.w	#$E,(VdpData).l
 		dbf	d7,loc_3C2
 		bra.s	*
-; ---------------------------------------------------------------------------
-
-oldBusErr:
-		move.b	#2,(byte_FFFC00+$44).w
-		bra.s	oldErrorAddress
-; ---------------------------------------------------------------------------
-
-oldAddressErr:
-		move.b	#4,(byte_FFFC00+$44).w
-		bra.s	oldErrorAddress
-; ---------------------------------------------------------------------------
-
-oldIllegalInstr:
-		move.b	#6,(byte_FFFC00+$44).w
-		addq.l	#2,2(sp)
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldZeroDiv:
-		move.b	#8,(byte_FFFC00+$44).w
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldChkInstr:
-		move.b	#$A,(byte_FFFC00+$44).w
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldTrapvInstr:
-		move.b	#$C,(byte_FFFC00+$44).w
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldPrivilegeViol:
-		move.b	#$E,(byte_FFFC00+$44).w
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldTrace:
-		move.b	#$10,(byte_FFFC00+$44).w
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldLineAEmu:
-		move.b	#$12,(byte_FFFC00+$44).w
-		addq.l	#2,2(sp)
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldLineFEmu:
-		move.b	#$14,(byte_FFFC00+$44).w
-		addq.l	#2,2(sp)
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldErrorException:
-		move.b	#0,(byte_FFFC00+$44).w
-		bra.s	oldErrorNormal
-; ---------------------------------------------------------------------------
-
-oldErrorAddress:
-		disable_ints
-		addq.w	#2,sp
-		move.l	(sp)+,(byte_FFFC00+$40).w
-		addq.w	#2,sp
-		movem.l	d0-a7,(byte_FFFC00).w
-		bsr.w	oldErrorPrint
-		move.l	2(sp),d0
-		bsr.w	oldErrorPrintAddr
-		move.l	(byte_FFFC00+$40).w,d0
-		bsr.w	oldErrorPrintAddr
-		bra.s	loc_472
-; ---------------------------------------------------------------------------
-
-oldErrorNormal:
-		disable_ints
-		movem.l	d0-a7,(byte_FFFC00).w
-		bsr.w	oldErrorPrint
-		move.l	2(sp),d0
-		bsr.w	oldErrorPrintAddr
-
-loc_472:
-		bsr.w	oldErrorWaitInput
-		movem.l	(byte_FFFC00).w,d0-a7
-		enable_ints
-		rte
-; ---------------------------------------------------------------------------
-
-oldErrorPrint:
-		lea	(VdpData).l,a6
-		move.l	#$78000003,(VdpCtrl).l
-		lea	(ArtText).l,a0
-		move.w	#$27F,d1
-
-@loadart:
-		move.w	(a0)+,(a6)
-		dbf	d1,@loadart
-		moveq	#0,d0
-		move.b	(byte_FFFC00+$44).w,d0
-		move.w	ErrorMessages(pc,d0.w),d0
-		lea	ErrorMessages(pc,d0.w),a0
-		move.l	#$46040003,(VdpCtrl).l
-		moveq	#$12,d1
-
-@loadtext:
-		moveq	#0,d0
-		move.b	(a0)+,d0
-		addi.w	#$790,d0
-		move.w	d0,(a6)
-		dbf	d1,@loadtext
-		rts
-; ---------------------------------------------------------------------------
-
-ErrorMessages:	dc.w strErrorException-ErrorMessages, strBusErr-ErrorMessages, strAddressErr-ErrorMessages
-		dc.w strIllegalInstr-ErrorMessages, strZeroDiv-ErrorMessages, strChkInstr-ErrorMessages, strTrapvInstr-ErrorMessages
-		dc.w strPrivilegeViol-ErrorMessages, strTrace-ErrorMessages, strLineAEmu-ErrorMessages, strLineFEmu-ErrorMessages
-
-strErrorException:dc.b 'ERROR EXCEPTION    '
-strBusErr:	dc.b 'BUS ERROR          '
-strAddressErr:	dc.b 'ADDRESS ERROR      '
-strIllegalInstr:dc.b 'ILLEGAL INSTRUCTION'
-strZeroDiv:	dc.b '@ERO DIVIDE        '	; @ is a Z in game
-strChkInstr:	dc.b 'CHK INSTRUCTION    '
-strTrapvInstr:	dc.b 'TRAPV INSTRUCTION  '
-strPrivilegeViol:dc.b 'PRIVILEGE VIOLATION'
-strTrace:	dc.b 'TRACE              '
-strLineAEmu:	dc.b 'LINE 1010 EMULATOR '
-strLineFEmu:	dc.b 'LINE 1111 EMULATOR '
-		even
-; ---------------------------------------------------------------------------
-
-oldErrorPrintAddr:
-		move.w	#$7CA,(a6)
-		moveq	#7,d2
-
-loc_5BA:
-		rol.l	#4,d0
-		bsr.s	sub_5C4
-		dbf	d2,loc_5BA
-		rts
-; ---------------------------------------------------------------------------
-
-sub_5C4:
-		move.w	d0,d1
-		andi.w	#$F,d1
-		cmpi.w	#$A,d1
-		bcs.s	loc_5D2
-		addq.w	#7,d1
-
-loc_5D2:
-		addi.w	#$7C0,d1
-		move.w	d1,(a6)
-		rts
-; ---------------------------------------------------------------------------
-
-oldErrorWaitInput:
-		bsr.w	padRead
-		cmpi.b	#$20,(padPress1).w
-		bne.w	oldErrorWaitInput
-		rts
 ; ---------------------------------------------------------------------------
 ArtText:	incbin "unsorted/debugtext.unc"
 		even
@@ -1286,7 +1113,7 @@ locret_1786:
 ; ---------------------------------------------------------------------------
 
 PalCycLZ:
-		;rts
+		rts
 ; ---------------------------------------------------------------------------
 		subq.w	#1,(PalCycWait).w
 		bpl.s	locret_17B8
@@ -1642,34 +1469,6 @@ GetSine:
 SineTable:	incbin "unsorted/sinetable.dat"
 		even
 ; ---------------------------------------------------------------------------
-		movem.l	d1-d2,-(sp)	; garbage code
-		move.w	d0,d1
-		swap	d1
-		moveq	#0,d0
-		move.w	d0,d1
-		moveq	#7,d2
-
-loc_22F4:
-		rol.l	#2,d1
-		add.w	d0,d0
-		addq.w	#1,d0
-		sub.w	d0,d1
-		bcc.s	loc_230E
-		add.w	d0,d1
-		subq.w	#1,d0
-		dbf	d2,loc_22F4
-		lsr.w	#1,d0
-		movem.l	(sp)+,d1-d2
-		rts
-; ---------------------------------------------------------------------------
-
-loc_230E:
-		addq.w	#1,d0
-		dbf	d2,loc_22F4
-		lsr.w	#1,d0
-		movem.l	(sp)+,d1-d2
-		rts
-; ---------------------------------------------------------------------------
 
 GetAngle:
 		movem.l	d3-d4,-(sp)
@@ -1904,6 +1703,7 @@ loc_2710:
 loc_2732:
 		move.l	d0,(a6)
 		dbf	d1,loc_2732
+		music	mus_Options
 		bsr.w	sub_292C
 
 loc_273C:

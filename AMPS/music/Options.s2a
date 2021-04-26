@@ -1,6 +1,6 @@
 Options_Header:
 	sHeaderInit						; Z80 offset is $1380
-	sHeaderTempo	$01, $79
+	sHeaderTempo	$01, $02
 	sHeaderCh	$05, $03
 	sHeaderDAC	Options_DAC1
 	sHeaderDAC	Options_DAC2
