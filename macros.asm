@@ -15,6 +15,12 @@ disable_ints:	macro
 enable_ints:	macro
 		move	#$2300,sr
 		endm
+		
+vsync:			macro
+		enable_ints
+@wait:	tst.b	(VintRoutine).w
+		bne.s	@wait
+		endm
 ; ---------------------------------------------------------------------------
 
 ; enum object, width 64 bytes

@@ -104,7 +104,7 @@ SampleList:
 	sample $00E6, Timpani, Stop, MidTimpani	; 84 - Timpani
 	sample $00C2, Timpani, Stop, LowTimpani	; 85 - Low Timpani
 	sample $00B6, Timpani, Stop, FloorTimpani; 86 - Floor Timpani
-	;sample $0100, Sega, Stop		; 87 - SEGA screen
+	sample $0100, Sega, Stop		; 87 - SEGA screen
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Define volume envelopes and their data
@@ -200,7 +200,7 @@ SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	Kick, Timpani, Snare;, Sega
+	incSWF	Kick, Timpani, Snare, Sega
 	opt ae+				; enable automatic evens
 	list				; continue source listing
 ; ---------------------------------------------------------------------------

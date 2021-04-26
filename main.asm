@@ -79,8 +79,16 @@ Checksum:	dc.w 0                          ; Checksum (incorrect, but it's not ch
 
 dword_1A0:	dc.l StartOfROM, $7FFFF					; ROM region (512 KB)
 		dc.l $FF0000, $FFFFFF				; RAM region
-		dc.b '                                                               '	; SRAM/Modem support (none)
-		dc.b ' '
+	if RecordableDemo=1
+		dc.b "RA",$E8,$20
+		dc.l $200000
+		dc.l $203FFF
+	else
+		dc.b $20,$20,$20
+		dc.l $202020
+		dc.l $202020
+	endif
+Notes:	dc.b '                                                    '
 		dc.b %0011
 		dc.b '               '				; Region codes (Japan and America)
 ; ---------------------------------------------------------------------------
@@ -852,18 +860,18 @@ PauseGame:
 		;nop
 		tst.b	(Lives).w
 		beq.s	loc_1206
-		tst.w	(PauseFlag).w
+		tst.b	(PauseFlag).w
 		bne.s	loc_11CC
 		btst	#7,(padPress1).w
 		beq.s	locret_120C
 
 loc_11CC:
-		move.w	#-1,(PauseFlag).w
+		move.b	#-1,(PauseFlag).w
 		AMPS_MUSPAUSE
 
 loc_11D2:
 		move.b	#$10,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		btst	#6,(padPress1).w
 		beq.s	loc_11EE
 		move.b	#4,(GameMode).w
@@ -880,7 +888,7 @@ loc_11EE:
 		beq.s	loc_11D2
 
 loc_1206:
-		clr.w	(PauseFlag).w
+		clr.b	(PauseFlag).w
 		AMPS_MUSUNPAUSE
 
 locret_120C:
@@ -888,7 +896,7 @@ locret_120C:
 ; ---------------------------------------------------------------------------
 
 loc_120E:
-		move.w	#1,(PauseFlag).w
+		move.b	#1,(PauseFlag).w
 		AMPS_MUSUNPAUSE
 		rts
 ; ---------------------------------------------------------------------------
@@ -1429,7 +1437,7 @@ Pal_ToBlack:
 
 loc_1972:
 		move.b	#$12,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.s	Pal_FadeIn
 		bsr.w	ProcessPLC
 		dbf	d4,loc_1972
@@ -1489,7 +1497,7 @@ Pal_FadeFrom:
 
 loc_19DC:
 		move.b	#$12,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.s	Pal_FadeOut
 		bsr.w	ProcessPLC
 		dbf	d4,loc_19DC
@@ -1634,15 +1642,6 @@ palSBZ:		incbin "levels/SBZ/Main.pal"
 		even
 palSpecial:	incbin "screens/special stage/Main.pal"
 		even
-; ---------------------------------------------------------------------------
-
-vsync:
-		enable_ints
-
-@wait:
-		tst.b	(VintRoutine).w
-		bne.s	@wait
-		rts
 ; ---------------------------------------------------------------------------
 
 RandomNumber:
@@ -1805,7 +1804,7 @@ loc_24BC:
 
 loc_2528:
 		move.b	#2,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.w	sub_1A3A
 		tst.w	(GlobalTimer).w
 		beq.s	loc_2544
@@ -1899,7 +1898,7 @@ loc_25D8:
 
 loc_26AE:
 		move.b	#4,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.w	RunObjects
 		bsr.w	LevelScroll
 		bsr.w	ProcessMaps
@@ -1943,7 +1942,7 @@ loc_2732:
 
 loc_273C:
 		move.b	#2,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.w	sub_28A6
 		bsr.w	ProcessPLC
 		tst.l	(plcList).w
@@ -1996,7 +1995,11 @@ loc_27A6:
 		move.w	d0,(curzone).w
 
 loc_27AA:
-		move.b	#$C,(GameMode).w
+    if RecordableDemo=1
+        move.b	#$8,(GameMode).w
+    else
+        move.b	#$C,(GameMode).w
+    endif
 		move.b	#3,(Lives).w
 		moveq	#0,d0
 		move.w	d0,(Rings).w
@@ -2020,7 +2023,7 @@ loc_27F8:
 
 loc_27FE:
 		move.b	#4,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.w	LevelScroll
 		bsr.w	PaletteCycle
 		bsr.w	ProcessPLC
@@ -2330,7 +2333,7 @@ loc_2C6C:
 
 loc_2C92:
 		move.b	#$C,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.w	RunObjects
 		bsr.w	ProcessMaps
 		bsr.w	ProcessPLC
@@ -2382,11 +2385,17 @@ loc_2D54:
 		move.b	(curzone).w,d0
 		lsl.w	#2,d0
 		movea.l	(a1,d0.w),a1
+	if RecordableDemo=0
 		move.b	1(a1),(unk_FFF792).w
 		subq.b	#1,(unk_FFF792).w
+        bcc.s	Level_Demo_NullPress
+        move.b	3(a1),(unk_FFF792).w
+        addq.w	#2,(unk_FFF790).w
+Level_Demo_NullPress:
+	endif
 		move.w	#$708,(GlobalTimer).w
 		move.b	#8,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		move.w	#$202F,(word_FFF626).w
 		bsr.w	Pal_FadeTo2
 		addq.b	#2,(byte_FFD080+$24).w
@@ -2397,7 +2406,7 @@ loc_2D54:
 sLevelLoop:
 		bsr.w	PauseGame
 		move.b	#8,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		addq.w	#1,(LevelFrames).w
 		bsr.w	sub_3048
 		bsr.w	DemoPlayback
@@ -2434,7 +2443,7 @@ loc_2E66:
 		tst.w	(GlobalTimer).w
 		beq.s	loc_2E84
 		cmpi.b	#8,(GameMode).w
-		beq.s	sLevelLoop
+		beq.w	sLevelLoop
 		clr.b	(GameMode).w
 		rts
 ; ---------------------------------------------------------------------------
@@ -2450,7 +2459,7 @@ loc_2E92:
 
 loc_2E9E:
 		move.b	#8,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.w	DemoPlayback
 		bsr.w	RunObjects
 		bsr.w	ProcessMaps
@@ -2600,13 +2609,16 @@ locret_3076:
 ; ---------------------------------------------------------------------------
 
 DemoPlayback:
+	if RecordableDemo=0
 		tst.w	(DemoMode).w
 		bne.s	loc_30B8
 		rts
+	endif
 ; ---------------------------------------------------------------------------
 
 DemoRecord:
-		lea	($80000).l,a1
+	;	lea	($80000).l,a1
+        lea	($200400).l,a1
 		move.w	(unk_FFF790).w,d0
 		adda.w	d0,a1
 		move.b	(padHeld1).w,d0
@@ -3013,7 +3025,7 @@ loc_3584:
 loc_3620:
 		bsr.w	PauseGame
 		move.b	#$A,(VintRoutine).w
-		bsr.w	vsync
+		vsync
 		bsr.w	DemoPlayback
 		move.w	(padHeld1).w,(padHeldPlayer).w
 		bsr.w	RunObjects
@@ -3104,7 +3116,7 @@ loc_36EA:
 ; ---------------------------------------------------------------------------
 
 sSpecialPalCyc:
-		tst.w	(PauseFlag).w
+		tst.b	(PauseFlag).w
 		bmi.s	locret_37B4
 		subq.w	#1,(unk_FFF79C).w
 		bpl.s	locret_37B4
@@ -4847,7 +4859,7 @@ EventsGHZ:
 		jmp	off_497C(pc,d0.w)
 ; ---------------------------------------------------------------------------
 
-off_497C:	dc.w EventsGHZ1-off_497C, EventsGHZ2-off_497C, EventsGHZ3-off_497C
+off_497C:	dc.w EventsGHZ1-off_497C, EventsGHZ2-off_497C, EventsGHZ3-off_497C, EventsGHZ3-off_497C
 ; ---------------------------------------------------------------------------
 
 EventsGHZ1:
@@ -4954,7 +4966,7 @@ EventsMZ:
 		jmp	off_4A90(pc,d0.w)
 ; ---------------------------------------------------------------------------
 
-off_4A90:	dc.w EventsMZ1-off_4A90, EventsMZ2-off_4A90, EventsMZ3-off_4A90
+off_4A90:	dc.w EventsMZ1-off_4A90, EventsMZ2-off_4A90, EventsMZ3-off_4A90, EventsMZ3-off_4A90
 ; ---------------------------------------------------------------------------
 
 EventsMZ1:
@@ -5090,7 +5102,7 @@ ApplySpeedSettings:
 ; ----------------------------------------------------------------------------
 ;		top_speed	acceleration	deceleration	; #	; Comment
 Speedsettings:
-	dc.w	$600,		$C,		$80		; $00	; Normal
+	dc.w	$600,		$C,		$40		; $00	; Normal
 	dc.w	$C00,		$18,		$80		; $08	; Normal Speedshoes
 	even
 ; ---------------------------------------------------------------------------
@@ -20216,6 +20228,7 @@ locret_10EF6:
 ; ---------------------------------------------------------------------------
 
 loc_10EF8:
+        move.b	#$19,ani(a0)    ; use "shrinking" animation
 		addi.w	#$40/2,(SpecSpeed).w
 		cmpi.w	#$3000,(SpecSpeed).w
 		blt.s	loc_10F1C
@@ -20544,7 +20557,7 @@ Map_obj8A:
 ; ---------------------------------------------------------------------------
 
 ZoneAnimTiles:
-		tst.w	(PauseFlag).w
+		tst.b	(PauseFlag).w
 		bmi.s	locret_112A8
 		lea	(VdpData).l,a6
 		moveq	#0,d0
@@ -20945,7 +20958,7 @@ loc_116A6:
 loc_116BA:
 		tst.b	(byte_FFFE1E).w
 		beq.s	loc_1170E
-		tst.w	(PauseFlag).w
+		tst.b	(PauseFlag).w
 		bmi.s	loc_1170E
 		lea	(dword_FFFE26).w,a1
 		addq.b	#1,-(a1)
@@ -21160,7 +21173,7 @@ loc_118D0:
 ; ---------------------------------------------------------------------------
 
 dword_118DC:	dc.l 100000
-		dc.l 10000
+	;	dc.l 10000
 
 dword_118E4:	dc.l 1000
 
@@ -21412,9 +21425,12 @@ off_11E74:	dc.w loc_11E78-off_11E74, loc_11EB8-off_11E74
 ; ---------------------------------------------------------------------------
 
 loc_11E78:
+		clr.w	(ObjectsList+inertia).w ; Clear Inertia
+		clr.w	(ObjectsList+yvel).w ; Clear X/Y Speed
+		clr.w	(ObjectsList+xvel).w ; Clear X/Y Speed
 		addq.b	#2,(DebugRoutine).w
-		move.b	#0,frame(a0)
-		move.b	#0,ani(a0)
+		clr.b	frame(a0)
+		clr.b	ani(a0)
 		moveq	#0,d0
 		move.b	(curzone).w,d0
 		lea	(DebugLists).l,a2
@@ -21423,7 +21439,7 @@ loc_11E78:
 		move.w	(a2)+,d6
 		cmp.b	(byte_FFFE06).w,d6
 		bhi.s	loc_11EA8
-		move.b	#0,(byte_FFFE06).w
+		clr.b	(byte_FFFE06).w
 
 loc_11EA8:
 		bsr.w	sub_11FCE
@@ -21736,7 +21752,7 @@ plcArray:	dc.w plcMain-plcArray, plcMain2-plcArray, plcExplosion-plcArray, plcGa
 		dc.w plcSBZ1-plcArray, plcSBZ2-plcArray, plcTitleCards-plcArray, word_12484-plcArray
 		dc.w plcSignPosts-plcArray, plcFlash-plcArray, plcSpecialStage-plcArray, plcGHZAnimals-plcArray
 		dc.w plcLZAnimals-plcArray, plcMZAnimals-plcArray, plcSLZAnimals-plcArray, plcSYZAnimals-plcArray
-		dc.w plcSBZAnimals-plcArray
+		dc.w plcSBZAnimals-plcArray, plcGHZAnimals-plcArray
 
 plcMain:	dc.w 4
 		dc.l ArtSmoke
