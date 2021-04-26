@@ -443,8 +443,7 @@ vint:
 loc_B3C:
 		move.b	(VintRoutine).w,d0
 		clr.b	(VintRoutine).w
-		nop
-		move.w	#1,(HintFlag).w
+		move.b	#1,(HintFlag).w
 		andi.w	#$3E,d0
 		move.w	off_B6A(pc,d0.w),d0
 		jsr	off_B6A(pc,d0.w)
@@ -487,8 +486,7 @@ locret_BA8:
 ; ---------------------------------------------------------------------------
 
 sub_BAA:
-		bsr.w	sub_E78
-		rts
+		bra.w	sub_E78
 ; ---------------------------------------------------------------------------
 
 sub_BB0:
@@ -497,7 +495,6 @@ sub_BB0:
 
 loc_BBA:
 		bsr.w	padRead
-		stopZ80
 		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
@@ -534,7 +531,6 @@ loc_BBA:
 		move.b	#0,(SonicVRAMReset).w
 
 loc_C7A:
-		startZ80
 		bsr.w	mapLevelLoad
 		jsr	ZoneAnimTiles
 		jsr	UpdateHUD
@@ -547,7 +543,7 @@ loc_C7A:
 		move.b	d0,(byte_FFF629).w
 
 loc_CA8:
-		move.b	#0,(VintECounter).w
+		clr.b	(VintECounter).w
 		tst.w	(GlobalTimer).w
 		beq.w	locret_CBA
 		subq.w	#1,(GlobalTimer).w
@@ -558,7 +554,6 @@ locret_CBA:
 
 loc_CBC:
 		bsr.w	padRead
-		stopZ80
 		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
@@ -580,7 +575,6 @@ loc_CBC:
 		move.w	#$7C00,(a5)
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		startZ80
 		bsr.w	sSpecialPalCyc
 		tst.b	(SonicVRAMReset).w
 		beq.s	loc_D7A
@@ -604,7 +598,6 @@ locret_D86:
 
 sub_D88:
 		bsr.w	padRead
-		stopZ80
 		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
@@ -638,7 +631,6 @@ sub_D88:
 		move.b	#0,(SonicVRAMReset).w
 
 loc_E3A:
-		startZ80
 		bsr.w	mapLevelLoad
 		jsr	ZoneAnimTiles
 		jsr	UpdateHUD
@@ -662,7 +654,6 @@ sub_E70:
 
 sub_E78:
 		bsr.w	padRead
-		stopZ80
 		lea	(VdpCtrl).l,a5
 		move.l	#$94009340,(a5)
 		move.l	#$96FD9580,(a5)
@@ -684,12 +675,11 @@ sub_E78:
 		move.w	#$7C00,(a5)
 		move.w	#$83,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
-		startZ80
 		rts
 ; ---------------------------------------------------------------------------
 
 hint:
-		tst.w	(HintFlag).w
+		tst.b	(HintFlag).w
 		beq.s	locret_F3A
 		move.l	a5,-(sp)
 		lea	(VdpCtrl).l,a5
@@ -700,50 +690,26 @@ hint:
 		move.w	#$80,(word_FFF644).w
 		move.w	(word_FFF644).w,(a5)
 		movem.l	(sp)+,a5
-		move.w	#0,(HintFlag).w
+		clr.b	(HintFlag).w
 
 locret_F3A:
-		rte
-		;nop
-; ---------------------------------------------------------------------------
-		tst.w	(HintFlag).w		; earlier version of hint?
-		beq.s	locret_F7E
-		movem.l	d0/a0/a5,-(sp)
-		move.w	#0,(HintFlag).w
-		move.w	#$8405,(VdpCtrl).l
-		move.w	#$857C,(VdpCtrl).l
-		move.l	#$78000003,(VdpCtrl).l
-		lea	(SprTableBuff).w,a0
-		lea	(VdpData).l,a5
-		move.w	#$9F,d0
-
-loc_F74:
-		move.l	(a0)+,(a5)
-		dbf	d0,loc_F74
-		movem.l	(sp)+,d0/a0/a5
-
-locret_F7E:
 		rte
 ; ---------------------------------------------------------------------------
 
 padInit:
-		stopZ80
 		moveq	#$40,d0
 		move.b	d0,($A10009).l
 		move.b	d0,($A1000B).l
 		move.b	d0,($A1000D).l
-		startZ80
 		rts
 ; ---------------------------------------------------------------------------
 
 padRead:
-		stopZ80
 		lea	(padHeld1).w,a0
 		lea	($A10003).l,a1
 		bsr.s	sub_FDC
 		addq.w	#2,a1
 		bsr.s	sub_FDC
-		startZ80
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -772,7 +738,7 @@ sub_FDC:
 vdpInit:
 		lea	(VdpCtrl).l,a0
 		lea	(VdpData).l,a1
-		lea	($1080).l,a2
+		lea	(vdpInitRegs).l,a2
 		moveq	#$12,d7
 
 loc_101E:
@@ -22696,7 +22662,7 @@ PauseFlag:	ds.w 1		; self explanatory
 word_FFF644:	ds.w 1
 		ds.b 1
 		ds.b 1
-HintFlag:	ds.w 1		; used when the water palette should be transferred to the next horizontal interrupt
+HintFlag:	ds.w 1		; used when the palette should be transferred to the next horizontal interrupt
 		ds.b 1
 		ds.b 1
 word_FFF64C:	ds.w 1
