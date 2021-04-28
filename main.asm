@@ -68,7 +68,7 @@ StartOfROM:		dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
 		dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
 		dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
 		dc.l ErrorTrap, ErrorTrap
-		dc.b 'SEGA MEGA DRIVE '				; Console name
+		dc.b 'SEGA GENESIS    '				; Console name
 		dc.b 'RPLNMLD APR.2021'				; Copyright/release date
 		dc.b 'Das war ja so was von klar                      '; Domestic name (blank)
 		dc.b 'Das war ja so was von klar                      '; International name (blank)
@@ -84,13 +84,13 @@ dword_1A0:	dc.l StartOfROM, $7FFFF					; ROM region (512 KB)
 		dc.l $200000
 		dc.l $203FFF
 	else
-		dc.b $20,$20,$20
-		dc.l $20202020
-		dc.l $20202020
+		dc.b "RA",$A0,$20
+		dc.l $200000
+		dc.l $203FFF
 	endif
 Notes:	dc.b 'Wenn mir jemand den Titel sagen kann, Ich tue nicht-'
 		dc.b %1111
-		dc.b '                '				; Region codes
+		dc.b '               '				; Region codes
 ; ---------------------------------------------------------------------------
 
 GameInit:
@@ -249,11 +249,11 @@ ScreensArray:
 ; ---------------------------------------------------------------------------
 		bra.w	sSpecial
 ; ---------------------------------------------------------------------------
-		illegal
+		nop
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
-		bsr.w	vdpInit			; not used, since the place where it'd branch to this is nop'd out
+	;	bsr.w	vdpInit			; not used, since the place where it'd branch to this is nop'd out
 		move.l	#CRAM_ADDR_CMD,(VdpCtrl).l
 		moveq	#$3F,d7
 
@@ -409,7 +409,7 @@ loc_CBC:
 
 loc_D7A:
 		tst.w	(GlobalTimer).w
-		beq.w	locret_D86
+		beq.s	locret_D86
 		subq.w	#1,(GlobalTimer).w
 
 locret_D86:
@@ -559,7 +559,7 @@ loc_101E:
 		move.w	d0,(ModeReg2).w
 		moveq	#0,d0
 		move.l	#CRAM_ADDR_CMD,(VdpCtrl).l
-		move.w	#$3F,d7
+		moveq	#$3F,d7
 
 loc_103E:
 		move.w	d0,(a1)
@@ -1663,11 +1663,10 @@ loc_2544:
 ; ---------------------------------------------------------------------------
 
 sTitle:
-		command	mus_FadeOut
+		command	mus_Stop
 		bsr.w	ClearPLC
 		bsr.w	Pal_FadeFrom
 		lea	(VdpCtrl).l,a6
-		move.w  #$8100|%01110100,(a6)
 		move.w	#$8004,(a6)
 		move.w	#$8230,(a6)
 		move.w	#$8407,(a6)
@@ -1700,6 +1699,7 @@ loc_2592:
 loc_25D8:
 		move.w	(a5)+,(a6)
 		dbf	d1,loc_25D8
+		command	mus_Reset
 		lea	(byte_18A62).l,a1
 		move.l	#$42060003,d0
 		moveq	#$21,d1
@@ -2114,11 +2114,11 @@ MusicList:	dc.b mus_GHZ, mus_LZ, mus_MZ, mus_SLZ, mus_SYZ, mus_SBZ
 ; ---------------------------------------------------------------------------
 
 sLevel:
+		bsr.w	ClearPLC
+		bsr.w	Pal_FadeFrom
 		move.l	#$70000002,(VdpCtrl).l
 		lea	(ArtTitleCards).l,a0
 		bsr.w	NemesisDec
-		bsr.w	ClearPLC
-		bsr.w	Pal_FadeFrom
 		bsr.w	sub_10A6
 		moveq	#0,d0
 		move.b	(curzone).w,d0
@@ -2138,14 +2138,14 @@ loc_2C0A:
 		move.w	#$8230,(a6)
 		move.w	#$8407,(a6)
 		move.w	#$857C,(a6)
-		btst	#6,(ConsoleRegion).w	; is this a PAL machine?
-		beq.s	.cont			; if not, continue
-		move.w  #$8100|%01111100,(a6)
-.cont:
 		clr.w	(word_FFFFE8).w
 		move.w	#$8AAF,(word_FFF624).w
 		move.w	#$8004,(a6)
 		move.w	#$8720,(a6)
+		btst	#6,(ConsoleRegion).w	; is this a PAL machine?
+		beq.s	.cont			; if not, continue
+		move.w  #$8100|%01111100,(a6)
+.cont:
 		lea	(ObjectsList).w,a1
 		moveq	#0,d0
 		move.w	#$7FF,d1
@@ -2200,7 +2200,6 @@ loc_2C92:
 		bsr.w	LevelScroll
 		bsr.w	LoadLevelData
 		bsr.w	mapLevelLoadFull
-		;jsr	LogCollision
 		bsr.w	ColIndexLoad
 		move.b	#1,(ObjectsList).w
 		move.b	#$21,(byte_FFD040).w
@@ -2324,119 +2323,6 @@ loc_2EC8:
 		bne.s	loc_2E9E
 		rts
 ; ---------------------------------------------------------------------------
-oscillator:		lea	(word_2EF4).l,a0
-		lea	(byte_FFD400).w,a1
-		move.w	#$B,d1
-
-loc_2EDE:
-		move.b	#5,(a1)
-		move.w	(a0)+,8(a1)
-		move.w	(a0)+,$A(a1)
-		lea	$40(a1),a1
-		dbf	d1,loc_2EDE
-		rts
-; ---------------------------------------------------------------------------
-
-word_2EF4:	dc.w $158, $148
-		dc.w $160, $148
-		dc.w $168, $148
-		dc.w $170, $148
-		dc.w $180, $148
-		dc.w $188, $148
-		dc.w $190, $148
-		dc.w $198, $148
-		dc.w $158, $98
-		dc.w $160, $98
-		dc.w $168, $98
-		dc.w $170, $98
-; ---------------------------------------------------------------------------
-oscillator2:		lea	(word_2F48).l,a0
-		lea	(byte_FFD280).w,a1
-		move.w	#$33,d1
-
-loc_2F32:
-		move.b	#5,(a1)
-		move.w	(a0)+,8(a1)
-		move.w	(a0)+,$A(a1)
-		lea	$40(a1),a1
-		dbf	d1,loc_2F32
-		rts
-; ---------------------------------------------------------------------------
-
-word_2F48:	dc.w $158, $90
-		dc.w $160, $90
-		dc.w $168, $90
-		dc.w $170, $90
-		dc.w $180, $90
-		dc.w $188, $90
-		dc.w $190, $90
-		dc.w $198, $90
-		dc.w $158, $A0
-		dc.w $160, $A0
-		dc.w $168, $A0
-		dc.w $170, $A0
-		dc.w $180, $A0
-		dc.w $188, $A0
-		dc.w $190, $A0
-		dc.w $198, $A0
-		dc.w $158, $A8
-		dc.w $160, $A8
-		dc.w $168, $A8
-		dc.w $170, $A8
-		dc.w $180, $A8
-		dc.w $188, $A8
-		dc.w $190, $A8
-		dc.w $198, $A8
-		dc.w $158, $B0
-		dc.w $160, $B0
-		dc.w $168, $B0
-		dc.w $170, $B0
-		dc.w $180, $B0
-		dc.w $188, $B0
-		dc.w $190, $B0
-		dc.w $198, $B0
-		dc.w $158, $B8
-		dc.w $160, $B8
-		dc.w $168, $B8
-		dc.w $170, $B8
-		dc.w $180, $B8
-		dc.w $188, $B8
-		dc.w $190, $B8
-		dc.w $198, $B8
-		dc.w $100, $98
-		dc.w $108, $98
-		dc.w $110, $98
-		dc.w $118, $98
-		dc.w $128, $98
-		dc.w $130, $98
-		dc.w $138, $98
-		dc.w $140, $98
-		dc.w $128, $A8
-		dc.w $130, $A8
-		dc.w $138, $A8
-		dc.w $140, $A8
-; ---------------------------------------------------------------------------
-		lea	(NemBuffer).w,a0
-		move.w	(word_FFF64C).w,d2
-		move.w	#$9100,d3
-		move.w	#$FF,d7
-
-loc_3028:
-		move.w	d2,d0
-		bsr.w	GetSine
-		asr.w	#4,d0
-		bpl.s	loc_3034
-		moveq	#0,d0
-
-loc_3034:
-		andi.w	#$1F,d0
-		move.b	d0,d3
-		move.w	d3,(a0)+
-		addq.w	#2,d2
-		dbf	d7,loc_3028
-		addq.w	#2,(word_FFF64C).w
-		rts
-; ---------------------------------------------------------------------------
 
 sub_3048:
 		btst	#0,(padHeld1).w
@@ -2520,61 +2406,6 @@ locret_30FE:
 
 off_3100:	dc.l demoin_GHZ, demoin_LZ, demoin_MZ, demoin_SLZ, demoin_MZ
 		dc.l demoin_GHZ, demoin_SS
-		dc.b 0
-		dc.b $8B
-		dc.b 8
-		dc.b $37					; 7
-		dc.b 0
-		dc.b $42					; B
-		dc.b 8
-		dc.b $5C					; \
-		dc.b 0
-		dc.b $6A					; j
-		dc.b 8
-		dc.b $5F					; _
-		dc.b 0
-		dc.b $2F					; /
-		dc.b 8
-		dc.b $2C					; ,
-		dc.b 0
-		dc.b $21					; !
-		dc.b 8
-		dc.b 3
-		dc.b $28					; (
-		dc.b $30					; 0
-		dc.b 8
-		dc.b 8
-		dc.b 0
-		dc.b $2E					; .
-		dc.b 8
-		dc.b $15
-		dc.b 0
-		dc.b $F
-		dc.b 8
-		dc.b $46					; F
-		dc.b 0
-		dc.b $1A
-		dc.b 8
-		dc.b $FF
-		dc.b 8
-		dc.b $CA
-		dc.b 0
-		dc.b 0
-		dc.b 0
-		dc.b 0
-		dc.b 0
-		dc.b 0
-		dc.b 0
-		dc.b 0
-		dc.b 0
-		dc.b 0
-; ---------------------------------------------------------------------------
-		cmpi.b	#6,(curzone).w
-		bne.s	locret_3176
-		bsr.w	sub_3178
-		lea	((byte_FF0900)&$FFFFFF).l,a1
-		bsr.s	sub_3166
-		lea	((byte_FF3380)&$FFFFFF).l,a1
 ; ---------------------------------------------------------------------------
 
 sub_3166:
@@ -3283,59 +3114,32 @@ loc_3CB2:
 		bra.w	LoadLevelUnk
 ; ---------------------------------------------------------------------------
 StartPosArray:	incbin "levels/GHZ/Start 1.dat"
-		even
 		incbin "levels/GHZ/Start 2.dat"
-		even
 		incbin "levels/GHZ/Start 3.dat"
-		even
 		incbin "levels/GHZ/Start 4.dat"
-		even
 		incbin "levels/LZ/Start 1.dat"
-		even
 		incbin "levels/LZ/Start 2.dat"
-		even
 		incbin "levels/LZ/Start 3.dat"
-		even
 		incbin "levels/LZ/Start 4.dat"
-		even
 		incbin "levels/MZ/Start 1.dat"
-		even
 		incbin "levels/MZ/Start 2.dat"
-		even
 		incbin "levels/MZ/Start 3.dat"
-		even
 		incbin "levels/MZ/Start 4.dat"
-		even
 		incbin "levels/SLZ/Start 1.dat"
-		even
 		incbin "levels/SLZ/Start 2.dat"
-		even
 		incbin "levels/SLZ/Start 3.dat"
-		even
 		incbin "levels/SLZ/Start 4.dat"
-		even
 		incbin "levels/SYZ/Start 1.dat"
-		even
 		incbin "levels/SYZ/Start 2.dat"
-		even
 		incbin "levels/SYZ/Start 3.dat"
-		even
 		incbin "levels/SYZ/Start 4.dat"
-		even
 		incbin "levels/SBZ/Start 1.dat"
-		even
 		incbin "levels/SBZ/Start 2.dat"
-		even
 		incbin "levels/SBZ/Start 3.dat"
-		even
 		incbin "levels/SBZ/Start 4.dat"
-		even
 		incbin "levels/Ending/Start 1.dat"
-		even
 		incbin "levels/Ending/Start 2.dat"
-		even
 		incbin "levels/Ending/Start 3.dat"
-		even
 		incbin "levels/Ending/Start 4.dat"
 		even
 
@@ -3382,7 +3186,7 @@ initLevelBG:
 ; ---------------------------------------------------------------------------
 
 off_3DC0:	dc.w InitBGHZ-off_3DC0, initLevelLZ-off_3DC0, initLevelMZ-off_3DC0, initLevelSLZ-off_3DC0
-		dc.w initLevelSYZ-off_3DC0, initLevelSBZ-off_3DC0
+		dc.w initLevelSYZ-off_3DC0, initLevelSBZ-off_3DC0, InitBGHZ-off_3DC0
 ; ---------------------------------------------------------------------------
 
 InitBGHZ:
@@ -7252,8 +7056,8 @@ ObjectAnimate:
 		cmp.b	anilast(a0),d0
 		beq.s	loc_6B54
 		move.b	d0,anilast(a0)
-		move.b	#0,anipos(a0)
-		move.b	#0,anidelay(a0)
+		clr.b	anipos(a0)
+		clr.b	anidelay(a0)
 
 loc_6B54:
 		add.w	d0,d0
@@ -7285,7 +7089,7 @@ locret_6B94:
 loc_6B96:
 		addq.b	#1,d0
 		bne.s	loc_6BA6
-		move.b	#0,anipos(a0)
+		clr.b	anipos(a0)
 		move.b	render(a1),d0
 		bra.s	loc_6B70
 ; ---------------------------------------------------------------------------
@@ -7313,7 +7117,7 @@ loc_6BC4:
 loc_6BCC:
 		addq.b	#1,d0
 		bne.s	locret_6BDA
-		move.b	#0,anipos(a0)
+		clr.b	anipos(a0)
 		clr.b	subact(a0)
 
 locret_6BDA:
@@ -17185,8 +16989,8 @@ ObjSonic_SpinDash:
 		move.b	(padHeldPlayer).w,d0
 		andi.b	#$70,d0
 		beq.w	locret_1AC8C
-		move.b	#9,ani(a0)
-		sfx		sfx_Roll
+		move.b	#2,ani(a0)
+		sfx		sfx_Spindash
 		addq.l	#4,sp
 		move.b	#1,spindashflag(a0)
 		move.w	#0,spindashtimer(a0)
@@ -17264,8 +17068,8 @@ loc_1AD48:
 		move.b	(padPressPlayer).w,d0
 		andi.b	#$70,d0	; 'p'
 		beq.w	loc_1AD78
-		move.w	#$900,ani(a0)
-		sfx		sfx_Roll
+	;	move.w	#$900,ani(a0)
+		sfx		sfx_Spindash
 		addi.w	#$200,spindashtimer(a0)
 		cmpi.w	#$800,spindashtimer(a0)
 		bcs.s	loc_1AD78
@@ -19155,85 +18959,6 @@ loc_1042C:
 		add.w	d1,d0
 		bpl.w	loc_103B6
 		not.w	d1
-		rts
-; ---------------------------------------------------------------------------
-
-LogCollision:
-		rts
-; ---------------------------------------------------------------------------
-		lea	(colWidth).l,a1
-		lea	(colWidth).l,a2
-		move.w	#$FF,d3
-
-loc_1044E:
-		moveq	#$10,d5
-		move.w	#$F,d2
-
-loc_10454:
-		moveq	#0,d4
-		move.w	#$F,d1
-
-loc_1045A:
-		move.w	(a1)+,d0
-		lsr.l	d5,d0
-		addx.w	d4,d4
-		dbf	d1,loc_1045A
-		move.w	d4,(a2)+
-		suba.w	#$20,a1
-		subq.w	#1,d5
-		dbf	d2,loc_10454
-		adda.w	#$20,a1
-		dbf	d3,loc_1044E
-		lea	(colWidth).l,a1
-		lea	(colHeight).l,a2
-		bsr.s	sub_10492
-		lea	(colWidth).l,a1
-		lea	(colWidth).l,a2
-; ---------------------------------------------------------------------------
-
-sub_10492:
-		move.w	#$FFF,d3
-
-loc_10496:
-		moveq	#0,d2
-		move.w	#$F,d1
-		move.w	(a1)+,d0
-		beq.s	loc_104C4
-		bmi.s	loc_104AE
-
-loc_104A2:
-		lsr.w	#1,d0
-		bcc.s	loc_104A8
-		addq.b	#1,d2
-
-loc_104A8:
-		dbf	d1,loc_104A2
-		bra.s	loc_104C6
-; ---------------------------------------------------------------------------
-
-loc_104AE:
-		cmpi.w	#$FFFF,d0
-		beq.s	loc_104C0
-
-loc_104B4:
-		lsl.w	#1,d0
-		bcc.s	loc_104BA
-		subq.b	#1,d2
-
-loc_104BA:
-		dbf	d1,loc_104B4
-		bra.s	loc_104C6
-; ---------------------------------------------------------------------------
-
-loc_104C0:
-		move.w	#$10,d0
-
-loc_104C4:
-		move.w	d0,d2
-
-loc_104C6:
-		move.b	d2,(a2)+
-		dbf	d3,loc_10496
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -22042,6 +21767,7 @@ ArtTitleSonic:	incbin "screens/title/Sonic.twim"
 		even
 		include "levels/shared/Sonic/sprite.map"
 		include "levels/shared/Sonic/dynamic.map"
+		align $8000
 ArtSonic:	incbin "levels/shared/Sonic/Art.unc"
 		even
 
