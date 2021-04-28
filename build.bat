@@ -1,12 +1,10 @@
 @echo off
 "AMPS\Includer.exe" ASM68K AMPS AMPS\.Data
 "tools/asm68k.exe" /o ae-,op+,os+,ow+,oz+,oaq+,osq+,omq+,w- /e RecordableDemo=0 /q /p main.asm, out.md, , out.lst>out.log
-"tools/asm68k.exe" /o ae-,op+,os+,ow+,oz+,oaq+,osq+,omq+,w- /e RecordableDemo=1 /q /p main.asm, out_demo.md
 type out.log
 if not exist out.md pause & exit
 "AMPS\Dual PCM Compress.exe" AMPS\.z80 AMPS\.z80.dat out.md _dlls\lzkn.exe
 error\convsym out.lst out.md -input asm68k_lst -inopt "/localSign=. /localJoin=. /ignoreMacroDefs+ /ignoreMacroExp- /addMacrosAsOpcodes+" -a
 "tools/fixheadr.exe" out.md
-"tools/fixheadr.exe" out_demo.md
 del out.log
 pause

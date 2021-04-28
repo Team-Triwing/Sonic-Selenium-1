@@ -83,7 +83,7 @@ SoundIndex:
 	ptrSFX	0, EnterSS, Goal, ActionBlock, Diamonds, Continue
 
 ; SFX with special features
-	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Score, Lava
+	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Score, Lava, Metal, Pounding
 
 ; unused SFX
 	ptrSFX	0, UnkA2, UnkAB, UnkB8
@@ -109,6 +109,10 @@ SampleList:
 	sample $00C2, Tom, Stop, LowTom	; 89 - Low Tom
 	sample $00B6, Tom, Stop, FloorTom; 8A - Floor Tom
 	sample $0100, Sega, Stop		; 8B - SEGA screen
+	sample $0100, SonicClear, Stop	; 8C - Sonic at act results
+	sample $0100, SonicHurt, Stop	; 8D - Sonic Hurt
+	sample $0100, SonicDeath, Stop	; 8E - Sonic Death
+	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Define volume envelopes and their data
@@ -237,7 +241,7 @@ SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	Kick, Timpani, Snare, Tom, Sega
+	incSWF	Kick, Timpani, Snare, Tom, Sega, SonicClear, SonicDeath, SonicHurt
 	opt ae+				; enable automatic evens
 	list				; continue source listing
 ; ---------------------------------------------------------------------------

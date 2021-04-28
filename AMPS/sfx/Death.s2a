@@ -1,7 +1,8 @@
 	sHeaderInitSFX
 	sHeaderPrio	$70
-	sHeaderCh	$01
+	sHeaderCh	$02
 	sHeaderSFX	$80, ctFM5, .FM5, $F4, $00
+	sHeaderSFX	$A0, ctDAC1, .DAC1, $00, $00
 
 .FM5	sVoice		pDeath
 	dc.b nB3, $07, sHold, nAb3
@@ -9,4 +10,8 @@
 .loop	dc.b $01
 	saVol		$01
 	sLoop		$00, $2F, .loop
+	sStop
+
+.DAC1:	sVoice	dSonicDeath
+	;dc.b nC4, $30
 	sStop

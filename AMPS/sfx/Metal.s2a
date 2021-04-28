@@ -1,0 +1,19 @@
+	sHeaderInitSFX
+	sHeaderPrio	$80
+	sHeaderCh	$01
+	sHeaderSFX	$80, ctFM5, .FM5, $00, $00
+
+.FM5:
+	sVoice		pMetal
+	sModAMPS	$01, $06, $0F, $05
+
+.Jump1:
+	dc.b nA6, $05, nRst, $02
+
+.Loop1:
+	dc.b nA6, $02, sHold
+	saVol		$05
+	sLoop		$00, $08, .Loop1
+	saVol		$D8
+	sCont		.Jump1
+	sStop

@@ -1,8 +1,8 @@
 GotThrough_Header:
 	sHeaderInit
-	sHeaderTempo	$02, $03
+	sHeaderTempo	$82, $03
 	sHeaderCh	$05, $02
-	sHeaderDAC	GotThrough_DAC1
+	sHeaderDAC	GotThrough_DAC1, $00, dSonicClear
 	sHeaderDAC	GotThrough_DAC2
 	sHeaderFM	GotThrough_FM1, $F4, $0A
 	sHeaderFM	GotThrough_FM2, $DC, $0A
@@ -155,8 +155,10 @@ GotThrough_FM5:
 GotThrough_PSG2:
 	dc.b nG5, $06, nC6, nB5, nG5, nC6, nB5, nG5
 	dc.b nC6, nB5, $0C, nC6, $09, nB5, $33
-
+	sStop
+	
 GotThrough_DAC1:
+	dc.b nC4, $7F
 	sStop
 
 GotThrough_DAC2:
