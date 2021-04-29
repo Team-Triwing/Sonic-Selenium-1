@@ -63,7 +63,7 @@ __mus =		MusOff
 MusicIndex:
 	ptrMusic GHZ, $07, LZ, $72, MZ, $73, SLZ, $26, SYZ, $15, SBZ, $08, FZ, $18
 	ptrMusic Boss, $12, SS, $00, Invincibility, $FF, Title, $00, GotThroughAct, $00, ExtraLife, $05
-	ptrMusic GameOver, $00, Continue, $00, Options, $00, SEGA, $00
+	ptrMusic GameOver, $00, Continue, $00, Options, $00, SEGA, $00, newgrass, $00
 
 MusCount =	__mus-MusOff		; number of installed music tracks
 SFXoff =	__mus			; first SFX ID

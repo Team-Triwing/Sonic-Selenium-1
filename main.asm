@@ -233,6 +233,8 @@ loc_36A:
 
 ScreensLoop:
 		move.b	(GameMode).w,d0
+		blo.s	InvalidGMErr	; there's probably a better way to check for invalid
+								; game modes, but this'll work I suppose
 		andi.w	#$1C,d0
 		jsr	ScreensArray(pc,d0.w)
 		bra.s	ScreensLoop
@@ -249,18 +251,12 @@ ScreensArray:
 ; ---------------------------------------------------------------------------
 		bra.w	sSpecial
 ; ---------------------------------------------------------------------------
-		nop
+InvalidGMErr:
+		__ErrorMessage "INVALID GAME MODE", _eh_default|_eh_address_error
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
-	;	bsr.w	vdpInit			; not used, since the place where it'd branch to this is nop'd out
-		move.l	#CRAM_ADDR_CMD,(VdpCtrl).l
-		moveq	#$3F,d7
-
-loc_3C2:
-		move.w	#$E,(VdpData).l
-		dbf	d7,loc_3C2
-		bra.s	*
+		__ErrorMessage "CHECKSUM INCORRECT", _eh_default
 ; ---------------------------------------------------------------------------
 ArtText:	incbin "unsorted/debugtext.unc"
 		even
@@ -5042,7 +5038,6 @@ loc_4F32:
 		bsr.w	ObjBridge_UpdateBend
 
 loc_4F42:
-		bsr.w	ObjectDisplay
 		bra.w	ObjBridge_ChkDelete
 ; ---------------------------------------------------------------------------
 
@@ -5181,7 +5176,6 @@ PtfmNormalHeight:
 
 loc_50B2:
 		bsr.s	ObjBridge_ChkExit
-		bsr.w	ObjectDisplay
 		bra.w	ObjBridge_ChkDelete
 ; ---------------------------------------------------------------------------
 
@@ -5370,7 +5364,7 @@ ObjBridge_ChkDelete:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.s	ObjBridge_DeleteAll
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjBridge_DeleteAll:
@@ -5506,7 +5500,6 @@ loc_55C8:
 		move.b	$16(a0),d3
 		bsr.w	PtfmNormalHeight
 		bsr.w	sub_563C
-		bsr.w	ObjectDisplay
 		bra.w	ObjSwingPtfm_ChkDelete
 ; ---------------------------------------------------------------------------
 
@@ -5622,7 +5615,7 @@ ObjSwingPtfm_ChkDelete:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.s	ObjSwingPtfm_DeleteAll
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjSwingPtfm_DeleteAll:
@@ -5725,7 +5718,6 @@ loc_5850:
 
 loc_5854:
 		bsr.w	sub_5860
-		bsr.w	ObjectDisplay
 		bra.w	loc_5880
 ; ---------------------------------------------------------------------------
 
@@ -5751,7 +5743,7 @@ loc_5880:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	loc_58A0
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_58A0:
@@ -5775,7 +5767,7 @@ loc_58C2:
 ; ---------------------------------------------------------------------------
 
 loc_58C8:
-		bsr.w	sub_5860
+		bsr.s	sub_5860
 		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 		include "levels/GHZ/SpikeLogs/Sprite.map"
@@ -5840,7 +5832,6 @@ loc_59B8:
 loc_59C2:
 		bsr.w	sub_5A1E
 		bsr.w	sub_5A04
-		bsr.w	ObjectDisplay
 		bra.w	loc_5BB0
 ; ---------------------------------------------------------------------------
 
@@ -6057,7 +6048,7 @@ loc_5BB0:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.s	loc_5BCE
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_5BCE:
@@ -6120,7 +6111,6 @@ loc_5D14:
 
 loc_5D20:
 		bsr.w	sub_5DC8
-		bsr.w	ObjectDisplay
 		bra.w	loc_5E2A
 ; ---------------------------------------------------------------------------
 
@@ -6237,7 +6227,7 @@ loc_5E2A:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_5E4A:
@@ -6345,11 +6335,10 @@ locret_5FCC:
 ; ---------------------------------------------------------------------------
 
 loc_5FCE:
-		bsr.w	ObjectFall
-		bsr.w	ObjectDisplay
 		tst.b	1(a0)
 		bpl.s	loc_5FDE
-		rts
+		bsr.w	ObjectFall
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_5FDE:
@@ -6451,11 +6440,10 @@ locret_60F0:
 ; ---------------------------------------------------------------------------
 
 loc_60F2:
-		bsr.w	ObjectFall
-		bsr.w	ObjectDisplay
 		tst.b	1(a0)
 		bpl.s	loc_6102
-		rts
+		bsr.w	ObjectFall
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_6102:
@@ -6523,9 +6511,8 @@ loc_61A4:
 		dbf	d1,loc_6160
 
 loc_61A8:
-		bsr.w	ObjectDisplay
 		sfx		sfx_Collapse
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjCollapseFloor_Delay1:dc.b $1C, $18, $14, $10, $1A, $16, $12, $E, $A, 6, $18
@@ -6605,7 +6592,6 @@ loc_6676:
 		move.w	#$20,d1
 		move.w	#-$14,d3
 		bsr.w	PtfmNormalHeight
-		bsr.w	ObjectDisplay
 		bra.s	loc_66A8
 ; ---------------------------------------------------------------------------
 
@@ -6615,10 +6601,6 @@ loc_668A:
 		move.w	8(a0),d2
 		move.w	#-$14,d3
 		bsr.w	PtfmSurfaceHeight
-		bsr.w	ObjectDisplay
-		;bra.w	loc_66A8
-; ---------------------------------------------------------------------------
-		;rts
 ; ---------------------------------------------------------------------------
 
 loc_66A8:
@@ -6630,22 +6612,19 @@ loc_66A8:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	loc_66C8
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_66C8:
 		bra.w	ObjectDelete
-		;rts
 ; ---------------------------------------------------------------------------
 
 loc_66CE:
-		bsr.w	ObjectDisplay
 		bra.s	loc_66A8
 ; ---------------------------------------------------------------------------
 
 loc_66D6:
 		bra.w	ObjectDelete
-		;rts
 ; ---------------------------------------------------------------------------
 
 Map1B:		dc.w byte_66E0-Map1B, byte_66F5-Map1B
@@ -6688,7 +6667,6 @@ ObjScenery_Init:
 		move.b	(a1)+,col(a0)
 
 ObjScenery_Normal:
-		bsr.w	ObjectDisplay
 		move.w	xpos(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -6697,7 +6675,7 @@ ObjScenery_Normal:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjScenery_Delete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjScenery_Delete:
@@ -6749,7 +6727,6 @@ loc_67F8:
 		move.w	d0,(unk_FFF7E0).w
 
 loc_6812:
-		bsr.w	ObjectDisplay
 		move.w	xpos(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -6758,7 +6735,7 @@ loc_6812:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	loc_6836
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_6836:
@@ -6837,7 +6814,6 @@ loc_6906:
 		bsr.w	sub_6936
 
 loc_6912:
-		bsr.w	ObjectDisplay
 		move.w	xpos(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -6846,7 +6822,7 @@ loc_6912:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 sub_6936:
@@ -7319,7 +7295,7 @@ ObjCannonballExplode_Init:
 		move.b	#$C,xdisp(a0)
 		move.b	#9,anidelay(a0)
 		move.b	#0,frame(a0)
-		sfx		sfx_BuzzExplode
+		sfx		sfx_UnkA2
 
 ObjCannonballExplode_Act:
 		subq.b	#1,anidelay(a0)
@@ -8071,7 +8047,6 @@ loc_7CC8:
 
 loc_7CD0:
 		move.b	(RingFrame).w,frame(a0)
-		bsr.w	ObjectDisplay
 		move.w	$32(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -8080,7 +8055,7 @@ loc_7CD0:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.s	loc_7D2C
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_7CF8:
@@ -8269,7 +8244,6 @@ loc_7ED6:
 
 loc_7F12:
 		move.b	(RingFrame).w,frame(a0)
-		bsr.w	ObjectDisplay
 		move.w	xpos(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -8278,7 +8252,7 @@ loc_7F12:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_7F3C:
@@ -8428,7 +8402,6 @@ loc_81A4:
 		bsr.w	ObjectAnimate
 
 loc_81AE:
-		bsr.w	ObjectDisplay
 		move.w	xpos(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -8437,7 +8410,7 @@ loc_81AE:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 sub_81D2:
@@ -9614,7 +9587,6 @@ loc_8F96:
 		bsr.w	loc_A30C
 
 loc_8F9E:
-		bsr.w	ObjectDisplay
 		bra.w	loc_90C2
 ; ---------------------------------------------------------------------------
 
@@ -9760,7 +9732,7 @@ loc_90CE:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_90EE:
@@ -9919,7 +9891,6 @@ ObjGlassBlock:
 		move.b	$24(a0),d0
 		move.w	off_93DE(pc,d0.w),d1
 		jsr	off_93DE(pc,d1.w)
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -9928,12 +9899,11 @@ ObjGlassBlock:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	loc_93D8
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_93D8:
-		bsr.w	ObjectDelete
-		rts
+		bra.w	ObjectDelete
 ; ---------------------------------------------------------------------------
 
 off_93DE:	dc.w loc_93FA-off_93DE, loc_9498-off_93DE, loc_94B0-off_93DE, loc_94CA-off_93DE, loc_94D8-off_93DE
@@ -10289,7 +10259,6 @@ loc_97D0:
 		movea.l	a2,a0
 
 loc_9810:
-		bsr.w	ObjectDisplay
 		bra.w	loc_984A
 ; ---------------------------------------------------------------------------
 
@@ -10310,8 +10279,6 @@ loc_9834:
 		move.w	d0,$C(a0)
 
 loc_9846:
-		bsr.w	ObjectDisplay
-
 loc_984A:
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
@@ -10321,7 +10288,7 @@ loc_984A:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 sub_986A:
@@ -10522,7 +10489,6 @@ loc_9A8E:
 		move.w	#$20,d3
 		move.w	(sp)+,d4
 		bsr.w	sub_A2BC
-		bsr.w	ObjectDisplay
 		bra.w	loc_9ADC
 ; ---------------------------------------------------------------------------
 
@@ -10543,8 +10509,6 @@ loc_9AC4:
 		move.w	d0,xpos(a0)
 
 loc_9AD8:
-		bsr.w	ObjectDisplay
-
 loc_9ADC:
 		move.w	$3A(a0),d0
 		andi.w	#$FF80,d0
@@ -10554,7 +10518,7 @@ loc_9ADC:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 sub_9AFC:
@@ -10687,7 +10651,6 @@ loc_9E14:
 		bchg	#1,$1A(a0)
 
 loc_9E2E:
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -10696,12 +10659,11 @@ loc_9E2E:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	loc_9E52
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_9E52:
-		bsr.w	ObjectDelete
-		rts
+		bra.w	ObjectDelete
 ; ---------------------------------------------------------------------------
 
 sub_9E58:
@@ -10841,7 +10803,6 @@ loc_9F84:
 		bset	#7,$28(a0)
 
 loc_9FD4:
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -10850,7 +10811,7 @@ loc_9FD4:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.s	loc_9FF6
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_9FF6:
@@ -11799,7 +11760,6 @@ loc_ABBE:
 		movea.l	(sp)+,a0
 
 loc_ABDE:
-		bsr.w	ObjectDisplay
 		move.w	$30(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -11808,7 +11768,7 @@ loc_ABDE:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 sub_AC02:
@@ -11906,7 +11866,6 @@ loc_AD42:
 		move.w	#$10,d3
 		move.w	xpos(a0),d4
 		bsr.w	sub_A2BC
-		bsr.w	ObjectDisplay
 		move.w	xpos(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -11915,7 +11874,7 @@ loc_AD42:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjWaterfallSnd:
@@ -12017,10 +11976,9 @@ loc_AE78:
 loc_AE92:
 		bsr.w	ObjectMove
 		addi.w	#$70,$12(a0)
-		bsr.w	ObjectDisplay
 		tst.b	1(a0)
 		bpl.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjectFragment:
@@ -12542,7 +12500,6 @@ ObjCapsule:
 		move.b	$24(a0),d0
 		move.w	off_B66C(pc,d0.w),d1
 		jsr	off_B66C(pc,d1.w)
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -12551,7 +12508,7 @@ ObjCapsule:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 off_B66C:	dc.w loc_B68C-off_B66C, loc_B6D6-off_B66C
@@ -12838,7 +12795,6 @@ ObjSpring:
 		move.b	$24(a0),d0
 		move.w	off_BAA0(pc,d0.w),d1
 		jsr	off_BAA0(pc,d1.w)
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -12847,7 +12803,7 @@ ObjSpring:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 off_BAA0:	dc.w loc_BAB8-off_BAA0, sub_BB2E-off_BAA0, loc_BB84-off_BAA0, sub_BB8E-off_BAA0, sub_BB9A-off_BAA0
@@ -13325,7 +13281,6 @@ loc_C148:
 		bsr.w	sub_6936
 
 loc_C154:
-		bsr.w	ObjectDisplay
 		move.w	xpos(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -13334,7 +13289,7 @@ loc_C154:
 		sub.w	d1,d0
 		cmpi.w	#640,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 		include "levels/GHZ/Wall/Sprite.map"
 		even
@@ -13564,7 +13519,6 @@ loc_C43C:
 		bsr.w	sub_A2BC
 
 loc_C46A:
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -13573,7 +13527,7 @@ loc_C46A:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 off_C48E:	dc.w locret_C498-off_C48E, loc_C4B2-off_C48E, loc_C49A-off_C48E, loc_C4D2-off_C48E
@@ -13673,7 +13627,6 @@ loc_C560:
 		move.b	#0,$1A(a0)
 
 loc_C57E:
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -13682,7 +13635,7 @@ loc_C57E:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 		include "levels/SYZ/SceneryLamp/Sprite.map"
 		even
@@ -13732,7 +13685,6 @@ loc_C62C:
 loc_C684:
 		lea	(AniBumper).l,a1
 		bsr.w	ObjectAnimate
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -13743,7 +13695,7 @@ loc_C684:
 loc_C6A8:
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 		include "levels/SYZ/Bumper/Sprite.ani"
 		even
@@ -13758,7 +13710,6 @@ ObjSignpost:
 		jsr	off_C726(pc,d1.w)
 		lea	(AniSignpost).l,a1
 		bsr.w	ObjectAnimate
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -13767,7 +13718,7 @@ ObjSignpost:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 off_C726:	dc.w loc_C72E-off_C726, loc_C752-off_C726, loc_C77C-off_C726, loc_C814-off_C726
@@ -13966,8 +13917,7 @@ loc_C9CE:
 loc_C9DA:
 		lea	(AniLavaFallMaker).l,a1
 		bsr.w	ObjectAnimate
-		bsr.w	ObjectDisplay
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 loc_C9EA:
@@ -14224,7 +14174,6 @@ loc_CCB2:
 		lea	(AniLavaChase).l,a1
 		bsr.w	ObjectAnimate
 		bsr.w	ObjectMove
-		bsr.w	ObjectDisplay
 		tst.b	$36(a0)
 		bne.s	locret_CCE6
 		move.w	8(a0),d0
@@ -14235,6 +14184,7 @@ loc_CCB2:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.s	loc_CCE8
+		bra.w	ObjectDisplay
 
 locret_CCE6:
 		rts
@@ -14395,10 +14345,9 @@ loc_D2C4:
 
 loc_D2C8:
 		bsr.w	ObjectFall
-		bsr.w	ObjectDisplay
 		tst.b	render(a0)
 		bpl.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 sub_D2DA:
@@ -14573,10 +14522,9 @@ loc_D528:
 loc_D580:
 		bsr.w	ObjectMove
 		addi.w	#$38,$12(a0)
-		bsr.w	ObjectDisplay
 		tst.b	1(a0)
 		bpl.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjSmashBlock_Frag:dc.w $FE00, $FE00, $FF00, $FF00, $200, $FE00, $100, $FF00
@@ -14837,12 +14785,6 @@ loc_D862:
 		cmp.w	d2,d0
 		rts
 ; ---------------------------------------------------------------------------
-		bsr.w	ObjectMove
-		bsr.w	ObjectDisplay
-		tst.b	1(a0)
-		bpl.w	ObjectDelete
-		rts
-; ---------------------------------------------------------------------------
 		include "levels/MZ/Basaran/Sprite.ani"
 		include "levels/MZ/Basaran/Sprite.map"
 		even
@@ -14940,7 +14882,6 @@ ObjMovingBlocks_Action:
 		bsr.w	sub_A2BC
 
 ObjMovingBlocks_ChkDelete:
-		bsr.w	ObjectDisplay
 		move.w	$34(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -14949,7 +14890,7 @@ ObjMovingBlocks_ChkDelete:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
 ObjBasaran_TypeIndex:dc.w ObjBasaran_Type00-ObjBasaran_TypeIndex, ObjBasaran_Type01-ObjBasaran_TypeIndex, ObjBasaran_Type02-ObjBasaran_TypeIndex
@@ -16113,7 +16054,6 @@ loc_E646:
 		move.b	d0,$1A(a0)
 
 loc_E64E:
-		bsr.w	ObjectDisplay
 		move.w	8(a0),d0
 		andi.w	#$FF80,d0
 		move.w	(CameraX).w,d1
@@ -16122,7 +16062,7 @@ loc_E64E:
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bhi.w	ObjectDelete
-		rts
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 		include "levels/SLZ/Fan/Sprite.map"
 		even
@@ -17856,7 +17796,7 @@ ObjShield_Shield:
 		move.b	(ObjectsList+$22).w,$22(a0)
 		lea	(AniShield).l,a1
 		jsr	(ObjectAnimate).l
-		bsr.w	ObjectDisplay
+		bra.w	ObjectDisplay
 
 locret_F7C0:
 		rts
