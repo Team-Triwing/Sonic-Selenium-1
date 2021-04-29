@@ -1309,10 +1309,16 @@ Pal_ToBlack:
 		move.w	#$14,d4
 
 loc_1972:
+		bsr.w	ProcessPLC
 		move.b	#$12,(VintRoutine).w
 		vsync
+		bchg	#$00,d6					; MJ: change delay counter
+		beq.s	loc_1972				; MJ: if null, delay a frame
 		bsr.s	Pal_FadeIn
-		bsr.w	ProcessPLC
+		subq.b	#$02,d4					; MJ: decrease colour check
+		bne.s	loc_1972				; MJ: if it has not reached null, branch
+		move.b	#$12,(VintRoutine).w
+		vsync
 		dbf	d4,loc_1972
 		rts
 ; ---------------------------------------------------------------------------
@@ -1333,35 +1339,29 @@ loc_199E:
 ; ---------------------------------------------------------------------------
 
 Pal_AddColor:
-		move.w	(a1)+,d2
-		move.w	(a0),d3
-		cmp.w	d2,d3
-		beq.s	loc_19CE
-		move.w	d3,d1
-		addi.w	#$200,d1
-		cmp.w	d2,d1
-		bhi.s	loc_19BC
-		move.w	d1,(a0)+
-		rts
-; ---------------------------------------------------------------------------
+		move.b	(a1),d5					; MJ: load blue
+		move.w	(a1)+,d1				; MJ: load green and red
+		move.b	d1,d2					; MJ: load red
+		lsr.b	#$04,d1					; MJ: get only green
+		andi.b	#$0E,d2					; MJ: get only red
+		move.w	(a0),d3					; MJ: load current colour in buffer
+		cmp.b	d5,d4					; MJ: is it time for blue to fade?
+		bhi.s	FCI_NoBlue				; MJ: if not, branch
+		addi.w	#$0200,d3				; MJ: increase blue
 
-loc_19BC:
-		move.w	d3,d1
-		addi.w	#$20,d1
-		cmp.w	d2,d1
-		bhi.s	loc_19CA
-		move.w	d1,(a0)+
-		rts
-; ---------------------------------------------------------------------------
+FCI_NoBlue:
+		cmp.b	d1,d4					; MJ: is it time for green to fade?
+		bhi.s	FCI_NoGreen				; MJ: if not, branch
+		addi.b	#$20,d3					; MJ: increase green
 
-loc_19CA:
-		addq.w	#2,(a0)+
-		rts
-; ---------------------------------------------------------------------------
+FCI_NoGreen:
+		cmp.b	d2,d4					; MJ: is it time for red to fade?
+		bhi.s	FCI_NoRed				; MJ: if not, branch
+		addq.b	#$02,d3					; MJ: increase red
 
-loc_19CE:
-		addq.w	#2,a0
-		rts
+FCI_NoRed:
+		move.w	d3,(a0)+				; MJ: save colour
+		rts						; MJ: return
 ; ---------------------------------------------------------------------------
 
 Pal_FadeFrom:
@@ -2114,6 +2114,11 @@ MusicList:	dc.b mus_GHZ, mus_LZ, mus_MZ, mus_SLZ, mus_SYZ, mus_SBZ
 ; ---------------------------------------------------------------------------
 
 sLevel:
+        tst.b	(word_FFF662).w
+        bne.s	.notset
+		clr.b	(word_FFF662).w
+		music	mus_FadeOut
+.notset
 		bsr.w	ClearPLC
 		bsr.w	Pal_FadeFrom
 		move.l	#$70000002,(VdpCtrl).l
@@ -2263,15 +2268,15 @@ sLevelLoop:
 		bsr.w	RunObjects
 		tst.w	(LevelRestart).w
 		bne.w	sLevel
-		tst.w	(DebugRoutine).w
-		bne.s	loc_2E2A
-		cmpi.b	#6,(ObjectsList+act).w
-		bcc.s	loc_2E2E
+		;tst.w	(DebugRoutine).w
+		;bne.s	loc_2E2A
+		;cmpi.b	#6,(ObjectsList+act).w
+		;bcc.s	loc_2E2E
 
-loc_2E2A:
+;loc_2E2A:
 		bsr.w	LevelScroll
 
-loc_2E2E:
+;loc_2E2E:
 		bsr.w	ProcessMaps
 		bsr.w	LoadObjects
 		bsr.w	PaletteCycle
@@ -2498,8 +2503,8 @@ oscInitTable:	dc.w $7C, $80, 0, $80, 0, $80, 0, $80, 0, $80, 0, $80
 ; ---------------------------------------------------------------------------
 
 oscUpdate:
-		cmpi.b	#6,(ObjectsList+act).w
-		bcc.s	locret_340C
+		;cmpi.b	#6,(ObjectsList+act).w
+		;bcc.s	locret_340C
 		lea	(oscValues).w,a1
 		lea	(oscUpdateTable).l,a2
 		move.w	(a1)+,d3
@@ -6847,8 +6852,8 @@ loc_6912:
 sub_6936:
 		tst.w	(DebugRoutine).w
 		bne.w	locret_69A6
-		cmpi.b	#6,(ObjectsList+act).w
-		bcc.s	locret_69A6
+		;cmpi.b	#6,(ObjectsList+act).w
+		;bcc.s	locret_69A6
 		bsr.w	sub_69CE
 		beq.s	loc_698C
 		bmi.w	loc_69A8
@@ -8671,8 +8676,8 @@ RunObjects:
 		lea	(ObjectsList).w,a0
 		moveq	#$7F,d7
 		moveq	#0,d0
-		cmpi.b	#6,(ObjectsList+act).w
-		bcc.s	loc_8560
+		;cmpi.b	#6,(ObjectsList+act).w
+		;bcc.s	loc_8560
 ; ---------------------------------------------------------------------------
 
 sub_8546:
@@ -8762,11 +8767,10 @@ ObjectMove:
 ; ---------------------------------------------------------------------------
 
 ObjectDisplay:
-		lea	(DisplayLists).w,a1
+		moveq	#0,d0
 		move.b	prio(a0),d0
-		andi.w	#7,d0
-		lsl.w	#7,d0
-		adda.w	d0,a1
+		add.w	d0,d0
+		movea.w	Priority2InputAddrTable(pc,d0.w),a1
 		cmpi.w	#$7E,(a1)
 		bcc.s	locret_8768
 		addq.w	#2,(a1)
@@ -8778,11 +8782,10 @@ locret_8768:
 ; ---------------------------------------------------------------------------
 
 ObjectDisplayA1:
-		lea	(DisplayLists).w,a2
+		moveq	#0,d0
 		move.b	prio(a1),d0
-		andi.w	#7,d0
-		lsl.w	#7,d0
-		adda.w	d0,a2
+		add.w	d0,d0
+		movea.w	Priority2InputAddrTable(pc,d0.w),a2
 		cmpi.w	#$7E,(a2)
 		bcc.s	locret_8786
 		addq.w	#2,(a2)
@@ -8791,6 +8794,17 @@ ObjectDisplayA1:
 
 locret_8786:
 		rts
+		
+; ---------------------------------------------------------------------------
+Priority2InputAddrTable:
+   dc.w   DisplayLists
+   dc.w   DisplayLists+$80
+   dc.w   DisplayLists+$100
+   dc.w   DisplayLists+$180
+   dc.w   DisplayLists+$200
+   dc.w   DisplayLists+$280
+   dc.w   DisplayLists+$300
+   dc.w   DisplayLists+$380
 ; ---------------------------------------------------------------------------
 
 ObjectDelete:
@@ -8822,7 +8836,9 @@ loc_87B2:
 
 loc_87BA:
 		movea.w	(a4,d6.w),a0
-		tst.b	(a0)
+		tst.b	0(a0)
+		beq.w	loc_886E
+		tst.l	4(a0)
 		beq.w	loc_886E
 		bclr	#7,render(a0)
 		move.b	1(a0),d0
@@ -12022,7 +12038,7 @@ ObjectFragment:
 ; ---------------------------------------------------------------------------
 
 loc_AECE:
-		bsr.w	ObjectLoad
+		bsr.w	LoadNextObject
 		bne.s	loc_AF28
 		addq.w	#5,a3
 
@@ -12038,16 +12054,6 @@ loc_AED6:
 		move.b	xdisp(a0),xdisp(a1)
 		move.w	(a4)+,xvel(a1)
 		move.w	(a4)+,yvel(a1)
-		cmpa.l	a0,a1
-		bcc.s	loc_AF24
-		move.l	a0,-(sp)
-		movea.l	a1,a0
-		bsr.w	ObjectMove
-		add.w	d2,yvel(a0)
-		movea.l	(sp)+,a0
-		bsr.w	ObjectDisplayA1
-
-loc_AF24:
 		dbf	d1,loc_AECE
 
 loc_AF28:
@@ -18356,35 +18362,9 @@ loc_FED4:
 ; ---------------------------------------------------------------------------
 
 locret_FEE8:
-		rts
-; ---------------------------------------------------------------------------
-		move.l	8(a0),d2
-		move.w	$10(a0),d0
-		ext.l	d0
-		asl.l	#8,d0
-		sub.l	d0,d2
-		move.l	d2,8(a0)
-		move.w	#$38,d0
-		ext.l	d0
-		asl.l	#8,d0
-		sub.l	d0,d3
-		move.l	d3,$C(a0)
-		rts
 ; ---------------------------------------------------------------------------
 
 locret_FF0C:
-		rts
-; ---------------------------------------------------------------------------
-		move.l	$C(a0),d3
-		move.w	$12(a0),d0
-		subi.w	#$38,d0
-		move.w	d0,$12(a0)
-		ext.l	d0
-		asl.l	#8,d0
-		sub.l	d0,d3
-		move.l	d3,$C(a0)
-		rts
-; ---------------------------------------------------------------------------
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -19053,8 +19033,6 @@ loc_105B6:
 locret_105BE:
 		rts
 ; ---------------------------------------------------------------------------
-		move.w	$C(a0),d2
-		move.w	8(a0),d3
 
 loc_105C8:
 		addi.w	#$A,d2
@@ -19203,8 +19181,6 @@ ObjSonic_NoRunningOnWalls:
 		move.b	#$80,d2
 		bra.w	loc_105A8
 ; ---------------------------------------------------------------------------
-		move.w	$C(a0),d2
-		move.w	8(a0),d3
 
 loc_10754:
 		subi.w	#$A,d2
@@ -19454,8 +19430,6 @@ loc_109E0:
 		subq.b	#1,(UnkTimer).w
 		bpl.s	loc_10A02
 		move.b	#7,(UnkTimer).w
-		;bra.s	loc_10A02
-; ---------------------------------------------------------------------------
 		addq.b	#1,(UnkFrame).w
 		andi.b	#1,(UnkFrame).w
 
@@ -19699,20 +19673,6 @@ byte_10C8C:	dc.b 1
 byte_10C92:	dc.b 1
 		dc.b $F4, $A, $20, 9, $F4
 ; ---------------------------------------------------------------------------
-		lea	((byte_FF1020)&$FFFFFF).l,a1
-		lea	(Spec_Layout).l,a0
-		moveq	#$3F,d1
-
-loc_10CA6:
-		moveq	#$F,d2
-
-loc_10CA8:
-		move.l	(a0)+,(a1)+
-		dbf	d2,loc_10CA8
-		lea	$40(a1),a1
-		dbf	d1,loc_10CA6
-		rts
-; ---------------------------------------------------------------------------
 
 ObjSonicSpecial:
 		moveq	#0,d0
@@ -19785,7 +19745,6 @@ loc_10D80:
 		add.w	(SpecSpeed).w,d0
 		move.w	d0,(SpecAngle).w
 		jmp	ObjSonic_Animate
-		;rts
 ; ---------------------------------------------------------------------------
 
 sub_10D94:
@@ -19868,10 +19827,6 @@ loc_10E48:
 
 loc_10E4E:
 		subi.w	#$40,d0
-	;	bcc.s	loc_10E56
-	;	nop
-
-loc_10E56:
 		move.w	d0,$14(a0)
 		rts
 ; ---------------------------------------------------------------------------
@@ -19892,10 +19847,6 @@ loc_10E76:
 
 loc_10E7C:
 		addi.w	#$40,d0
-	;	bcc.s	loc_10E84
-	;	nop
-
-loc_10E84:
 		move.w	d0,$14(a0)
 
 locret_10E88:
@@ -19947,7 +19898,7 @@ locret_10EF6:
 loc_10EF8:
         move.b	#$19,ani(a0)    ; use "shrinking" animation
 		addi.w	#$40/2,(SpecSpeed).w
-		cmpi.w	#$3000,(SpecSpeed).w
+		cmpi.w	#$2000,(SpecSpeed).w
 		blt.s	loc_10F1C
 		clr.w	(SpecSpeed).w
 		move.w	#$4000,(SpecAngle).w

@@ -18,8 +18,8 @@ enable_ints:	macro
 		
 vsync:			macro
 		enable_ints
-@wait:	tst.b	(VintRoutine).w
-		bne.s	@wait
+@wait\@:	tst.b	(VintRoutine).w
+		bne.s	@wait\@
 		endm
 ; ---------------------------------------------------------------------------
 
