@@ -74,14 +74,14 @@ SoundIndex:
 	ptrSFX	$01, RingRight
 	ptrSFX	0, RingLeft, RingLoss, Break, Jump, Roll
 	ptrSFX	0, Bubble, Drown, SpikeHit, Death
-	ptrSFX	0, Register, Bonus, Shield, Dash, BossHit, Switch
+	ptrSFX	0, Register, Bonus, Shield, Dash, BossHit
 	ptrSFX	0, Signpost, Lamppost, BigRing, Bumper, Spring
 	ptrSFX	0, Collapse, Smash, BuzzExplode, Explode
 	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble
 	ptrSFX	0, Door, Stomp, EnterSS, Goal, ActionBlock, Diamonds, Continue, Spindash
 
 ; SFX with special features
-	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Score, Lava, Metal, Pounding, Alarm
+	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Lava, Metal, Pounding, Alarm, Switch
 
 ; unused SFX
 	ptrSFX	0, UnkA2, UnkAB, UnkB8, Buzzer

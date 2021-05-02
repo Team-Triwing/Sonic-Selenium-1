@@ -1,10 +1,10 @@
 	sHeaderInitSFX
 	sHeaderPrio	$70
 	sHeaderCh	$01
-	sHeaderSFX	$A1, ctPSG1, .PSG1, $F4+$0C, $00
+	sHeaderSFX	$80, ctFM4, .FM4, $00-9, $01*8
 
-.PSG1	sVolEnv		vNone
+.FM4	sVoice	pJump
 	dc.b nF2, $05
-	sModAMPS	$03, $01, $F8, $65
+	sModAMPS	$03, $01, $F8/5+4, $65/2
 	dc.b nBb2, $15
 	sStop
