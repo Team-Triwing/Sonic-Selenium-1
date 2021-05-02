@@ -1,0 +1,9 @@
+	sHeaderInitSFX
+	sHeaderPrio	$80
+	sHeaderCh	$01
+	sHeaderSFX	$80, ctFM5, .FM5, $00, $08
+
+.FM5:
+	sVoice		pBuzzer
+	dc.b nAb3, $1C
+	sStop

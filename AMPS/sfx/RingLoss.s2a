@@ -3,7 +3,7 @@
 	sHeaderCh	$03
 	sHeaderSFX	$80, ctFM4, .FM4, $00, $05
 	sHeaderSFX	$80, ctFM5, .FM5, $00, $08
-	sHeaderSFX	$A0, ctDAC1, .DAC1, $00, $00
+	sHeaderSFX	$A1, ctDAC1, .DAC1, $00, $00
 
 .FM4	sVoice		pRings
 	dc.b nA5, $02, $05, $05, $05, $05, $05, $05
@@ -16,5 +16,5 @@
 	sStop
 
 .DAC1:	sVoice	dSonicHurt
-	;dc.b nC4, $30
+	dc.b nC4, $40
 	sStop

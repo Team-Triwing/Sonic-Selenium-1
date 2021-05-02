@@ -1,9 +1,14 @@
 	sHeaderInitSFX
 	sHeaderPrio	$70
-	sHeaderCh	$01
+	sHeaderCh	$02
 	sHeaderSFX	$80, ctFM5, .FM5, $F2, $00
+	sHeaderSFX	$A1, ctDAC1, .DAC1, $00, $00
 
 .FM5	sVoice		pSpikeHit
 	sModAMPS	$02, $01, $10, $FF
 	dc.b nFs6, $05, nD7, $25
+	sStop
+
+.DAC1:	sVoice	dSonicDeath
+	dc.b nC4, $40
 	sStop

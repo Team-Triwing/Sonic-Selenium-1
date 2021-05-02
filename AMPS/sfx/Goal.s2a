@@ -4,10 +4,10 @@
 	sHeaderSFX	$80, ctFM5, .FM5, $F2, $04
 
 .FM5	sVoice		pSpikeHit
-	dc.b nCs3
+	dc.b nBb3
 
-.Loop	dc.b $02, sHold, nB2, $01, sHold
-	saTranspose	$02
-	sLoop		$00, $25, .Loop
-	dc.b $02, sHold, nBb2, $01	; <- would be invalid note ffs
+.Loop:
+	dc.b $02, sHold, nAb3, $01, sHold
+	saTranspose	$01
+	sLoop		$00, $30, .Loop
 	sStop

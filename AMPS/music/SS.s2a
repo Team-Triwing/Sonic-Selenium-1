@@ -1,10 +1,10 @@
 SpecialStage_Header:
 	sHeaderInit
 	sHeaderTempo	$02, $08
-	sHeaderCh	$05, $02
+	sHeaderCh	$06, $02
 	sHeaderDAC	SpecialStage_DAC1
 	sHeaderDAC	SpecialStage_DAC2
-	;sHeaderFM	SpecialStage_FM1, $DC, $18
+	sHeaderFM	SpecialStage_FM1, $DC, $18
 	sHeaderFM	SpecialStage_FM2, $DC, $0C
 	sHeaderFM	SpecialStage_FM3, $E8, $18
 	sHeaderFM	SpecialStage_FM4, $E8, $18
@@ -89,20 +89,20 @@ SpecialStage_Header:
 	spSSGEG		$00, $00, $00, $00
 	spTotalLv	$17, $00, $00, $00
 
-;SpecialStage_FM1:
-;	sVoice		$00
+SpecialStage_FM1:
+	sVoice		$00
 
-;SpecialStage_Loop1:
-;	dc.b nE5, $18, nF5, $0C, nG5, $18, nE5, $0C
-;	dc.b $18, nC5, $0C, nE5, $18, nC5, $0C, nE5
-;	dc.b $18, nF5, $0C, nG5, $18, nE5, $0C, nC5
-;	dc.b $18, nD5, $0C, nC5, $24
-;	sLoop		$00, $02, SpecialStage_Loop1
-;	dc.b sHold, $03, nRst, $09, nD5, $0C, nE5, nF5
-;	dc.b nE5, nF5, nG5, $18, nE5, $0C, nC5, $24
-;	dc.b nRst, $0C, nD5, nE5, nF5, nE5, nF5, nG5
-;	dc.b $18, nA5, $0C, nG5, $21, nRst, $03
-;	sJump		SpecialStage_Loop1
+SpecialStage_Loop1:
+	dc.b nE5, $18, nF5, $0C, nG5, $18, nE5, $0C
+	dc.b $18, nC5, $0C, nE5, $18, nC5, $0C, nE5
+	dc.b $18, nF5, $0C, nG5, $18, nE5, $0C, nC5
+	dc.b $18, nD5, $0C, nC5, $24
+	sLoop		$00, $02, SpecialStage_Loop1
+	dc.b sHold, $03, nRst, $09, nD5, $0C, nE5, nF5
+	dc.b nE5, nF5, nG5, $18, nE5, $0C, nC5, $24
+	dc.b nRst, $0C, nD5, nE5, nF5, nE5, nF5, nG5
+	dc.b $18, nA5, $0C, nG5, $21, nRst, $03
+	sJump		SpecialStage_Loop1
 
 SpecialStage_FM2:
 	sVoice		$02

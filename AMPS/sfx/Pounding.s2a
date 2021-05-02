@@ -7,6 +7,6 @@
 	sVoice		pPounding
 
 .Jump1:
-	dc.b nE0, $0E, nFs0, $0F
+	dc.b nE0, $0D, nFs0, $0E
 	sCont		.Jump1
 	sStop

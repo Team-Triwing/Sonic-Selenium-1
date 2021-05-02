@@ -1,8 +1,27 @@
 
 
-align		macro pos
+align		macro pos,num
+	if narg=1
 		dcb.b ((\pos)-(offset(*)%(\pos)))%(\pos),$FF
+	else
+		dcb.b ((\pos)-(offset(*)%(\pos)))%(\pos),num
+	endif
 	endm
+	
+; Macro for playing a command
+command		macro id
+	move.b #id,mQueue.w
+    endm
+
+; Macro for playing music
+music		macro id
+	move.b #id,mQueue+1.w
+    endm
+
+; Macro for playing sound effect
+sfx		macro id
+	move.b #id,mQueue+2.w
+    endm
 		
 ; ---------------------------------------------------------------------------
 ; self-explanatory

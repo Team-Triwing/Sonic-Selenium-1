@@ -1,0 +1,13 @@
+	sHeaderInitSFX
+	sHeaderPrio	$90
+	sHeaderCh	$01
+	sHeaderSFX	$80, ctFM5, .FM5, $00, $08
+
+.FM5:
+	sVoice		pAlarm
+	sModAMPS	$02, $01, $E0, $0D
+
+.Jump1:
+	dc.b nC6, $6A
+	sCont		.Jump1
+	sStop

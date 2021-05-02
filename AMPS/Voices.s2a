@@ -780,4 +780,42 @@ sPatNum = 0
 	spSSGEG		$00, $00, $00, $00
 	spTotalLv	$00, $1D, $00, $00
 
+	; Patch $29
+	; $FA
+	; $02, $00, $01, $01,	$1F, $1F, $1F, $15
+	; $1F, $1F, $1F, $9F,	$00, $40, $00, $00
+	; $01, $01, $01, $06,	$24, $00, $28, $00
+	spAlgorithm	$02, Alarm
+	spFeedback	$07
+	spDetune	$00, $00, $00, $00
+	spMultiple	$02, $01, $00, $01
+	spRateScale	$00, $00, $00, $00
+	spAttackRt	$1F, $1F, $1F, $15
+	spAmpMod	$00, $00, $00, $01
+	spSustainRt	$1F, $1F, $1F, $1F
+	spSustainLv	$00, $00, $00, $00
+	spDecayRt	$00, $00, $40, $00
+	spReleaseRt	$01, $01, $01, $06
+	spSSGEG		$00, $00, $00, $00
+	spTotalLv	$24, $28, $00, $00
+
+	; Patch $2A
+	; $2C
+	; $72, $72, $33, $32,	$1F, $1F, $1F, $1F
+	; $01, $03, $01, $03,	$01, $01, $01, $01
+	; $1F, $2F, $1F, $2F,	$19, $80, $17, $80
+	spAlgorithm	$04, Buzzer
+	spFeedback	$05
+	spDetune	$07, $03, $07, $03
+	spMultiple	$02, $03, $02, $02
+	spRateScale	$00, $00, $00, $00
+	spAttackRt	$1F, $1F, $1F, $1F
+	spAmpMod	$00, $00, $00, $00
+	spSustainRt	$01, $01, $03, $03
+	spSustainLv	$01, $01, $02, $02
+	spDecayRt	$01, $01, $01, $01
+	spReleaseRt	$0F, $0F, $0F, $0F
+	spSSGEG		$00, $00, $00, $00
+	spTotalLv	$19, $17, $00, $00
+
 	list				; do not list this voice bank, it'd be huge!

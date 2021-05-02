@@ -63,7 +63,7 @@ __mus =		MusOff
 MusicIndex:
 	ptrMusic GHZ, $07, LZ, $72, MZ, $73, SLZ, $26, SYZ, $15, SBZ, $08, FZ, $18
 	ptrMusic Boss, $12, SS, $00, Invincibility, $FF, Title, $00, GotThroughAct, $00, ExtraLife, $05
-	ptrMusic GameOver, $00, Continue, $00, Options, $00, SEGA, $00, newgrass, $00
+	ptrMusic GameOver, $00, Continue, $00, Options, $00, SEGA, $00
 
 MusCount =	__mus-MusOff		; number of installed music tracks
 SFXoff =	__mus			; first SFX ID
@@ -81,10 +81,10 @@ SoundIndex:
 	ptrSFX	0, Door, Stomp, EnterSS, Goal, ActionBlock, Diamonds, Continue, Spindash
 
 ; SFX with special features
-	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Score, Lava, Metal, Pounding
+	ptrSFX	$80, PushBlock, Waterfall, Skid, Basaran, Chain, Saw, Score, Lava, Metal, Pounding, Alarm
 
 ; unused SFX
-	ptrSFX	0, UnkA2, UnkAB, UnkB8
+	ptrSFX	0, UnkA2, UnkAB, UnkB8, Buzzer
 
 SFXcount =	__sfx-SFXoff		; number of intalled sound effects
 SFXlast =	__sfx
@@ -161,7 +161,8 @@ vd08:		dc.b $00, $00, $00, $00, $00, $08, $08, $08
 
 vd09:		dc.b $00, $08, $10, $18, $20, $28, $30, $38
 		dc.b $40, $48, $50, $58, $60, $68, $70, $78
-		dc.b eHold
+		dc.b eStop
+		
 vd0A:		dc.b $00, $00, $00, $00, $00, $00, $00, $00
 		dc.b $00, $00, $08, $08, $08, $08, $08, $08
 		dc.b $08, $08, $08, $08, $08, $08, $08, $08
@@ -174,7 +175,7 @@ vd0A:		dc.b $00, $00, $00, $00, $00, $00, $00, $00
 vd0B:		dc.b $20, $20, $20, $18, $18, $18, $10, $10
 		dc.b $10, $08, $08, $08, $08, $08, $08, $08
 		dc.b $10, $10, $10, $10, $10, $18, $18, $18
-		dc.b $18, $18, $20, eHold
+		dc.b $18, $18, $20, eReset
 
 vd0C:		dc.b $20, $20, $18, $18, $10, $10, $08, $08
 		dc.b $08, $08, $08, $08, $08, $08, $08, $08
@@ -232,14 +233,14 @@ musend
 
 		align	$8000		; must be aligned to bank. By the way, these are also used in Z80.asm. Be sure to check it out
 fLog:		incbin "AMPS/filters/Logarithmic.dat"	; logarithmic filter (no filter)
-;fLinear:	incbin "AMPS/filters/Linear.dat"	; linear filter (no filter)
+fLinear:	incbin "AMPS/filters/Linear.dat"	; linear filter (no filter)
 
 dacaddr		dcb.b Z80E_Read*(MaxPitch/$100),$00
 SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	Kick, Timpani, Snare, Tom, Sega, SonicClear, SonicDeath, SonicHurt
+	incSWF	Kick, Timpani, Snare, Tom, SonicClear, SonicDeath, SonicHurt, Sega
 	opt ae+				; enable automatic evens
 	list				; continue source listing
 ; ---------------------------------------------------------------------------

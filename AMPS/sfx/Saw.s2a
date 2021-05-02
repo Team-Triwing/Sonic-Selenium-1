@@ -4,7 +4,7 @@
 	sHeaderSFX	$80, ctFM5, .FM5, $00, $0A
 
 .FM5	sVoice		pSaw
-	sModAMPS	$06, $01, $19, $74
+	sModAMPS	$06, $01, $18, $74
 
 Saw_Jump1:
 	dc.b nB2, $7A
