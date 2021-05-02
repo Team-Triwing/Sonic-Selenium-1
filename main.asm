@@ -2037,7 +2037,7 @@ LevelSelectText:
 		dc.b	'SPARKLING          ACT 1'
 		dc.b	'                   ACT 2'
 		dc.b	'                   ACT 3'
-		dc.b	'CLOCK WORK         ACT 1'
+		dc.b	'CLOCK  ORK         ACT 1'
 		dc.b	'                   ACT 2'
 		dc.b	'                   ACT 3'
 		dc.b	'SPECIAL STAGE           '
@@ -21549,7 +21549,7 @@ ArtBasaran:	incbin "levels/MZ/Basaran/Art.nem"
 		even
 ArtSplats:	incbin "levels/shared/Splats/Art.nem"
 		even
-ArtTitleCards:	incbin "levels/shared/Title Cards/Art.twim"
+ArtTitleCards:	incbin "levels/shared/Title Cards/Art.nem"
 		even
 ArtHUD:		incbin "levels/shared/HUD/Main.nem"
 		even
