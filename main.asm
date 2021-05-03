@@ -21,7 +21,7 @@
 
 ROM		section org(0)
 
-Z80_Space =	$917			; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
+Z80_Space =	$918			; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
 z80_ram:	equ $A00000
 z80_bus_request	equ $A11100
 z80_reset:	equ $A11200
@@ -17561,6 +17561,7 @@ ObjSonic_DynTiles:			; XREF: Obj01_Control; et al
 		subq.w	#1,d5
 		bmi.s	locret_13C96
 		move.w	#$F000,d4
+		move.l	#ArtSonic,d6
 
 ObjSonic_DynReadEntry:
 		moveq	#0,d1
@@ -21465,6 +21466,7 @@ ArtTitleSonic:	incbin "screens/title/Sonic.twim"
 		include "levels/shared/Sonic/sprite.map"
 		include "levels/shared/Sonic/dynamic.map"
 		align $8000,0
+ArtSonic:	incbin "levels/shared/Sonic/Art.unc"
 		even
 
 byte_1C8EF:
