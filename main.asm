@@ -1126,13 +1126,14 @@ loc_14F4:
 		dbf	d1,loc_14F4
 		rts
 ; ---------------------------------------------------------------------------
-
 EnigmaDec:
 		include	"compression/Enigma.asm"
 ; ---------------------------------------------------------------------------
-
 KosinskiDec:
 		include	"compression/Kosinski.asm"
+; ---------------------------------------------------------------------------
+KosinskiPlusDec:
+		include "compression/KosinskiPlus.asm"
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
@@ -4228,7 +4229,7 @@ LoadLevelData:
 		bsr.w	EnigmaDec
 		movea.l	(a2)+,a0
 		lea	((Chunks)&$FFFFFF).l,a1
-		bsr.w	KosinskiDec
+		bsr.w	KosinskiPlusDec
 		bsr.w	LoadLayout
 		move.w	(a2)+,d0
 		move.w	(a2),d0
@@ -13653,9 +13654,8 @@ sub_C81C:
 		clr.b	(byte_FFFE2C).w
 		clr.b	(byte_FFFE1E).w
 		move.b	#$3A,(byte_FFD600).w
-		move.l	#$70000002,(VdpCtrl).l
-		lea	(ArtTitleCards).l,a0
-		bsr.w	NemesisDec
+		moveq	#$10,d0
+		jsr	(plcReplace).l
 		move.b	#1,(byte_FFFE58).w
 		moveq	#0,d0
 		move.b	(dword_FFFE22+1).w,d0
@@ -21590,19 +21590,19 @@ BlocksGHZ:	incbin "levels/GHZ/Blocks.eni"
 		even
 TilesGHZ:	incbin "levels/GHZ/Tiles.nem"
 		even
-ChunksGHZ:	incbin "levels/GHZ/Chunks.kos"
+ChunksGHZ:	incbin "levels/GHZ/Chunks.kosp"
 		even
 BlocksLZ:	incbin "levels/LZ/Blocks.eni"
 		even
 TilesLZ:	incbin "levels/LZ/Tiles.nem"
 		even
-ChunksLZ:	incbin "levels/LZ/Chunks.kos"
+ChunksLZ:	incbin "levels/LZ/Chunks.kosp"
 		even
 BlocksMZ:	incbin "levels/MZ/Blocks.eni"
 		even
 TilesMZ:	incbin "levels/MZ/Tiles.nem"
 		even
-ChunksMZ:	incbin "levels/MZ/Chunks.kos"
+ChunksMZ:	incbin "levels/MZ/Chunks.kosp"
 		even
 		;incbin "unknown/3DB70.dat"
 		;even
@@ -21610,19 +21610,19 @@ BlocksSLZ:	incbin "levels/SLZ/Blocks.eni"
 		even
 TilesSLZ:	incbin "levels/SLZ/Tiles.nem"
 		even
-ChunksSLZ:	incbin "levels/SLZ/Chunks.kos"
+ChunksSLZ:	incbin "levels/SLZ/Chunks.kosp"
 		even
 BlocksSYZ:	incbin "levels/SYZ/Blocks.eni"
 		even
 TilesSYZ:	incbin "levels/SYZ/Tiles.nem"
 		even
-ChunksSYZ:	incbin "levels/SYZ/Chunks.kos"
+ChunksSYZ:	incbin "levels/SYZ/Chunks.kosp"
 		even
 BlocksSBZ:	incbin "levels/SBZ/Blocks.eni"
 		even
 TilesSBZ:	incbin "levels/SBZ/Tiles.nem"
 		even
-ChunksSBZ:	incbin "levels/SBZ/Chunks.kos"
+ChunksSBZ:	incbin "levels/SBZ/Chunks.kosp"
 		even
 BlocksTS:	incbin "levels/TS/Blocks.twiz"
 		even
