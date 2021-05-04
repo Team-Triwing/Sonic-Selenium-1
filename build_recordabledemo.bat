@@ -5,6 +5,6 @@ type out.log
 if not exist out_demo.md pause & exit
 "AMPS\Dual PCM Compress.exe" AMPS\.z80 AMPS\.z80.dat out_demo.md _dlls\slz.exe
 error\convsym out.lst out_demo.md -input asm68k_lst -inopt "/localSign=. /localJoin=. /ignoreMacroDefs+ /ignoreMacroExp- /addMacrosAsOpcodes+" -a
-"tools\romfix.exe" -d -r 00 -z out_demo.md
+"tools\romfix.exe" -t "Das war ja so was von klar" -d -s "05094F" -r 00 -z out_demo.md
 del out.log
 pause

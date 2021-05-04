@@ -50,8 +50,8 @@ StartOfROM:		dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
 		dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
 		dc.l ErrorTrap, ErrorTrap
 		dc.b 'SEGA GENESIS    '				; Console name
-		dc.b 'RPLNMLD APR.2021'				; Copyright/release date
-		dc.b 'Das war ja so was von klar                      '; Domestic name
+		dc.b 'RPNTMLD         '				; Copyright/release date
+		dc.b '                                                '; Domestic name
 		dc.b 'Das war ja so was von klar                      '; International name
 		dc.b 'GM 00000000-00'				; Serial code
 
