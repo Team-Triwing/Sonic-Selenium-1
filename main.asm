@@ -30,10 +30,8 @@ Drvmem      equ $FFFFF000
 
         include "AMPS/lang.asm"
         include "AMPS/code/macro.asm"
-        include "error/debugger.asm"
-    
+        include "error/debugger.asm"    
         include "macros.asm"
-        include "error/debugger.asm"
 ; ---------------------------------------------------------------------------
 StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
         dc.l IllegalInstr, ZeroDiv, ChkInstr, TrapvInstr, PrivilegeViol
@@ -150,7 +148,7 @@ InitValues: dc.l $8000, $3FFF, $100
         dc.l z80_reset                  ; Z80 reset
         dc.l VdpData                    ; VDP data port
         dc.l VdpCtrl                    ; VDP command port
-        dc.b 4, $14, $30, $3C, 7, $6C, 0, 0, 0, 0, $FF, 0, $81  ; VDP values
+        dc.b %00110000, %11110100, $30, $3C, 7, $6C, 0, 0, 0, 0, $FF, 0, $81  ; VDP values
         dc.b $37, 0, 1, 1, 0, 0, $FF, $FF, 0, 0, $80
 
 initz80 z80prog 0
@@ -3985,40 +3983,6 @@ loc_456E:
         bsr.w   sub_4636
 
 locret_45B0:
-        rts
-; ---------------------------------------------------------------------------
-        tst.b   (a2)
-        beq.s   locret_4606
-        bclr    #2,(a2)
-        beq.s   loc_45DC
-        move.w  #$D0,d4
-        move.w  4(a3),d1
-        andi.w  #$FFF0,d1
-        sub.w   d1,d4
-        move.w  d4,-(sp)
-        moveq   #$FFFFFFF0,d5
-        bsr.w   sub_476E
-        move.w  (sp)+,d4
-        moveq   #$FFFFFFF0,d5
-        moveq   #2,d6
-        bsr.w   sub_4636
-
-loc_45DC:
-        bclr    #3,(a2)
-        beq.s   locret_4606
-        move.w  #$D0,d4
-        move.w  4(a3),d1
-        andi.w  #$FFF0,d1
-        sub.w   d1,d4
-        move.w  d4,-(sp)
-        move.w  #$140,d5
-        bsr.w   sub_476E
-        move.w  (sp)+,d4
-        move.w  #$140,d5
-        moveq   #2,d6
-        bsr.w   sub_4636
-
-locret_4606:
         rts
 ; ---------------------------------------------------------------------------
 
