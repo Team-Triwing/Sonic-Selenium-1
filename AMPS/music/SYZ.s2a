@@ -412,6 +412,7 @@ Credits_Call9:
 	dc.b nA7, $0C
 	sRet
 
-SpringYard_PSG2:
 SpringYard_DAC1:
+	dc.b dFloorTom, $06, $06, $06, $06, $06, $06, $06
+SpringYard_PSG2:
 	sStop

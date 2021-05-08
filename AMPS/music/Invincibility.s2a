@@ -144,8 +144,8 @@ Invincibility_Jump2:
 	sJump		Invincibility_Jump2
 
 Invincibility_DAC2:
-	dc.b dSnare, $06, dSnare, dSnare, dSnare, dSnare, $02, dSnare
-	dc.b $04, dKick, $12
+	dc.b dHiTom, $06, dHiTom, dHiTom, dMidTom, dMidTom, $02, dLowTom
+	dc.b $04, dFloorTom, $12
 
 Invincibility_Loop7:
 	dc.b dKick, $0C, dSnare, dKick, dSnare, dKick, $0C, dSnare

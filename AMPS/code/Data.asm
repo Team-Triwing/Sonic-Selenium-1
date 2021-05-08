@@ -102,14 +102,22 @@ SampleList:
 	sample $00E6, Timpani, Stop, MidTimpani	; 84 - Timpani
 	sample $00C2, Timpani, Stop, LowTimpani	; 85 - Low Timpani
 	sample $00B6, Timpani, Stop, FloorTimpani; 86 - Floor Timpani
-	sample $0100, Tom, Stop, HiTom	; 87 - Hi Tom
-	sample $00E6, Tom, Stop, MidTom	; 88 - Mid Tom
-	sample $00C2, Tom, Stop, LowTom	; 89 - Low Tom
-	sample $00B6, Tom, Stop, FloorTom; 8A - Floor Tom
+	sample $0300, HiTom, Stop		; 87 - Hi Tom
+	sample $0300, MidTom, Stop		; 88 - Mid Tom
+	sample $0300, LowTom, Stop		; 89 - Low Tom
+	sample $0300, FloorTom, Stop	; 8A - Floor Tom
 	sample $0100, Sega, Stop		; 8B - SEGA screen
 	sample $0100, SonicClear, Stop	; 8C - Sonic at act results
 	sample $0100, SonicHurt, Stop	; 8D - Sonic Hurt
 	sample $0100, SonicDeath, Stop	; 8E - Sonic Death
+	sample $0100, Choir, Choir		; 8F - Choir (Loop)
+	sample $0100, MajPad, Stop	; 90 - Minor chord Pad
+	sample $0100, MinPad, Stop	; 91 - Major chord Pad
+	sample $0100, Sus2Pad, Stop	; 92 - Sus2 chord Pad
+	sample $0100, Sus4Pad, Stop	; 93 - Sus4 chord Pad
+	sample $0100, Perfect5thPad, Stop	; 94 - Perfect 5th chord Pad
+	sample $0100, CrystalRhodes, Stop	; 95 - Crystal Rhodes
+	sample $0100, Lava, Lava	; 96 - Lava (Loop)
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -240,7 +248,9 @@ SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	Kick, Timpani, Snare, Tom, SonicClear, SonicDeath, SonicHurt, Sega
+	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega
+	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad
+	incSWF	Perfect5thPad, CrystalRhodes, Choir, Lava
 	opt ae+				; enable automatic evens
 	list				; continue source listing
 ; ---------------------------------------------------------------------------

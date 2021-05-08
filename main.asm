@@ -21,7 +21,7 @@
 
 ROM     section org(0)
 
-Z80_Space = $918            ; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
+Z80_Space = $8CF            ; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
 z80_ram:    equ $A00000
 z80_bus_request equ $A11100
 z80_reset:  equ $A11200
@@ -48,10 +48,10 @@ StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
         dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
         dc.l ErrorTrap, ErrorTrap
         dc.b 'SEGA GENESIS    '             ; Console name
-        dc.b 'RPNTMLD         '             ; Copyright/release date
-        dc.b '                                                '; Domestic name
-        dc.b 'Das war ja so was von klar                      '; International name
-        dc.b 'GM 00000000-00'               ; Serial code
+        dc.b 'RPNTMLD         '             ; Copyright/release date (placeholder for romfix)
+        dc.b '                                                '; Domestic name (placeholder for romfix)
+        dc.b '                                                '; International name (placeholder for romfix)
+        dc.b 'GM XXXXXXXX-XX'               ; Serial code (placeholder for romfix)
 
 Checksum:   dc.w 0                          ; Checksum
         dc.b 'J               '             ; I/O support (3-button joypad)
@@ -352,7 +352,7 @@ loc_C7A:
 loc_CA8:
         clr.b   (VintECounter).w
         tst.w   (GlobalTimer).w
-        beq.w   locret_CBA
+        beq.s   locret_CBA
         subq.w  #1,(GlobalTimer).w
 
 locret_CBA:
@@ -504,14 +504,10 @@ padRead:
 
 sub_FDC:
         move.b  #0,(a1)
-        nop
-        nop
         move.b  (a1),d0
         lsl.b   #2,d0
         andi.b  #$C0,d0
         move.b  #$40,(a1)
-        nop
-        nop
         move.b  (a1),d1
         andi.b  #$3F,d1
         or.b    d1,d0
@@ -639,7 +635,7 @@ QueueDMATransfer_Done:
 
 ; sub_14AC: CopyToVRAM: IssueVDPCommands: Process_DMA: Process_DMA_Queue:
 ProcessDMAQueue:
-        lea ($C00004).l,a5
+        lea (VdpCtrl).l,a5
         lea (SonicArtBuf).w,a1
 ; loc_14B6:
 ProcessDMAQueue_Loop:
@@ -1126,14 +1122,11 @@ loc_14F4:
 EnigmaDec:
         include "compression/Enigma.asm"
 ; ---------------------------------------------------------------------------
-KosinskiDec:
-        include "compression/Kosinski.asm"
-; ---------------------------------------------------------------------------
 KosinskiPlusDec:
         include "compression/KosinskiPlus.asm"
 ; ---------------------------------------------------------------------------
-SLZDec:
-        include "compression/SLZ.asm"
+SaxmanDec:
+        include "compression/Saxman.asm"
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
@@ -1448,6 +1441,7 @@ PaletteLoadTable:dc.l palSegaBG
         dc.w $FB00, $1F
         dc.l palGHZNight
         dc.w $FB00, $1F
+		even
 palSegaBG:  incbin "screens/sega/Main.pal"
         even
 palTitle:   incbin "screens/title/Main.pal"
@@ -11467,20 +11461,22 @@ word_A826:  dc.w 1,    2, $200,    0
         dc.w $300, $402, $500,    0
         dc.w $501, $502,    0,    0
 
-word_A856:  dc.w 4, $124, $BC
-        dc.b 2, 0
-        dc.w $FEE0, $120, $D0
-        dc.b 2, 1
-        dc.w $40C, $14C, $D6
-        dc.b 2, 6
-        dc.w $520, $120, $EC
-        dc.b 2, 2
-        dc.w $540, $120, $FC
-        dc.b 2, 3
-        dc.w $560, $120, $10C
-        dc.b 2, 4
-        dc.w $20C, $14C, $CC
-        dc.b 2, 5
+word_A856:    ; routine number, frame    number (changes)
+           ; x-start, x-main, y-main
+        dc.w 4,    $124, $BC ; SONIC HAS
+        dc.b 2,    0
+        dc.w $FEE0, $120, $D0 ; PASSED
+        dc.b 2,    1
+        dc.w $40C, $14C, $D6 ; act number
+        dc.b 2,    6
+        dc.w $520,    $120,    $122 ; score
+        dc.b 2,    2
+        dc.w $540,    $120,    $F2 ; time bonus
+        dc.b 2,    3
+        dc.w $560,    $120,    $102 ; ring bonus
+        dc.b 2,    4
+        dc.w $20C, $14C, $CC ; The blue bit of the card
+        dc.b 2,    5
         include "levels/shared/TitleCard/Sprite.map"
         even
         include "levels/shared/GameOver/Sprite.map"
@@ -16051,6 +16047,8 @@ loc_E906:
 
 loc_E916:
         clr.b   (byte_FFFE2D).w
+        subq.b	#2,act(a0)
+        move.b	#$78,invulnerable(a0)
 
 loc_E91C:
         tst.b   (byte_FFFE2E).w
@@ -16194,8 +16192,16 @@ ObjSonic_LookUp:
         btst    #0,(padHeldPlayer).w
         beq.s   ObjSonic_Duck
         move.b  #7,ani(a0)
-        cmpi.w  #$C8,(unk_FFF73E).w
-        beq.s   loc_EAEA
+		move.w	(CameraY).w,d0	; get camera top coordinate
+		sub.w	(unk_FFF72C).w,d0	; subtract zone's top bound from it
+		add.w	(unk_FFF73E).w,d0	; add default offset
+		cmpi.w	#$C8,d0			; is offset <= $C8?
+		ble.s	@skip			; if so, branch
+		move.w	#$C8,d0			; set offset to $C8
+		
+	@skip:
+		cmp.w	(unk_FFF73E).w,d0
+		ble.s	loc_EAEA
         addq.w  #2,(unk_FFF73E).w
         bra.s   loc_EAEA
 ; ---------------------------------------------------------------------------
@@ -16204,8 +16210,19 @@ ObjSonic_Duck:
         btst    #1,(padHeldPlayer).w
         beq.s   ObjSonic_ResetScroll
         move.b  #8,ani(a0)
-        cmpi.w  #8,(unk_FFF73E).w
-        beq.s   loc_EAEA
+		move.w	(CameraY).w,d0	; get camera top coordinate
+		sub.w	(unk_FFF72E).w,d0	; subtract zone's bottom bound from it (creating a negative number)
+		add.w	(unk_FFF73E).w,d0	; add default offset
+		cmpi.w	#8,d0			; is offset < 8?
+		blt.s	@set			; if so, branch
+		bgt.s	@skip			; if greater than 8, branch
+		
+	@set:
+		move.w	#8,d0	; set offset to 8
+		
+	@skip:
+		cmp.w	(unk_FFF73E).w,d0
+		bge.s	loc_EAEA
         subq.w  #2,(unk_FFF73E).w
         bra.s   loc_EAEA
 ; ---------------------------------------------------------------------------
@@ -16279,6 +16296,7 @@ loc_EB42:
         cmpi.b  #$80,d0
         beq.s   loc_EB7E
         add.w   d1,xvel(a0)
+locret_EB8E:
         rts
 ; ---------------------------------------------------------------------------
 
@@ -16294,8 +16312,6 @@ loc_EB84:
 
 loc_EB8A:
         add.w   d1,yvel(a0)
-
-locret_EB8E:
         rts
 ; ---------------------------------------------------------------------------
 
@@ -16738,7 +16754,7 @@ ObjSonic_SpinDash:
 
 loc_1AC84:
         bsr.w   ObjSonic_LevelBound
-        bsr.w   ObjSonic_AnglePosition
+        bra.w   ObjSonic_AnglePosition
 
 locret_1AC8C:
         rts 
@@ -16847,13 +16863,12 @@ ObjSonic_SlopeResist:
         add.w   d0,inertia(a0)
 
 locret_EFB6:
+locret_EFBC:
         rts
 ; ---------------------------------------------------------------------------
 
 loc_EFB8:
         add.w   d0,inertia(a0)
-
-locret_EFBC:
         rts
 ; ---------------------------------------------------------------------------
 
@@ -16890,7 +16905,6 @@ locret_EFF8:
 ; ---------------------------------------------------------------------------
 
 ObjSonic_SlopeRepel:
-        ;nop
         tst.w   lock(a0)
         bne.s   loc_F02C
         move.b  angle(a0),d0
@@ -17117,16 +17131,8 @@ locret_F216:
 ; ---------------------------------------------------------------------------
 
 ObjSonic_ResetOnFloor:
-    ;   btst    #4,status(a0)
-    ;   beq.s   loc_F226
-    ;   nop
-    ;   nop
-    ;   nop
-
-;loc_F226:
         bclr    #5,status(a0)
         bclr    #1,status(a0)
-    ;   bclr    #4,status(a0)
         btst    #2,status(a0)
         beq.s   loc_F25C
         bclr    #2,status(a0)

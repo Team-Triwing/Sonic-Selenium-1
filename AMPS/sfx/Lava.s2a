@@ -1,7 +1,8 @@
 	sHeaderInitSFX
 	sHeaderPrio	$70
-	sHeaderCh	$01
+	sHeaderCh	$02
 	sHeaderSFX	$A1, ctPSG3, .PSG3, $00+$0C, $00
+	sHeaderSFX	$A0, ctDAC1, .DAC1, $00, $00
 
 .PSG3:	sVolEnv		vNone
 	sNoisePSG	snWhitePSG3
@@ -10,3 +11,7 @@
 	dc.b sHold, $0C
 	sCont	.Loop
 	sStop
+	
+.DAC1:
+	dc.b dLava, $25
+	sJump	.Loop

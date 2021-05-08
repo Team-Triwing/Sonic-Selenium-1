@@ -178,7 +178,12 @@ Final_Loop3:
 	sJump		Final_Loop1
 
 Final_DAC1:
-	sStop
+	sModePitchDAC
+	sVoice		dCrystalRhodes
+	dc.b nE6, $03, nRst, nE5, nRst, nE5, nRst, nE6
+	dc.b nE6, $03, nRst, $18	
+	sVoice		dChoir
+	sJump		Final_Jump1
 
 Final_DAC2:
 	dc.b dHiTimpani, $06, dLowTimpani, dLowTimpani, dHiTimpani, $03, dHiTimpani, $09
