@@ -112,6 +112,7 @@ ExtraLife_PSG1:
 	dc.b nD7, $09, nB6, nA6, $06, nCs7, $18
 
 ExtraLife_DAC2:
+	dc.b dSonicLife, $40
 	sStop
 
 ExtraLife_DAC1:

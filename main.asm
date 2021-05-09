@@ -21,7 +21,7 @@
 
 ROM     section org(0)
 
-Z80_Space = $8CF            ; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
+Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
 z80_ram:    equ $A00000
 z80_bus_request equ $A11100
 z80_reset:  equ $A11200
@@ -67,9 +67,11 @@ dword_1A0:  dc.l StartOfROM, $7FFFF                 ; ROM region (512 KB)
         dc.l $200000
         dc.l $200000
     endif
-Notes:  dc.b 'Wenn mir jemand den Titel sagen kann, Ich tue nicht-'
+Notes:  dc.b 'I already know nobody is going to like this hack.   '
+			;'                                                    '
         dc.b %1111          ; Region codes
-        dc.b '               '
+        dc.b 'Why even play? '
+			;'               '
 ; ---------------------------------------------------------------------------
 
 GameInit:
@@ -1165,7 +1167,6 @@ locret_1786:
 ; ---------------------------------------------------------------------------
 
 PalCycLZ:
-        rts
 ; ---------------------------------------------------------------------------
 
 PalCycMZ:
@@ -4319,7 +4320,7 @@ locret_495C:
         rts
 ; ---------------------------------------------------------------------------
 
-off_495E:   dc.w EventsGHZ-off_495E, EventsNull-off_495E, EventsMZ-off_495E, EventsSLZ-off_495E
+off_495E:   dc.w EventsGHZ-off_495E, EventsNull-off_495E, EventsMZ-off_495E, EventsNull-off_495E
         dc.w EventsNull-off_495E, EventsNull-off_495E, EventsNull-off_495E
 ; ---------------------------------------------------------------------------
 
@@ -4531,21 +4532,6 @@ locret_4B66:
 ; ---------------------------------------------------------------------------
 
 EventsMZ3:
-        rts
-; ---------------------------------------------------------------------------
-
-EventsSLZ:
-        moveq   #0,d0
-        move.b  (curact).w,d0
-        add.w   d0,d0
-        move.w  off_4B7A(pc,d0.w),d0
-        jmp off_4B7A(pc,d0.w)
-; ---------------------------------------------------------------------------
-
-off_4B7A:   dc.w EventsSLZNull-off_4B7A, EventsSLZNull-off_4B7A, EventsSLZNull-off_4B7A
-; ---------------------------------------------------------------------------
-
-EventsSLZNull:
         rts
         
 ; ---------------------------------------------------------------------------

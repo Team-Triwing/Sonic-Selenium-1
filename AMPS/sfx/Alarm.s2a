@@ -8,6 +8,6 @@
 	sModAMPS	$02, $01, $E0, $0D
 
 .Jump1:
-	dc.b nC6, $6A
+	dc.b nC6, $69
 	sCont		.Jump1
 	sStop

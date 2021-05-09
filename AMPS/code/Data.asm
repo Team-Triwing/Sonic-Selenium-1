@@ -107,9 +107,9 @@ SampleList:
 	sample $0300, LowTom, Stop		; 89 - Low Tom
 	sample $0300, FloorTom, Stop	; 8A - Floor Tom
 	sample $0100, Sega, Stop		; 8B - SEGA screen
-	sample $0100, SonicClear, Stop	; 8C - Sonic at act results
-	sample $0100, SonicHurt, Stop	; 8D - Sonic Hurt
-	sample $0100, SonicDeath, Stop	; 8E - Sonic Death
+	sample $0100, SonicClear, Stop	; 8C - Sonic (act results)
+	sample $0100, SonicHurt, Stop	; 8D - Sonic (when he gets hurt)
+	sample $0100, SonicDeath, Stop	; 8E - Sonic (when he dies)
 	sample $0100, Choir, Choir		; 8F - Choir (Loop)
 	sample $0100, MajPad, Stop	; 90 - Minor chord Pad
 	sample $0100, MinPad, Stop	; 91 - Major chord Pad
@@ -118,6 +118,7 @@ SampleList:
 	sample $0100, Perfect5thPad, Stop	; 94 - Perfect 5th chord Pad
 	sample $0100, CrystalRhodes, Stop	; 95 - Crystal Rhodes
 	sample $0100, Lava, Lava	; 96 - Lava (Loop)
+	sample $0100, SonicLife, Lava	; 97 - Sonic (extra life)
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -241,7 +242,7 @@ musend
 
 		align	$8000		; must be aligned to bank. By the way, these are also used in Z80.asm. Be sure to check it out
 fLog:		incbin "AMPS/filters/Logarithmic.dat"	; logarithmic filter (no filter)
-fLinear:	incbin "AMPS/filters/Linear.dat"	; linear filter (no filter)
+;fLinear:	incbin "AMPS/filters/Linear.dat"	; linear filter (no filter)
 
 dacaddr		dcb.b Z80E_Read*(MaxPitch/$100),$00
 SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
@@ -249,8 +250,11 @@ SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
 	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega
+	even
 	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad
-	incSWF	Perfect5thPad, CrystalRhodes, Choir, Lava
+	even
+	incSWF	Perfect5thPad, CrystalRhodes, Choir, Lava, SonicLife
+	even
 	opt ae+				; enable automatic evens
 	list				; continue source listing
 ; ---------------------------------------------------------------------------
