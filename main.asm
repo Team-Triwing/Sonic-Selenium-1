@@ -5159,10 +5159,7 @@ byte_5306:  dc.b $FF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ObjBridge_ChkDelete:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.s   ObjBridge_DeleteAll
         bra.w   ObjectDisplay
@@ -5410,10 +5407,7 @@ loc_56A6:
 ObjSwingPtfm_ChkDelete:
         move.w  $3A(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.s   ObjSwingPtfm_DeleteAll
         bra.w   ObjectDisplay
@@ -5538,10 +5532,7 @@ locret_587E:
 loc_5880:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   loc_58A0
         bra.w   ObjectDisplay
@@ -5843,10 +5834,7 @@ loc_5BA8:
 loc_5BB0:
         move.w  $32(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.s   loc_5BCE
         bra.w   ObjectDisplay
@@ -6021,10 +6009,7 @@ loc_5E24:
 loc_5E2A:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -6406,10 +6391,7 @@ loc_668A:
 loc_66A8:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   loc_66C8
         bra.w   ObjectDisplay
@@ -6469,10 +6451,7 @@ ObjScenery_Init:
 ObjScenery_Normal:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjScenery_Delete
         bra.w   ObjectDisplay
@@ -6529,10 +6508,7 @@ loc_67F8:
 loc_6812:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   loc_6836
         bra.w   ObjectDisplay
@@ -6616,10 +6592,7 @@ loc_6906:
 loc_6912:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -7848,10 +7821,7 @@ loc_7CD0:
         move.b  (RingFrame).w,frame(a0)
         move.w  $32(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.s   loc_7D2C
         bra.w   ObjectDisplay
@@ -8045,10 +8015,7 @@ loc_7F12:
         move.b  (RingFrame).w,frame(a0)
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -8203,10 +8170,7 @@ loc_81A4:
 loc_81AE:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -8913,6 +8877,10 @@ loc_8A38:
         move.w  #$FFFF,(unk_FFF76E).w
 
 loc_8A44:
+		move.w	(CameraX).w,d1
+		subi.w	#$80,d1
+		andi.w	#$FF80,d1
+		move.w	d1,(CameraXCoarse).w
         lea (byte_FFFC00).w,a2
         moveq   #0,d2
         move.w  (CameraX).w,d6
@@ -9526,10 +9494,7 @@ loc_90C2:
 loc_90CE:
         move.w  $2A(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -9693,10 +9658,7 @@ ObjGlassBlock:
         jsr off_93DE(pc,d1.w)
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   loc_93D8
         bra.w   ObjectDisplay
@@ -10082,10 +10044,7 @@ loc_9846:
 loc_984A:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -10312,10 +10271,7 @@ loc_9AD8:
 loc_9ADC:
         move.w  $3A(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -10453,10 +10409,7 @@ loc_9E14:
 loc_9E2E:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   loc_9E52
         bra.w   ObjectDisplay
@@ -10605,10 +10558,7 @@ loc_9F84:
 loc_9FD4:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.s   loc_9FF6
         bra.w   ObjectDisplay
@@ -11556,10 +11506,7 @@ loc_ABBE:
 loc_ABDE:
         move.w  $30(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -11662,10 +11609,7 @@ loc_AD42:
         bsr.w   sub_A2BC
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -11694,10 +11638,7 @@ ObjWaterfallSnd_Act:
 @nosound:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         rts
@@ -12296,10 +12237,7 @@ ObjCapsule:
         jsr off_B66C(pc,d1.w)
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -12501,10 +12439,7 @@ loc_B8FA:
 ObjectChkDespawn:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         bmi.w   loc_B938
         cmpi.w  #$280,d0
         bhi.w   loc_B938
@@ -12591,10 +12526,7 @@ ObjSpring:
         jsr off_BAA0(pc,d1.w)
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -13077,10 +13009,7 @@ loc_C148:
 loc_C154:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -13179,10 +13108,7 @@ loc_C2C8:
 loc_C2E6:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #640,d0
         bhi.w   ObjectDelete
         rts
@@ -13313,10 +13239,7 @@ loc_C43C:
 loc_C46A:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -13421,10 +13344,7 @@ loc_C560:
 loc_C57E:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -13479,10 +13399,7 @@ loc_C684:
         bsr.w   ObjectAnimate
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
 
 loc_C6A8:
         cmpi.w  #$280,d0
@@ -13504,10 +13421,7 @@ ObjSignpost:
         bsr.w   ObjectAnimate
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -13814,10 +13728,7 @@ loc_CB0A:
 loc_CB28:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         rts
@@ -13971,10 +13882,7 @@ loc_CCB2:
         bne.s   locret_CCE6
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.s   loc_CCE8
         bra.w   ObjectDisplay
@@ -14042,10 +13950,7 @@ loc_CD76:
 loc_CD84:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         bmi.w   ObjectDelete
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
@@ -14332,10 +14237,7 @@ ObjMovingPtfm:
         jsr off_D5FC(pc,d1.w)
         move.w  $32(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -14674,10 +14576,7 @@ ObjMovingBlocks_Action:
 ObjMovingBlocks_ChkDelete:
         move.w  $34(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -15035,10 +14934,7 @@ ObjSpikedBalls_MoveLoop:
 ObjSpikedBalls_ChkDelete:
         move.w  $3A(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjSpikedBalls_Delete
         bra.w   ObjectDisplay
@@ -15107,10 +15003,7 @@ ObjGiantBalls_Move:
         jsr ObjGiantBalls_TypeIndex(pc,d1.w)
         move.w  $3A(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -15186,10 +15079,7 @@ ObjSLZMovingPtfm:
         jsr off_DF9A(pc,d1.w)
         move.w  $32(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -15418,10 +15308,7 @@ loc_E1BE:
         addq.l  #4,sp
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         rts
@@ -15437,10 +15324,7 @@ ObjCirclePtfm:
         jsr off_E222(pc,d1.w)
         move.w  $32(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -15551,10 +15435,7 @@ ObjStaircasePtfm:
         jsr off_E358(pc,d1.w)
         move.w  $30(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -15846,10 +15727,7 @@ loc_E646:
 loc_E64E:
         move.w  xpos(a0),d0
         andi.w  #$FF80,d0
-        move.w  (CameraX).w,d1
-        subi.w  #$80,d1
-        andi.w  #$FF80,d1
-        sub.w   d1,d0
+        sub.w   (CameraXCoarse).w,d0
         cmpi.w  #$280,d0
         bhi.w   ObjectDelete
         bra.w   ObjectDisplay
@@ -16216,7 +16094,7 @@ ObjSonic_Duck:
 ObjSonic_ResetScroll:
         cmpi.w  #$60,(unk_FFF73E).w
         beq.s   loc_EAEA
-        bcc.s   loc_EAE6
+        bhs.s   loc_EAE6
         addq.w  #4,(unk_FFF73E).w
 
 loc_EAE6:
@@ -21733,31 +21611,31 @@ byte_6C998: incbin "unknown/6C998.dat"
 LayoutArray:    dc.w LayoutGHZ1FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutGHZ2FG-LayoutArray, LayoutGHZ2BG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutGHZ3FG-LayoutArray, LayoutGHZ3BG-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w LayoutEnding1FG-LayoutArray, LayoutEnding1BG-LayoutArray, LayoutEnding1BG-LayoutArray
+        dc.w LayoutGHZ3FG-LayoutArray, LayoutGHZ3BG-LayoutArray, LayoutEnding1BG-LayoutArray
         dc.w LayoutLZ1FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutLZ2FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutLZ3FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutLZ3FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutMZ1FG-LayoutArray, LayoutMZ1BG-LayoutArray, LayoutMZ1FG-LayoutArray
         dc.w LayoutMZ2FG-LayoutArray, LayoutMZ2BG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutMZ3FG-LayoutArray, LayoutMZ3BG-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutMZ3FG-LayoutArray, LayoutMZ3BG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutSLZ1FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutSLZ2FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutSLZ3FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutSLZ3FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutSYZ1FG-LayoutArray, LayoutSYZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutSYZ2FG-LayoutArray, LayoutSYZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutSYZ3FG-LayoutArray, LayoutSYZBG-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutSYZ3FG-LayoutArray, LayoutSYZBG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutSBZ1FG-LayoutArray, LayoutSBZ2FG-LayoutArray, LayoutSBZ2FG-LayoutArray
         dc.w LayoutSBZ2FG-LayoutArray, LayoutSBZ2BG-LayoutArray, LayoutSBZ2BG-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutSBZ2FG-LayoutArray, LayoutSBZ2BG-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutSBZ2FG-LayoutArray, LayoutSBZ2BG-LayoutArray, byte_6E3D6-LayoutArray
         dc.w LayoutEnding1FG-LayoutArray, LayoutEnding1BG-LayoutArray, LayoutEnding1BG-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
-        dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutEnding1FG-LayoutArray, LayoutEnding1BG-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutEnding1FG-LayoutArray, LayoutEnding1BG-LayoutArray, byte_6E3D6-LayoutArray
+        dc.w LayoutEnding1FG-LayoutArray, LayoutEnding1BG-LayoutArray, byte_6E3D6-LayoutArray
 LayoutGHZ1FG:   incbin "levels/GHZ/Foreground 1.unc"
         even
 LayoutGHZ1BG:   incbin "levels/GHZ/Background 1.unc"

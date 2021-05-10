@@ -189,7 +189,7 @@ unk_FFF72C:	ds.w 1
 unk_FFF72E:	ds.w 1
 unk_FFF730:	ds.w 1
 unk_FFF732:	ds.w 1
-		ds.b 1
+CameraXCoarse:	ds.b 1
 		ds.b 1
 		ds.b 1
 		ds.b 1
