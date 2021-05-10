@@ -5,6 +5,8 @@
 ; |                      License info: 48-3015-72F4-DD                      |
 ; |                       Octavian Dima, personal use                       |
 ; +-------------------------------------------------------------------------+
+
+        include "equates.asm"
 ;
 ; Input SHA256 : 078AAB438B99DC370ACC45549F752A332DBD0C348E2682DF1211BCBFB94F4C42
 ; Input MD5    : B06578C3412DE1C5BE765A59DEC5FF1F
@@ -25,7 +27,6 @@ Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The c
 z80_ram:    equ $A00000
 z80_bus_request equ $A11100
 z80_reset:  equ $A11200
-ConsoleRegion   equ ConsoleRegionn
 Drvmem      equ $FFFFF000
 
         include "AMPS/lang.asm"
@@ -22100,6 +22101,5 @@ mergecode   SECTION file("AMPS/.z80.dat"), org(0)   ; create settings file for s
     opt ae+
         include "error/ErrorHandler.asm"
 ; ===========================================================================
-        include "equates.asm"
 
                 end

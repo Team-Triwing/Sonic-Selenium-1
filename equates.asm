@@ -340,10 +340,7 @@ unk_FFF7E0:	ds.b 1
 		ds.b 1
 		ds.b 1
 unk_FFF7EF:	ds.b 1
-unk_FFF7F0:	ds.b 1
-		ds.b 1
-		ds.b 1
-		ds.b 1
+unk_FFF7F0:	ds.l 1
 		ds.b 1
 		ds.b 1
 		ds.b 1
@@ -431,10 +428,7 @@ EmeraldArray:		ds.b 1
 		ds.b 1
 		ds.b 1
 		ds.b 1
-unk_FFFE50:	ds.b 1
-		ds.b 1
-		ds.b 1
-		ds.b 1
+unk_FFFE50:	ds.l 1
 word_FFFE54:	ds.w 1
 word_FFFE56:	ds.w 1
 byte_FFFE58:	ds.b 1
@@ -783,7 +777,7 @@ DemoNum:	ds.w 1
 		ds.b 1
 		ds.b 1
 		ds.b 1
-ConsoleRegionn:	ds.b 1
+ConsoleRegion:	ds.b 1
 		ds.b 1
 EditModeFlag:	ds.w 1
 ChecksumStr:	ds.l 1
