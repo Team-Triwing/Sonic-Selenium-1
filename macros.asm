@@ -90,6 +90,41 @@ platform	equ $3D
 lock		equ $3E
 
 ; ---------------------------------------------------------------------------
+
+; sonic 2 naming convention
+x_pos	equ	xpos
+y_pos	equ	ypos
+x_sub	equ	xpix
+y_sub	equ	ypix
+x_vel	equ	xvel
+y_vel	equ	yvel
+x_radius	equ	xrad
+y_radius	equ	yrad
+routine	equ	act
+routine_secondary	equ	subact
+priority	equ	prio
+move_lock	equ	lock
+stick_to_convex	equ	convex
+subtype	equ	arg
+anim_frame_duration	equ	anilast
+collision_flags	equ	col
+collision_property	equ	colprop
+anim_frame	equ	anipos
+anim	equ	ani
+art_tile	equ	tile
+render_flags	equ	render
+mappings	equ	map
+mapping_frame	equ	frame
+invulnerable_time	equ	invulnerable
+invincibility_time	equ	invincible
+speedshoes_time	equ	speedshoes
+next_tilt	equ	sensorfront
+tilt	equ	sensorback
+spindash_flag	equ	spindashflag
+spindash_counter	equ	spindashtimer
+interact	equ	platform
+
+; ---------------------------------------------------------------------------
 ; long conditional jumps
 ; ---------------------------------------------------------------------------
 

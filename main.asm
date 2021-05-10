@@ -2637,11 +2637,85 @@ loc_3620:
         tst.w   (DemoMode).w
         beq.s   loc_3656
         tst.w   (GlobalTimer).w
-        beq.s   loc_3662
+        beq.w   loc_3662
 
 loc_3656:
         cmpi.b  #$10,(GameMode).w
         beq.s   loc_3620
+		tst.w	(DemoMode).w	; is demo mode on?
+		bne.w	loc_3662	; if yes, branch
+		move.b	#$C,(GameMode).w ; set	screen mode to $0C (level)
+
+SS_End:
+		move.w	#60,(GlobalTimer).w ; set	delay time to 1	second
+		move.w	#$3F,(word_FFF626).w
+		clr.w	(unk_FFF794).w
+
+SS_EndLoop:
+		move.b	#$16,(VintRoutine).w
+		vsync
+		bsr.w	DemoPlayback
+		move.w	(padHeldPlayer).w,(padPressPlayer).w
+		jsr	LoadObjects
+		jsr	ProcessMaps
+		jsr	sub_10B70
+		bsr.w	ssLoadBG
+		subq.w	#1,(unk_FFF794).w
+		bpl.s	loc_47D4
+		move.w	#2,(unk_FFF794).w
+		bsr.w	Pal_FadeTo
+
+loc_47D4:
+		tst.w	(GlobalTimer).w
+		bne.s	SS_EndLoop
+
+		move	#$2700,sr
+		lea	(VdpCtrl).l,a6
+		move.w	#$8230,(a6)
+		move.w	#$8407,(a6)
+		move.w	#$9001,(a6)
+		bsr.w	ClearPLC
+		move.l	#$70000002,(VdpCtrl).l
+		lea	(ArtTitleCards).l,a0 ; load title card patterns
+		bsr.w	NemesisDec
+		jsr		sub_3048
+		move	#$2300,sr
+		moveq	#$11,d0
+		bsr.w	palLoadFade	; load results screen pallet
+		moveq	#0,d0
+		bsr.w	PLCadd
+		moveq	#$1B,d0
+		bsr.w	PLCreplace		; load results screen patterns
+		move.b	#1,(byte_FFFE1F).w ; update score	counter
+		move.b	#1,(byte_FFFE58).w ; update ring bonus counter
+		move.w	(Rings).w,d0
+		mulu.w	#10,d0		; multiply rings by 10
+		move.w	d0,(word_FFFE54).w ; set rings bonus
+		music	mus_GotThroughAct
+		lea	(ObjectsList).w,a1
+		moveq	#0,d0
+		move.w	#$7FF,d1
+
+SS_EndClrObjRam:
+		move.l	d0,(a1)+
+		dbf	d1,SS_EndClrObjRam ; clear object RAM
+
+		move.b	#$7E,(ObjectsList).w ; load results screen object
+
+SS_NormalExit:
+		bsr.w	PauseGame
+		move.b	#$C,(VintRoutine).w
+		vsync
+		jsr	LoadObjects
+		jsr	ProcessMaps
+		bsr.w	PLCadd
+		tst.w	(LevelRestart).w
+		beq.s	SS_NormalExit
+		tst.l	(plcList).w
+		bne.s	SS_NormalExit
+		sfx		sfx_Goal
+		bsr.w	Pal_FadeTo
+		rts	
         rts
 ; ---------------------------------------------------------------------------
 
@@ -4566,85 +4640,326 @@ Speedsettings:
     even
 ; ---------------------------------------------------------------------------
 
-Obj02:
-        moveq   #0,d0
-        move.b  act(a0),d0
-        move.w  off_4B90(pc,d0.w),d1
-        jmp off_4B90(pc,d1.w)
 ; ---------------------------------------------------------------------------
 
-off_4B90:   dc.w loc_4B98-off_4B90, loc_4BC8-off_4B90
-        dc.w loc_4BEC-off_4B90, loc_4BEC-off_4B90
+Obj_SSResults:					; XREF: Obj_Index
+		moveq	#0,d0
+		move.b	act(a0),d0
+		move.w	Obj_SSResults_Index(pc,d0.w),d1
+		jmp	Obj_SSResults_Index(pc,d1.w)
+; ---------------------------------------------------------------------------
+Obj_SSResults_Index:	dc.w Obj_SSResults_ChkPLC-Obj_SSResults_Index
+		dc.w Obj_SSResults_ChkPos-Obj_SSResults_Index
+		dc.w Obj_SSResults_Wait-Obj_SSResults_Index
+		dc.w Obj_SSResults_RingBonus-Obj_SSResults_Index
+		dc.w Obj_SSResults_Wait-Obj_SSResults_Index
+		dc.w Obj_SSResults_Exit-Obj_SSResults_Index
+		dc.w Obj_SSResults_Wait-Obj_SSResults_Index
+		dc.w Obj_SSResults_Continue-Obj_SSResults_Index
+		dc.w Obj_SSResults_Wait-Obj_SSResults_Index
+		dc.w Obj_SSResults_Exit-Obj_SSResults_Index
+		dc.w loc_C91A-Obj_SSResults_Index
 ; ---------------------------------------------------------------------------
 
-loc_4B98:
-        addq.b  #2,act(a0)
-        move.w  #$200,xpos(a0)
-        move.w  #$60,ypos(a0)
-        move.l  #Map02,map(a0)
-        move.w  #$64F0,tile(a0)
-        move.b  #4,render(a0)
-        move.b  #1,colprop(a0)
-        move.b  #3,prio(a0)
-
-loc_4BC8:
-        bsr.w   ObjectDisplay
-        subq.b  #1,anidelay(a0)
-        bpl.s   locret_4BEA
-        move.b  #$10,anidelay(a0)
-        move.b  frame(a0),d0
-        addq.b  #1,d0
-        cmpi.b  #2,d0
-        bcs.s   loc_4BE6
-        moveq   #0,d0
-
-loc_4BE6:
-        move.b  d0,frame(a0)
-
-locret_4BEA:
-        rts
+Obj_SSResults_ChkPLC:				; XREF: Obj_SSResults_Index
+		tst.l	(plcList).w	; are the pattern load cues empty?
+		beq.s	Obj_SSResults_Main	; if yes, branch
+		rts	
 ; ---------------------------------------------------------------------------
 
-loc_4BEC:
-        bra.w   ObjectDelete
+Obj_SSResults_Main:
+		movea.l	a0,a1
+		lea	(Obj_SSResults_Config).l,a2
+		moveq	#3,d1
+		cmpi.w	#50,(Rings).w ; do you have	50 or more rings?
+		bcs.s	Obj_SSResults_Loop	; if no, branch
+		addq.w	#1,d1		; if yes, add 1	to d1 (number of sprites)
+
+Obj_SSResults_Loop:
+		move.b	#$7E,0(a1)
+		move.w	(a2)+,xpos(a1)	; load start x-position
+		move.w	(a2)+,$30(a1)	; load main x-position
+		move.w	(a2)+,ypos(a1)	; load y-position
+		move.b	(a2)+,act(a1)
+		move.b	(a2)+,frame(a1)
+		move.l	#Map_obj7E,map(a1)
+		move.w	#$8580,tile(a1)
+		move.b	#0,render(a1)
+		lea	size(a1),a1
+		dbf	d1,Obj_SSResults_Loop	; repeat sequence 3 or 4 times
+
+		moveq	#7,d0
+		move.b	(EmeraldAmount).w,d1
+		beq.s	loc_C842
+		moveq	#0,d0
+		cmpi.b	#6,d1		; do you have all chaos	emeralds?
+		bne.s	loc_C842	; if not, branch
+		moveq	#8,d0		; load "Sonic got them all" text
+		move.w	#$18,xpos(a0)
+		move.w	#$118,$30(a0)	; change position of text
+
+loc_C842:
+		move.b	d0,frame(a0)
+
+Obj_SSResults_ChkPos:				; XREF: Obj_SSResults_Index
+		moveq	#$10,d1		; set horizontal speed
+		move.w	$30(a0),d0
+		cmp.w	xpos(a0),d0	; has item reached its target position?
+		beq.s	loc_C86C	; if yes, branch
+		bge.s	Obj_SSResults_Move
+		neg.w	d1
+
+Obj_SSResults_Move:
+		add.w	d1,xpos(a0)	; change item's position
+
+loc_C85A:				; XREF: loc_C86C
+		move.w	xpos(a0),d0
+		bmi.s	locret_C86A
+		cmpi.w	#$200,d0	; has item moved beyond	$200 on	x-axis?
+		bcc.s	locret_C86A	; if yes, branch
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
-        include "unknown/Map02.map"
-        even
+
+locret_C86A:
+		rts	
 ; ---------------------------------------------------------------------------
 
-Obj03:
-        moveq   #0,d0
-        move.b  act(a0),d0
-        move.w  off_4C68(pc,d0.w),d1
-        jmp off_4C68(pc,d1.w)
+loc_C86C:				; XREF: Obj_SSResults_ChkPos
+		cmpi.b	#2,frame(a0)
+		bne.s	loc_C85A
+		addq.b	#2,act(a0)
+		move.w	#180,anidelay(a0)	; set time delay to 3 seconds
+		move.b	#$7F,(byte_FFD100).w ; load chaos	emerald	object
+
+Obj_SSResults_Wait:				; XREF: Obj_SSResults_Index
+		subq.w	#1,anidelay(a0)	; subtract 1 from time delay
+		bne.s	Obj_SSResults_Display
+		addq.b	#2,act(a0)
+
+Obj_SSResults_Display:
+		bra.w	ObjectDisplay
 ; ---------------------------------------------------------------------------
 
-off_4C68:   dc.w loc_4C70-off_4C68, loc_4CA6-off_4C68, loc_4CB8-off_4C68, loc_4CB8-off_4C68
+Obj_SSResults_RingBonus:			; XREF: Obj_SSResults_Index
+		bsr.w	ObjectDisplay
+		move.b	#1,(byte_FFFE58).w ; set ring bonus update flag
+		tst.w	(word_FFFE54).w	; is ring bonus	- zero?
+		beq.s	loc_C8C4	; if yes, branch
+		subi.w	#10,(word_FFFE54).w ; subtract 10	from ring bonus
+		moveq	#10,d0		; add 10 to score
+		jsr		ScoreAdd
+		sfx		sfx_Switch
+		rts
 ; ---------------------------------------------------------------------------
 
-loc_4C70:
-        addq.b  #2,act(a0)
-        move.w  #$100,xpos(a0)
-        move.w  #$40,ypos(a0)
-        move.l  #Map02,map(a0)
-        move.w  #$64F0,tile(a0)
-        move.b  #4,render(a0)
-        move.b  #1,colprop(a0)
-        move.b  #3,frame(a0)
-        move.b  #5,prio(a0)
+loc_C8C4:				; XREF: Obj_SSResults_RingBonus
+		sfx		sfx_Register
+		addq.b	#2,act(a0)
+		move.w	#180,anidelay(a0)	; set time delay to 3 seconds
+		cmpi.w	#50,(Rings).w ; do you have	at least 50 rings?
+		bcs.s	locret_C8EA	; if not, branch
+		move.w	#60,anidelay(a0)	; set time delay to 1 second
+		addq.b	#4,act(a0)	; goto "Obj_SSResults_Continue"	routine
 
-loc_4CA6:
-        bsr.w   ObjectDisplay
-        subq.b  #1,anidelay(a0)
-        bpl.s   locret_4CB6
-        move.b  #$10,anidelay(a0)
-
-locret_4CB6:
-        rts
+locret_C8EA:
+		rts	
 ; ---------------------------------------------------------------------------
 
-loc_4CB8:
-        bra.w   ObjectDelete
+Obj_SSResults_Exit:				; XREF: Obj_SSResults_Index
+		move.w	#1,(LevelRestart).w ; restart level
+		bra.w	ObjectDisplay
+; ---------------------------------------------------------------------------
+
+Obj_SSResults_Continue:				; XREF: Obj_SSResults_Index
+		move.b	#4,($FFFFD6DA).w
+		move.b	#$14,($FFFFD6E4).w
+		sfx		sfx_Continue
+		addq.b	#2,act(a0)
+		move.w	#360,anidelay(a0)	; set time delay to 6 seconds
+		bra.w	ObjectDisplay
+; ---------------------------------------------------------------------------
+
+loc_C91A:				; XREF: Obj_SSResults_Index
+		move.b	(byte_FFFE0F).w,d0
+		andi.b	#$F,d0
+		bne.s	Obj_SSResults_Display2
+		bchg	#0,frame(a0)
+
+Obj_SSResults_Display2:
+		bra.w	ObjectDisplay
+; ---------------------------------------------------------------------------
+Obj_SSResults_Config:	dc.w $20, $120,	$C4	; start	x-pos, main x-pos, y-pos
+		dc.b 2,	0		; rountine number, frame number
+		dc.w $320, $120, $118
+		dc.b 2,	1
+		dc.w $360, $120, $128
+		dc.b 2,	2
+		dc.w $1EC, $11C, $C4
+		dc.b 2,	3
+		dc.w $3A0, $120, $138
+		dc.b 2,	6
+; ---------------------------------------------------------------------------
+
+Obj_SSResCE:					; XREF: Obj_Index
+		moveq	#0,d0
+		move.b	act(a0),d0
+		move.w	Obj_SSResCE_Index(pc,d0.w),d1
+		jmp	Obj_SSResCE_Index(pc,d1.w)
+; ---------------------------------------------------------------------------
+Obj_SSResCE_Index:	dc.w Obj_SSResCE_Main-Obj_SSResCE_Index
+		dc.w Obj_SSResCE_Flash-Obj_SSResCE_Index
+
+; ---------------------------------------------------------------------------
+; X-axis positions for chaos emeralds
+; ---------------------------------------------------------------------------
+Obj_SSResCE_PosData:	dc.w $110, $128, $F8, $140, $E0, $158
+; ---------------------------------------------------------------------------
+
+Obj_SSResCE_Main:				; XREF: Obj_SSResCE_Index
+		movea.l	a0,a1
+		lea	(Obj_SSResCE_PosData).l,a2
+		moveq	#0,d2
+		moveq	#0,d1
+		move.b	(EmeraldAmount).w,d1 ; d1 is number	of emeralds
+		subq.b	#1,d1		; subtract 1 from d1
+		bcs.w	ObjectDelete	; if you have 0	emeralds, branch
+
+Obj_SSResCE_Loop:
+		move.b	#$7F,0(a1)
+		move.w	(a2)+,8(a1)	; set x-position
+		move.w	#$F0,$A(a1)	; set y-position
+		lea	(EmeraldArray).w,a3 ; check which emeralds	you have
+		move.b	(a3,d2.w),d3
+		move.b	d3,frame(a1)
+		move.b	d3,ani(a1)
+		addq.b	#1,d2
+		addq.b	#2,act(a1)
+		move.l	#Map_obj7F,map(a1)
+		move.w	#$8541,tile(a1)
+		move.b	#0,render(a1)
+		lea	$40(a1),a1	; next object
+		dbf	d1,Obj_SSResCE_Loop	; loop for d1 number of	emeralds
+
+Obj_SSResCE_Flash:				; XREF: Obj_SSResCE_Index
+		move.b	frame(a0),d0
+		move.b	#6,frame(a0)	; load 6th frame (blank)
+		cmpi.b	#6,d0
+		bne.s	Obj_SSResCE_Display
+		move.b	ani(a0),frame(a0)	; load visible frame
+
+Obj_SSResCE_Display:
+		bra.w	ObjectDisplay
+		
+; ---------------------------------------------------------------------------
+; Sprite mappings - special stage results screen
+; ---------------------------------------------------------------------------
+Map_obj7E:	dc.w .byte_CCAC-Map_obj7E
+		dc.w .byte_CCEE-Map_obj7E
+		dc.w .byte_CD0D-Map_obj7E
+		dc.w byte_AA94-Map_obj7E
+		dc.w .byte_CD31-Map_obj7E
+		dc.w .byte_CD46-Map_obj7E
+		dc.w .byte_CD5B-Map_obj7E
+		dc.w .byte_CD6B-Map_obj7E
+		dc.w .byte_CDA8-Map_obj7E
+.byte_CCAC:	dc.b $D			; "CHAOS EMERALDS"
+		dc.b $F8, 5, 0,	8, $90
+		dc.b $F8, 5, 0,	$1C, $A0
+		dc.b $F8, 5, 0,	0, $B0
+		dc.b $F8, 5, 0,	$32, $C0
+		dc.b $F8, 5, 0,	$3E, $D0
+		dc.b $F8, 5, 0,	$10, $F0
+		dc.b $F8, 5, 0,	$2A, 0
+		dc.b $F8, 5, 0,	$10, $10
+		dc.b $F8, 5, 0,	$3A, $20
+		dc.b $F8, 5, 0,	0, $30
+		dc.b $F8, 5, 0,	$26, $40
+		dc.b $F8, 5, 0,	$C, $50
+		dc.b $F8, 5, 0,	$3E, $60
+.byte_CCEE:	dc.b 6			; "SCORE"
+		dc.b $F8, $D, 1, $4A, $B0
+		dc.b $F8, 1, 1,	$62, $D0
+		dc.b $F8, 9, 1,	$64, $18
+		dc.b $F8, $D, 1, $6A, $30
+		dc.b $F7, 4, 0,	$6E, $CD
+		dc.b $FF, 4, $18, $6E, $CD
+.byte_CD0D:	dc.b 7
+		dc.b $F8, $D, 1, $52, $B0
+		dc.b $F8, $D, 0, $66, $D9
+		dc.b $F8, 1, 1,	$4A, $F9
+		dc.b $F7, 4, 0,	$6E, $F6
+		dc.b $FF, 4, $18, $6E, $F6
+		dc.b $F8, $D, $FF, $F8,	$28
+		dc.b $F8, 1, 1,	$70, $48
+.byte_CD31:	dc.b 4
+		dc.b $F8, $D, $FF, $D1,	$B0
+		dc.b $F8, $D, $FF, $D9,	$D0
+		dc.b $F8, 1, $FF, $E1, $F0
+		dc.b $F8, 6, $1F, $E3, $40
+.byte_CD46:	dc.b 4
+		dc.b $F8, $D, $FF, $D1,	$B0
+		dc.b $F8, $D, $FF, $D9,	$D0
+		dc.b $F8, 1, $FF, $E1, $F0
+		dc.b $F8, 6, $1F, $E9, $40
+.byte_CD5B:	dc.b 3
+		dc.b $F8, $D, $FF, $D1,	$B0
+		dc.b $F8, $D, $FF, $D9,	$D0
+		dc.b $F8, 1, $FF, $E1, $F0
+.byte_CD6B:	dc.b $C			; "SPECIAL STAGE"
+		dc.b $F8, 5, 0,	$3E, $9C
+		dc.b $F8, 5, 0,	$36, $AC
+		dc.b $F8, 5, 0,	$10, $BC
+		dc.b $F8, 5, 0,	8, $CC
+		dc.b $F8, 1, 0,	$20, $DC
+		dc.b $F8, 5, 0,	0, $E4
+		dc.b $F8, 5, 0,	$26, $F4
+		dc.b $F8, 5, 0,	$3E, $14
+		dc.b $F8, 5, 0,	$42, $24
+		dc.b $F8, 5, 0,	0, $34
+		dc.b $F8, 5, 0,	$18, $44
+		dc.b $F8, 5, 0,	$10, $54
+.byte_CDA8:	dc.b $F			; "SONIC GOT THEM ALL"
+		dc.b $F8, 5, 0,	$3E, $88
+		dc.b $F8, 5, 0,	$32, $98
+		dc.b $F8, 5, 0,	$2E, $A8
+		dc.b $F8, 1, 0,	$20, $B8
+		dc.b $F8, 5, 0,	8, $C0
+		dc.b $F8, 5, 0,	$18, $D8
+		dc.b $F8, 5, 0,	$32, $E8
+		dc.b $F8, 5, 0,	$42, $F8
+		dc.b $F8, 5, 0,	$42, $10
+		dc.b $F8, 5, 0,	$1C, $20
+		dc.b $F8, 5, 0,	$10, $30
+		dc.b $F8, 5, 0,	$2A, $40
+		dc.b $F8, 5, 0,	0, $58
+		dc.b $F8, 5, 0,	$26, $68
+		dc.b $F8, 5, 0,	$26, $78
+		even
+; ---------------------------------------------------------------------------
+; Sprite mappings - chaos emeralds from	the special stage results screen
+; ---------------------------------------------------------------------------
+Map_obj7F:
+		dc.w .byte_CE02-Map_obj7F
+		dc.w .byte_CE08-Map_obj7F
+		dc.w .byte_CE0E-Map_obj7F
+		dc.w .byte_CE14-Map_obj7F
+		dc.w .byte_CE1A-Map_obj7F
+		dc.w .byte_CE20-Map_obj7F
+		dc.w .byte_CE26-Map_obj7F
+.byte_CE02:	dc.b 1
+		dc.b $F8, 5, $20, 4, $F8
+.byte_CE08:	dc.b 1
+		dc.b $F8, 5, 0,	0, $F8
+.byte_CE0E:	dc.b 1
+		dc.b $F8, 5, $40, 4, $F8
+.byte_CE14:	dc.b 1
+		dc.b $F8, 5, $60, 4, $F8
+.byte_CE1A:	dc.b 1
+		dc.b $F8, 5, $20, 8, $F8
+.byte_CE20:	dc.b 1
+		dc.b $F8, 5, $20, $C, $F8
+.byte_CE26:	dc.b 0			; Blank frame
+		even
 ; ---------------------------------------------------------------------------
 
 Obj04:
@@ -4660,7 +4975,7 @@ off_4CCC:   dc.w loc_4CD4-off_4CCC, loc_4D04-off_4CCC, loc_4D28-off_4CCC, loc_4D
 loc_4CD4:
         addq.b  #2,act(a0)
         move.w  #$40,ypos(a0)
-        move.l  #Map02,map(a0)
+        ;move.l  #Map02,map(a0)
         move.w  #$2680,tile(a0)
         move.b  #4,render(a0)
         move.b  #1,colprop(a0)
@@ -8452,7 +8767,7 @@ loc_857A:
         rts
 ; ---------------------------------------------------------------------------
 
-AllObjects: dc.l ObjSonic, Obj02, Obj03, Obj04, Obj05, Ojb06, Obj07
+AllObjects: dc.l ObjSonic, Obj_SSResults, Obj_SSResCE, Obj04, Obj05, Ojb06, Obj07
         dc.l ObjectFall, ObjSonicSpecial, ObjectFall, ObjectFall
         dc.l ObjectFall, ObjSignpost, ObjTitleSonic, OibjTitleText
         dc.l ObjAniTest, ObjBridge, ObjSceneryLamp, ObjLavaMaker
@@ -19492,7 +19807,9 @@ loc_10EF8:
         move.b  #$19,ani(a0)    ; use "shrinking" animation
         addi.w  #$40/2,(SpecSpeed).w
         cmpi.w  #$2000,(SpecSpeed).w
-        blt.s   loc_10F1C
+        bne.s   .notofspeed
+		move.b	#$C,(GameMode).w
+.notofspeed:
         clr.w   (SpecSpeed).w
         move.w  #$4000,(SpecAngle).w
         addq.b  #2,act(a0)
@@ -20971,14 +21288,6 @@ DebugList_Ending:   dc.w $D
         dc.b 0, 0, $27, $B2
         dc.l ($26<<24)|MapMonitor
         dc.b 0, 0, 6, $80
-        dc.l ($02<<24)|Map02
-        dc.b 0, 0, 2, $B2
-        dc.l ($03<<24)|Map05
-        dc.b 0, 0, 3, $B2
-        dc.l ($04<<24)|Map02
-        dc.b 0, 0, 4, $B2
-        dc.l ($06<<24)|Map02
-        dc.b 0, 0, 6, $B2
         dc.l ($10<<24)|MapRing
         dc.b 0, 0, $10, $B2
         dc.l ($1B<<24)|Map1B

@@ -232,30 +232,14 @@ PlayerAccel:	ds.w 1
 PlayerDecel:	ds.w 1
 SonicLastDPLCID:ds.b 1		; previous DPLC frame for Sonic
 SonicVRAMReset:	ds.b 1		; for when Sonic's art needs to be updated in VRAM
-unk_FFF768:	ds.b 1
-		ds.b 1
-unk_FFF76A:	ds.b 1
-		ds.b 1
-unk_FFF76C:	ds.b 1
-		ds.b 1
-unk_FFF76E:	ds.b 1
-		ds.b 1
-unk_FFF770:	ds.b 1
-		ds.b 1
-		ds.b 1
-		ds.b 1
-unk_FFF774:	ds.b 1
-		ds.b 1
-		ds.b 1
-		ds.b 1
-unk_FFF778:	ds.b 1
-		ds.b 1
-		ds.b 1
-		ds.b 1
-unk_FFF77C:	ds.b 1
-		ds.b 1
-		ds.b 1
-		ds.b 1
+unk_FFF768:	ds.w 1
+unk_FFF76A:	ds.w 1
+unk_FFF76C:	ds.w 1
+unk_FFF76E:	ds.w 1
+unk_FFF770:	ds.l 1
+unk_FFF774:	ds.l 1
+unk_FFF778:	ds.l 1
+unk_FFF77C:	ds.l 1
 SpecAngle:	ds.w 1
 SpecSpeed:	ds.w 1
 		ds.b 1
@@ -415,7 +399,7 @@ byte_FFFE2C:	ds.b 1
 byte_FFFE2D:	ds.b 1
 byte_FFFE2E:	ds.b 1
 byte_FFFE2F:	ds.b 1
-		ds.b 1
+EmeraldArray:		ds.b 1
 		ds.b 1
 		ds.b 1
 		ds.b 1
@@ -501,7 +485,7 @@ UnkFrame:	ds.b 1		; this is also in the final game and Sonic 2 where it's also u
 RingLossTimer:	ds.b 1
 RingLossFrame:	ds.b 1
 RingLossAccumulator:ds.w 1
-		ds.b 1
+EmeraldAmount:		ds.b 1
 		ds.b 1
 		ds.b 1
 		ds.b 1
