@@ -1815,7 +1815,7 @@ LevSelOrder:    dc.w 0,    1,    2
         dc.w $200, $201, $202
         dc.w $300, $301, $302
         dc.w $400, $401, $402
-        dc.w $500, $501,$103
+        dc.w $500, $501,$502
         dc.w $700, $700,$8000
 ; ---------------------------------------------------------------------------
 
@@ -2112,6 +2112,7 @@ loc_2C6C:
         move.b  (curzone).w,d0
         lea (MusicList).l,a1
         move.b  (a1,d0.w),d0
+		move.b	d0,SavedSong.w
         move.b  d0,mQueue+1.w
 MusicLoop:
         command mus_ShoesOff   ; run the music at normal speed
@@ -2717,7 +2718,6 @@ SS_NormalExit:
 		sfx		sfx_Goal
 		bsr.w	Pal_FadeTo
 		rts	
-        rts
 ; ---------------------------------------------------------------------------
 
 loc_3662:
@@ -16217,12 +16217,7 @@ loc_E8E8:
         bne.s   loc_E91C
         tst.b   (unk_FFF7AA).w
         bne.s   loc_E916
-        moveq   #0,d0
-        move.b  (curzone).w,d0
-
-loc_E906:
-        lea (MusicList).l,a1
-        move.b  (a1,d0.w),d0
+		move.b	SavedSong.w,d0
         move.b  d0,mQueue+1.w
 
 loc_E916:

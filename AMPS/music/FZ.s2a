@@ -2,7 +2,7 @@ Final_Header:
 	sHeaderInit
 	sHeaderTempo	$02, $06
 	sHeaderCh	$05, $00
-	sHeaderDAC	Final_DAC1
+	sHeaderDAC	Final_DAC1, -12, dCrystalRhodes
 	sHeaderDAC	Final_DAC2
 	sHeaderFM	Final_FM1, $00, $12
 	sHeaderFM	Final_FM2, $F4, $0D
@@ -182,7 +182,6 @@ Final_DAC1:
 	sVoice		dCrystalRhodes
 	dc.b nE6, $03, nRst, nE5, nRst, nE5, nRst, nE6
 	dc.b nE6, $03, nRst, $18	
-	sVoice		dChoir
 	sJump		Final_Jump1
 
 Final_DAC2:

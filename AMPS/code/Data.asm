@@ -110,15 +110,14 @@ SampleList:
 	sample $0100, SonicClear, Stop	; 8C - Sonic (act results)
 	sample $0100, SonicHurt, Stop	; 8D - Sonic (when he gets hurt)
 	sample $0100, SonicDeath, Stop	; 8E - Sonic (when he dies)
-	sample $0100, Choir, Choir		; 8F - Choir (Loop)
+	sample $0100, SonicLife, Stop		; 8F - Sonic (extra life)
 	sample $0100, MajPad, Stop	; 90 - Minor chord Pad
 	sample $0100, MinPad, Stop	; 91 - Major chord Pad
 	sample $0100, Sus2Pad, Stop	; 92 - Sus2 chord Pad
 	sample $0100, Sus4Pad, Stop	; 93 - Sus4 chord Pad
 	sample $0100, Perfect5thPad, Stop	; 94 - Perfect 5th chord Pad
 	sample $0100, CrystalRhodes, Stop	; 95 - Crystal Rhodes
-	sample $0100, Lava, Lava	; 96 - Lava (Loop)
-	sample $0100, SonicLife, Lava	; 97 - Sonic (extra life)
+	sample $0100, Lava, Lava	; 96 - Lava (Loop))
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -253,7 +252,7 @@ SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 	even
 	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad
 	even
-	incSWF	Perfect5thPad, CrystalRhodes, Choir, Lava, SonicLife
+	incSWF	Perfect5thPad, CrystalRhodes, Lava, SonicLife
 	even
 	opt ae+				; enable automatic evens
 	list				; continue source listing

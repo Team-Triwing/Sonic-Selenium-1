@@ -369,7 +369,7 @@ DebugRoutine:	ds.w 1
 DebugTimer:	ds.b 1
 DebugSpeed:	ds.b 1
 VintCounter:	ds.b 1
-		ds.b 1
+SavedSong:		ds.b 1
 		ds.b 1
 byte_FFFE0F:	ds.b 1
 curzone:	ds.b 1
