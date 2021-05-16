@@ -4997,7 +4997,7 @@ loc_4CD4:
         move.b  #4,render(a0)
         move.b  #1,colprop(a0)
         move.b  #tile,frame(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
 
 loc_4D04:
         bsr.w   ObjectDisplay
@@ -5036,7 +5036,7 @@ loc_4D44:
         move.l  #Map05,map(a0)
         move.w  #$84F0,tile(a0)
         move.b  #0,render(a0)
-        move.b  #7,prio(a0)
+        move.w  #$380,prio(a0)
 
 loc_4D62:
         bra.w   ObjectDisplay
@@ -5065,7 +5065,7 @@ loc_4E04:
         move.l  #Map05,map(a0)
         move.w  #$8470,tile(a0)
         move.b  #0,render(a0)
-        move.b  #7,prio(a0)
+        move.w  #$380,prio(a0)
 
 loc_4E28:
         bra.w   ObjectDisplay
@@ -5112,7 +5112,7 @@ ObjBridge_Init:
         move.l  #MapBridge,map(a0)
         move.w  #$438E,tile(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$80,xpix(a0)
         move.w  ypos(a0),d2
         move.w  xpos(a0),d3
@@ -5158,7 +5158,7 @@ loc_4EE6:
         move.l  #MapBridge,map(a1)
         move.w  #$438E,tile(a1)
         move.b  #4,render(a1)
-        move.b  #3,prio(a1)
+        move.w  #$180,prio(a1)
         move.b  #8,xpix(a1)
         addi.w  #$10,d3
         dbf d1,ObjBridge_MakeLog
@@ -5548,7 +5548,7 @@ ObjSwingPtfm_Init:
         move.l  #MapSwingPtfm,4(a0)
         move.w  #$4380,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$18,xpix(a0)
         move.b  #8,yrad(a0)
         move.w  ypos(a0),convex(a0)
@@ -5594,7 +5594,7 @@ ObjSwingPtfm_LoadLinks:
         move.w  2(a0),2(a1)
         bclr    #6,2(a1)
         move.b  #4,render(a1)
-        move.b  #4,prio(a1)
+        move.w  #$200,prio(a1)
         move.b  #8,xpix(a1)
         move.b  #1,frame(a1)
         move.b  d3,$3C(a1)
@@ -5620,7 +5620,7 @@ loc_5586:
         move.l  #MapRollingBall,4(a0)
         move.w  #$43AA,2(a0)
         move.b  #1,frame(a0)
-        move.b  #2,prio(a0)
+        move.w  #$100,prio(a0)
         move.b  #$81,col(a0)
 
 loc_55C8:
@@ -5791,7 +5791,7 @@ loc_5792:
         move.w  #$4398,2(a0)
         move.b  #7,status(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #8,xpix(a0)
         move.w  ypos(a0),d2
         move.w  xpos(a0),d3
@@ -5826,7 +5826,7 @@ loc_57FA:
         move.l  4(a0),4(a1)
         move.w  #$4398,2(a1)
         move.b  #4,render(a1)
-        move.b  #3,prio(a1)
+        move.w  #$180,prio(a1)
         move.b  #8,xpix(a1)
         move.b  d6,$3E(a1)
         addq.b  #1,d6
@@ -5928,7 +5928,7 @@ loc_5950:
 
 loc_5972:
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.w  ypos(a0),$2C(a0)
         move.w  ypos(a0),$34(a0)
         move.w  xpos(a0),$32(a0)
@@ -6205,7 +6205,7 @@ loc_5C98:
         move.l  #MapRollingBall,4(a0)
         move.w  #$43AA,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$18,xpix(a0)
         move.b  #1,$1F(a0)
         bsr.w   sub_5DC8
@@ -6386,7 +6386,7 @@ loc_5EFA:
         move.l  #MapCollapsePtfm,4(a0)
         move.w  #$4000,2(a0)
         ori.b   #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #7,convex(a0)
         move.b  #$64,xpix(a0)
         move.b  arg(a0),frame(a0)
@@ -6484,7 +6484,7 @@ loc_5FFE:
 
 loc_6022:
         ori.b   #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #7,convex(a0)
         move.b  #$44,xpix(a0)
 
@@ -6617,7 +6617,7 @@ loc_6168:
         move.w  xpos(a0),xpos(a1)
         move.w  ypos(a0),ypos(a1)
         move.w  2(a0),2(a1)
-        move.b  prio(a0),prio(a1)
+        move.w  prio(a0),prio(a1)
         move.b  xpix(a0),xpix(a1)
         move.b  (a4)+,convex(a1)
         cmpa.l  a0,a1
@@ -6697,10 +6697,10 @@ loc_663E:
         move.w  #$4000,tile(a0)
         move.b  #4,render(a0)
         move.b  #$20,xpix(a0)
-        move.b  #5,prio(a0)
+        move.w  #$280,prio(a0)
         tst.b   arg(a0)
         bne.s   loc_6676
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #6,act(a0)
         rts
 ; ---------------------------------------------------------------------------
@@ -6826,7 +6826,7 @@ loc_67CE:
         move.b  #4,render(a0)
         move.w  ypos(a0),$30(a0)
         move.b  #$10,xpix(a0)
-        move.b  #5,prio(a0)
+        move.w  #$280,prio(a0)
 
 loc_67F8:
         move.w  $30(a0),ypos(a0)
@@ -6900,12 +6900,12 @@ loc_68A4:
         subi.w  #$20,d0
         move.w  d0,$30(a0)
         move.b  #$B,xpix(a0)
-        move.b  #5,prio(a0)
+        move.w  #$280,prio(a0)
         tst.b   arg(a0)
         beq.s   loc_68F0
         move.b  #1,frame(a0)
         move.w  #$4000,tile(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         addq.b  #2,act(a0)
 
 loc_68F0:
@@ -7070,7 +7070,7 @@ loc_6A6C:
         move.w  #$DE,xpix(a0)
         move.l  #MapTitleSonic,map(a0)
         move.w  #$2300,tile(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #$1D,$1F(a0)
         lea (AniTitleSonic).l,a1
         bsr.w   ObjectAnimate
@@ -7231,7 +7231,7 @@ loc_6F46:
         move.l  #MapBallhog,4(a0)
         move.w  #$2400,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #5,col(a0)
         move.b  #$C,xpix(a0)
         bsr.w   ObjectFall
@@ -7343,7 +7343,7 @@ ObjCannonball_Init:
         move.l  #MapCannonball,map(a0)
         move.w  #$2418,tile(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$87,col(a0)
         move.b  #8,xpix(a0)
         move.w  #$18,$30(a0)
@@ -7396,7 +7396,7 @@ ObjCannonballExplode_Init:
         move.l  #MapCannonballExplode,map(a0)
         move.w  #$41C,tile(a0)
         move.b  #4,render(a0)
-        move.b  #2,prio(a0)
+        move.w  #$100,prio(a0)
         move.b  #0,col(a0)
         move.b  #$C,xpix(a0)
         move.b  #9,anidelay(a0)
@@ -7438,7 +7438,7 @@ ObjExplode_Init:
         move.l  #MapExplode,map(a0)
         move.w  #$5A0,tile(a0)
         move.b  #4,render(a0)
-        move.b  #2,prio(a0)
+        move.w  #$100,prio(a0)
         move.b  #0,col(a0)
         move.b  #12,xpix(a0)
         move.b  #7,anidelay(a0)
@@ -7472,7 +7472,7 @@ ObjBomb_Init:
         move.l  #MapBombExplode,map(a0)
         move.w  #$5A0,tile(a0)
         move.b  #4,render(a0)
-        move.b  #2,prio(a0)
+        move.w  #$100,prio(a0)
         move.b  #0,col(a0)
         move.b  #$C,xpix(a0)
         move.b  #7,anidelay(a0)
@@ -7541,7 +7541,7 @@ loc_73C6:
         move.b  #$C,yrad(a0)
         move.b  #4,render(a0)
         bset    #0,render(a0)
-        move.b  #6,prio(a0)
+        move.w  #$300,prio(a0)
         move.b  #8,xpix(a0)
         move.b  #7,anidelay(a0)
         move.b  #2,frame(a0)
@@ -7646,7 +7646,7 @@ ObjPoints_Init:
         move.l  #MapPoints,map(a0)
         move.w  #$2797,tile(a0)
         move.b  #4,render(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #8,xpix(a0)
         move.w  #-$300,yvel(a0)
 
@@ -7680,7 +7680,7 @@ loc_75C2:
         move.l  #MapCrabmeat,4(a0)
         move.w  #$400,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #6,col(a0)
         move.b  #$15,xpix(a0)
         bsr.w   ObjectFall
@@ -7836,7 +7836,7 @@ loc_7778:
         move.l  #MapCrabmeat,4(a0)
         move.w  #$400,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$87,col(a0)
         move.b  #8,xpix(a0)
         move.w  #$FC00,yvel(a0)
@@ -7877,7 +7877,7 @@ loc_78AC:
         move.l  #MapBuzzbomber,4(a0)
         move.w  #$444,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #8,col(a0)
         move.b  #$18,xpix(a0)
 
@@ -7989,7 +7989,7 @@ loc_7A04:
         move.l  #MapBuzzMissile,4(a0)
         move.w  #$2444,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #8,xpix(a0)
         andi.b  #3,status(a0)
         tst.b   arg(a0)
@@ -8132,7 +8132,7 @@ loc_7C74:
         move.l  #MapRing,map(a1)
         move.w  #$27B2,tile(a1)
         move.b  #4,render(a1)
-        move.b  #2,prio(a1)
+        move.w  #$100,prio(a1)
         move.b  #$47,col(a1)
         move.b  #8,xpix(a1)
         move.b  respawn(a0),respawn(a1)
@@ -8162,7 +8162,7 @@ loc_7CD0:
 loc_7CF8:
         addq.b  #2,act(a0)
         move.b  #0,col(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         bsr.w   CollectRing
         lea (byte_FFFC00).w,a2
         moveq   #0,d0
@@ -8246,7 +8246,7 @@ loc_7DA8:
 loc_7DD2:
         move.w  #$27B2,tile(a1)
         move.b  #4,render(a1)
-        move.b  #2,prio(a1)
+        move.w  #$100,prio(a1)
         move.b  #$47,col(a1)
         move.b  #8,xpix(a1)
         move.b  #$FF,(RingLossTimer).w
@@ -8290,7 +8290,7 @@ loc_7E82:
 loc_7E9A:
         addq.b  #2,act(a0)
         move.b  #0,col(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         bsr.w   CollectRing
 
 loc_7EAE:
@@ -8339,7 +8339,7 @@ loc_7ED6:
         move.l  #Map4B,map(a0)
         move.w  #$24EC,tile(a0)
         move.b  #4,render(a0)
-        move.b  #2,prio(a0)
+        move.w  #$100,prio(a0)
         move.b  #$52,col(a0)
         move.b  #$C,xpix(a0)
 
@@ -8356,7 +8356,7 @@ loc_7F12:
 loc_7F3C:
         addq.b  #2,act(a0)
         move.b  #0,col(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
 
 loc_7F4C:
         move.b  #$4A,(byte_FFD1C0).w
@@ -8389,7 +8389,7 @@ loc_805E:
         move.l  #MapMonitor,map(a0)
         move.w  #$680,tile(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$F,xpix(a0)
         lea (byte_FFFC00).w,a2
         moveq   #0,d0
@@ -8551,7 +8551,7 @@ loc_8248:
         addq.b  #2,act(a0)
         move.w  #$680,tile(a0)
         move.b  #$24,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #8,xpix(a0)
         move.w  #-$300,yvel(a0)
         moveq   #0,d0
@@ -8837,44 +8837,29 @@ ObjectMove:
 ; ---------------------------------------------------------------------------
 
 ObjectDisplay:
-        moveq   #0,d0
-        move.b  prio(a0),d0
-        add.w   d0,d0
-        movea.w Priority2InputAddrTable(pc,d0.w),a1
+        lea     (DisplayLists).w,a1
+        adda.w  priority(a0),a1
         cmpi.w  #$7E,(a1)
-        bcc.s   locret_8768
+        bcc.s   return_16510
         addq.w  #2,(a1)
         adda.w  (a1),a1
         move.w  a0,(a1)
 
-locret_8768:
+return_16510:
         rts
 ; ---------------------------------------------------------------------------
 
 ObjectDisplayA1:
-        moveq   #0,d0
-        move.b  prio(a1),d0
-        add.w   d0,d0
-        movea.w Priority2InputAddrTable(pc,d0.w),a2
+        lea     (DisplayLists).w,a2
+        adda.w  priority(a1),a2
         cmpi.w  #$7E,(a2)
-        bcc.s   locret_8786
+        bcc.s   return_1652E
         addq.w  #2,(a2)
         adda.w  (a2),a2
         move.w  a1,(a2)
 
-locret_8786:
+return_1652E:
         rts
-        
-; ---------------------------------------------------------------------------
-Priority2InputAddrTable:
-   dc.w   DisplayLists
-   dc.w   DisplayLists+$80
-   dc.w   DisplayLists+$100
-   dc.w   DisplayLists+$180
-   dc.w   DisplayLists+$200
-   dc.w   DisplayLists+$280
-   dc.w   DisplayLists+$300
-   dc.w   DisplayLists+$380
 ; ---------------------------------------------------------------------------
 
 ObjectDelete:
@@ -9413,7 +9398,7 @@ loc_8BBA:
         move.l  #MapChopper,4(a0)
         move.w  #$47B,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #9,col(a0)
         move.b  #$10,xpix(a0)
         move.w  #$F900,yvel(a0)
@@ -9466,7 +9451,7 @@ loc_8C74:
         move.w  #$47B,2(a0)
         move.b  #4,render(a0)
         move.b  #$A,col(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$10,xpix(a0)
         move.w  #$FFC0,xvel(a0)
 
@@ -9496,7 +9481,7 @@ loc_8D02:
         move.l  #MapBurrobot,4(a0)
         move.w  #$239C,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #5,col(a0)
         move.b  #$C,xpix(a0)
         bset    #0,status(a0)
@@ -9632,7 +9617,7 @@ loc_8EDE:
         move.l  #MapMZPlatforms,4(a0)
         move.w  #$C000,2(a0)
         move.b  #4,render(a0)
-        move.b  #5,prio(a0)
+        move.w  #$280,prio(a0)
         move.w  ypos(a0),$2C(a0)
         move.w  xpos(a0),$2A(a0)
         moveq   #0,d0
@@ -9923,7 +9908,7 @@ loc_91F8:
         move.w  #$345,2(a0)
         move.w  xpos(a0),$2A(a0)
         move.b  #4,render(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #$8B,col(a0)
         move.b  #8,xpix(a0)
         sfx     sfx_Lava
@@ -10045,12 +10030,12 @@ loc_941C:
         move.w  ypos(a1),$30(a1)
         move.b  arg(a0),arg(a1)
         move.b  #$20,xpix(a1)
-        move.b  #4,prio(a1)
+        move.w  #$200,prio(a1)
         move.b  (a2)+,frame(a1)
         move.l  a0,$3C(a1)
         dbf d1,loc_9416
         move.b  #$10,xpix(a1)
-        move.b  #3,prio(a1)
+        move.w  #$180,prio(a1)
         addq.b  #8,arg(a1)
         andi.b  #$F,arg(a1)
 
@@ -10301,7 +10286,7 @@ loc_972C:
         move.b  arg(a0),arg(a1)
         move.b  #$10,xpix(a1)
         move.w  d2,$34(a1)
-        move.b  #4,prio(a1)
+        move.w  #$200,prio(a1)
         move.b  (a2)+,frame(a1)
         cmpi.b  #1,frame(a1)
         bne.s   loc_97A2
@@ -10317,7 +10302,7 @@ loc_972C:
 loc_97A2:
         move.l  a0,$3C(a1)
         dbf d1,loc_9724
-        move.b  #3,prio(a1)
+        move.w  #$180,prio(a1)
 
 loc_97B0:
         moveq   #0,d0
@@ -10560,7 +10545,7 @@ loc_9A18:
         move.b  arg(a0),arg(a1)
         move.b  #$20,xpix(a1)
         move.w  d2,$34(a1)
-        move.b  #4,prio(a1)
+        move.w  #$200,prio(a1)
         cmpi.b  #1,(a2)
         bne.s   loc_9A76
         move.b  #$91,col(a1)
@@ -10569,7 +10554,7 @@ loc_9A76:
         move.b  (a2)+,frame(a1)
         move.l  a0,$3C(a1)
         dbf d1,loc_9A12
-        move.b  #3,prio(a1)
+        move.w  #$180,prio(a1)
 
 loc_9A88:
         move.b  #$10,xpix(a0)
@@ -10689,7 +10674,7 @@ loc_9D76:
 loc_9D96:
         move.b  #4,render(a0)
         move.b  #$10,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         addq.w  #3,ypos(a0)
 
 loc_9DAC:
@@ -10846,7 +10831,7 @@ loc_9F1A:
         move.l  #MapPushBlock,4(a0)
         move.w  #$42B8,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         moveq   #0,d0
         move.b  arg(a0),d0
         add.w   d0,d0
@@ -11436,7 +11421,7 @@ loc_A524:
         move.w  #$8580,tile(a1)
         move.b  #$78,xpix(a1)
         move.b  #0,render(a1)
-        move.b  #0,prio(a1)
+        move.w  #0,prio(a1)
         move.w  #$3C,anidelay(a1)
         lea size(a1),a1
         dbf d1,loc_A4F8
@@ -11551,7 +11536,7 @@ loc_A676:
         move.l  #MapGameOver,map(a0)
         move.w  #$8580,tile(a0)
         move.b  #0,render(a0)
-        move.b  #0,prio(a0)
+        move.w  #0,prio(a0)
 
 loc_A696:
         moveq   #$10,d1
@@ -11776,7 +11761,7 @@ loc_AB1A:
         move.l  #MapSpikes,map(a0)
         move.w  #$51B,tile(a0)
         ori.b   #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  arg(a0),d0
         andi.b  #$F,arg(a0)
         andi.w  #$F0,d0
@@ -11933,7 +11918,7 @@ loc_AD1E:
         move.w  #$63D0,tile(a0)
         move.b  #4,render(a0)
         move.b  #$13,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
 
 loc_AD42:
         move.w  #$1B,d1
@@ -11998,7 +11983,7 @@ loc_ADF0:
         move.w  #$450F,2(a0)
         move.b  #4,render(a0)
         move.b  #$10,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  arg(a0),frame(a0)
 
 loc_AE1A:
@@ -12077,7 +12062,7 @@ loc_AED6:
         move.w  xpos(a0),xpos(a1)
         move.w  ypos(a0),ypos(a1)
         move.w  tile(a0),tile(a1)
-        move.b  prio(a0),prio(a1)
+        move.w  prio(a0),prio(a1)
         move.b  xpix(a0),xpix(a1)
         move.w  (a4)+,xvel(a1)
         move.w  (a4)+,yvel(a1)
@@ -12143,7 +12128,7 @@ loc_B022:
         move.w  #$400,2(a1)
         move.b  #4,render(a1)
         move.b  #$20,xpix(a1)
-        move.b  #3,prio(a1)
+        move.w  #$180,prio(a1)
         move.b  (a2)+,ani(a1)
         move.l  a0,$34(a1)
         dbf d1,loc_B01C
@@ -12448,7 +12433,7 @@ loc_B3AC:
         move.b  d5,(a2)+
         move.b  #4,render(a1)
         move.b  #8,xpix(a1)
-        move.b  #6,prio(a1)
+        move.w  #$300,prio(a1)
         move.l  $34(a0),$34(a1)
         dbf d1,loc_B376
 
@@ -12457,7 +12442,7 @@ loc_B3D6:
         move.l  #$5E7A,4(a1)
         move.w  #$43AA,2(a1)
         move.b  #1,frame(a1)
-        move.b  #5,prio(a1)
+        move.w  #$280,prio(a1)
         move.b  #$81,col(a1)
         rts
 ; ---------------------------------------------------------------------------
@@ -12737,7 +12722,7 @@ loc_B898:
         move.l  #MapMotobug,4(a0)
         move.w  #$4F0,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$14,xpix(a0)
         tst.b   ani(a0)
         bne.s   loc_B8F2
@@ -12878,7 +12863,7 @@ loc_BAB8:
         move.w  #$523,2(a0)
         ori.b   #4,render(a0)
         move.b  #$10,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  arg(a0),d0
         btst    #4,d0
         beq.s   loc_BB04
@@ -13050,7 +13035,7 @@ loc_BD2C:
         move.l  #MapNewtron,4(a0)
         move.w  #$249B,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$14,xpix(a0)
         move.b  #$10,yrad(a0)
         move.b  #8,xrad(a0)
@@ -13220,7 +13205,7 @@ loc_BFBE:
         move.l  #MapRoller,4(a0)
         move.w  #$24B8,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$10,xpix(a0)
         move.b  #$8E,col(a0)
 
@@ -13327,7 +13312,7 @@ loc_C110:
         move.w  #$434C,tile(a0)
         ori.b   #4,render(a0)
         move.b  #8,xpix(a0)
-        move.b  #6,prio(a0)
+        move.w  #$300,prio(a0)
         move.b  arg(a0),frame(a0)
         bclr    #4,frame(a0)
         beq.s   loc_C148
@@ -13411,7 +13396,7 @@ loc_C254:
         move.l  #MapLavaball,map(a0)
         move.w  #$345,tile(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$8B,col(a0)
         move.w  ypos(a0),$30(a0)
         moveq   #0,d0
@@ -13550,7 +13535,7 @@ loc_C400:
         move.l  #MapMZBlocks,4(a0)
         move.w  #$4000,2(a0)
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         move.b  #$10,xpix(a0)
         move.w  ypos(a0),$30(a0)
         move.w  #$5C0,$32(a0)
@@ -13664,7 +13649,7 @@ loc_C53C:
         move.w  #0,2(a0)
         move.b  #4,render(a0)
         move.b  #$10,xpix(a0)
-        move.b  #6,prio(a0)
+        move.w  #$300,prio(a0)
 
 loc_C560:
         subq.b  #1,anidelay(a0)
@@ -13703,7 +13688,7 @@ loc_C602:
         move.w  #$380,2(a0)
         move.b  #4,render(a0)
         move.b  #$10,xpix(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #$D7,col(a0)
 
 loc_C62C:
@@ -13770,7 +13755,7 @@ loc_C72E:
         move.w  #$680,2(a0)
         move.b  #4,render(a0)
         move.b  #$18,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
 
 loc_C752:
         move.w  (ObjectsList+8).w,d0
@@ -13820,7 +13805,7 @@ loc_C798:
         move.l  #MapRing,4(a1)
         move.w  #$27B2,2(a1)
         move.b  #4,render(a1)
-        move.b  #2,prio(a1)
+        move.w  #$100,prio(a1)
         move.b  #8,xpix(a1)
 
 locret_C802:
@@ -13902,7 +13887,7 @@ loc_C932:
         move.l  #MapLavafall,4(a0)
         move.w  #$E3A8,2(a0)
         move.b  #4,render(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #$38,xpix(a0)
         move.w  #$78,$34(a0)
 
@@ -14014,7 +13999,7 @@ sub_CA50:
         move.w  xpos(a0),xpos(a1)
         move.w  ypos(a0),ypos(a1)
         move.b  arg(a0),arg(a1)
-        move.b  #1,prio(a1)
+        move.w  #$80,prio(a1)
         move.b  #5,ani(a1)
         tst.b   arg(a0)
         beq.s   loc_CA9A
@@ -14041,7 +14026,7 @@ loc_CAA0:
         addq.b  #2,act(a1)
         bset    #4,2(a1)
         addi.w  #$100,ypos(a1)
-        move.b  #0,prio(a1)
+        move.w  #0,prio(a1)
         move.w  $30(a0),$30(a1)
         move.l  $3C(a0),$3C(a1)
         move.b  #0,arg(a0)
@@ -14165,7 +14150,7 @@ loc_CC16:
         move.b  #$50,xpix(a1)
         move.w  xpos(a0),xpos(a1)
         move.w  ypos(a0),ypos(a1)
-        move.b  #1,prio(a1)
+        move.w  #$80,prio(a1)
         move.b  #0,ani(a1)
         move.b  #$94,col(a1)
         move.l  a0,$3C(a1)
@@ -14268,7 +14253,7 @@ loc_CD36:
         move.w  #$8680,2(a0)
         move.b  #4,render(a0)
         move.b  #$80,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  arg(a0),frame(a0)
 
 loc_CD6C:
@@ -14313,7 +14298,7 @@ loc_D20A:
         move.l  #Map4F,map(a0)
         move.w  #$24E4,tile(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$C,xpix(a0)
         move.b  #$14,yrad(a0)
         move.b  #2,col(a0)
@@ -14428,7 +14413,7 @@ loc_D338:
         move.l  #MapYadrin,4(a0)
         move.w  #$247B,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$14,xpix(a0)
         move.b  #$11,yrad(a0)
         move.b  #8,xrad(a0)
@@ -14515,7 +14500,7 @@ loc_D4DA:
         move.w  #$42B8,2(a0)
         move.b  #4,render(a0)
         move.b  #$10,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  arg(a0),frame(a0)
 
 loc_D504:
@@ -14595,7 +14580,7 @@ loc_D606:
         lea byte_D602(pc,d0.w),a2
         move.b  (a2)+,xpix(a0)
         move.b  (a2)+,frame(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.w  xpos(a0),$32(a0)
         move.w  ypos(a0),$30(a0)
 
@@ -14691,7 +14676,7 @@ ObjBasaran_Init:
         move.w  #$84B8,2(a0)
         move.b  #4,render(a0)
         move.b  #$C,yrad(a0)
-        move.b  #2,prio(a0)
+        move.w  #$100,prio(a0)
         move.b  #$B,col(a0)
         move.b  #$10,xpix(a0)
 
@@ -14843,7 +14828,7 @@ ObjMovingBlocks_Init:
 
 loc_D912:
         move.b  #4,render(a0)
-        move.b  #3,prio(a0)
+        move.w  #$180,prio(a0)
         moveq   #0,d0
         move.b  arg(a0),d0
         lsr.w   #3,d0
@@ -15172,7 +15157,7 @@ ObjSpikedBalls_Init:
         move.l  #MapSpikedBalls,4(a0)
         move.w  #$3BA,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #8,xpix(a0)
         move.w  xpos(a0),$3A(a0)
         move.w  ypos(a0),convex(a0)
@@ -15214,7 +15199,7 @@ ObjSpikedBalls_MakeChain:
         move.l  4(a0),4(a1)
         move.w  2(a0),2(a1)
         move.b  render(a0),render(a1)
-        move.b  prio(a0),prio(a1)
+        move.w  prio(a0),prio(a1)
         move.b  xpix(a0),xpix(a1)
         move.b  col(a0),col(a1)
         subi.b  #$10,d3
@@ -15312,7 +15297,7 @@ ObjGiantBalls_Init:
         move.l  #MapGiantSpikedBalls,4(a0)
         move.w  #$396,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$18,xpix(a0)
         move.w  xpos(a0),$3A(a0)
         move.w  ypos(a0),convex(a0)
@@ -15471,7 +15456,7 @@ loc_DFE6:
         move.l  #MapSLZMovingPtfm,4(a0)
         move.w  #$4480,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.w  xpos(a0),$32(a0)
         move.w  ypos(a0),$30(a0)
 
@@ -15672,7 +15657,7 @@ loc_E228:
         move.l  #MapCirclePtfm,4(a0)
         move.w  #$4480,2(a0)
         move.b  #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$18,xpix(a0)
         move.w  xpos(a0),$32(a0)
         move.w  ypos(a0),$30(a0)
@@ -15804,7 +15789,7 @@ loc_E38A:
         move.l  #MapStaircasePtfm,4(a1)
         move.w  #$4480,2(a1)
         move.b  #4,render(a1)
-        move.b  #3,prio(a1)
+        move.w  #$180,prio(a1)
         move.b  #$10,xpix(a1)
         move.b  arg(a0),arg(a1)
         move.w  d2,xpos(a1)
@@ -15986,7 +15971,7 @@ loc_E570:
         move.w  #$43A0,2(a0)
         move.b  #4,render(a0)
         move.b  #$10,xpix(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
 
 loc_E594:
         btst    #1,arg(a0)
@@ -16086,7 +16071,7 @@ loc_E6B6:
         move.l  #MapSeesaw,4(a0)
         move.w  #$374,2(a0)
         ori.b   #4,render(a0)
-        move.b  #4,prio(a0)
+        move.w  #$200,prio(a0)
         move.b  #$30,xpix(a0)
 
 loc_E6DA:
@@ -16182,7 +16167,7 @@ loc_E830:
         move.b  #9,xrad(a0)
         move.l  #MapSonic,map(a0)
         move.w  #$780,tile(a0)
-        move.b  #2,prio(a0)
+        move.w  #$100,prio(a0)
         move.b  #$18,xpix(a0)
         move.b  #4,render(a0)
         lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
@@ -17762,7 +17747,7 @@ ObjShield_Init:
         addq.b  #2,act(a0)
         move.l  #MapShield,map(a0)
         move.b  #4,render(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #$10,xpix(a0)
         tst.b   ani(a0)
         bne.s   loc_F786
@@ -17852,7 +17837,7 @@ ObjEntryRingBeta_Init2:
         addq.b  #2,act(a0)
         move.l  #MapEntryRingBeta,map(a0)
         move.b  #4,render(a0)
-        move.b  #1,prio(a0)
+        move.w  #$80,prio(a0)
         move.b  #$38,xpix(a0)
         move.w  #$541,tile(a0)
         move.b  #$78,$30(a0)
@@ -19613,7 +19598,7 @@ loc_10CCE:
         move.l  #MapSonic,4(a0)
         move.w  #$780,2(a0)
         move.b  #4,render(a0)
-        move.b  #0,prio(a0)
+        move.w  #0,prio(a0)
         move.b  #2,ani(a0)
         bset    #2,status(a0)
         bset    #1,status(a0)
@@ -20130,7 +20115,7 @@ Obj8A_Main:             ; XREF: Obj8A_Index
         move.b  d0,frame(a0)            ; display appropriate sprite
         move.b  #0,render(a0)
         move.b  #16,xpix(a0)
-        move.b  #0,prio(a0)
+        move.w  #0,prio(a0)
         cmpi.b  #4,(GameMode).w ; is the scene  number 04 (title screen)?
         jne     ObjectDisplay       ; if not, branch
         move.w  #$A6,tile(a0)
@@ -20491,7 +20476,7 @@ ObjHUD_Init:
         move.l  #MapHUD,map(a0)
         move.w  #$6CA,tile(a0)
         move.b  #0,render(a0)
-        move.b  #0,prio(a0)
+        move.w  #0,prio(a0)
 
 ObjHUD_Display:
         jmp ObjectDisplay

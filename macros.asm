@@ -55,7 +55,7 @@ xvel		equ $10
 yvel		equ $12
 yrad		equ $16
 xrad		equ $17
-prio		equ $19
+prio		equ $18
 frame		equ $1A
 anipos		equ $1B
 ani		equ $1C
