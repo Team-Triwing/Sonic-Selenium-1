@@ -216,13 +216,7 @@ CS_Finish:
 		bne.w 	CheckSumError ; if not, branch
 
 loc_36A:
-        lea ((Chunks)&$FFFFFF).l,a6
-        moveq   #0,d7
-        move.w  #$3F7F,d6
-
-@clearRAM:
-        move.l  d7,(a6)+
-        dbf d6,@clearRAM
+        clrRAM  Chunks,DemoNum
         bsr.w   vdpInit
         jsr LoadDualPCM
         bsr.w   padInit
