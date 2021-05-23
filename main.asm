@@ -226,36 +226,37 @@ loc_36A:
 ScreensLoop:
         move.b  (GameMode).w,d0
         andi.w  #$1C,d0
-        jsr ScreensArray(pc,d0.w)
+        movea.l ScreensArray(pc,d0.w),a0
+        jsr (a0)
         bra.s   ScreensLoop
 ; ---------------------------------------------------------------------------
 
 ScreensArray:
-        bra.w   sSega
+        dc.l    sSega
 ; ---------------------------------------------------------------------------
-        bra.w   sTitle
+        dc.l    sTitle
 ; ---------------------------------------------------------------------------
-        bra.w   sLevel
+        dc.l    sLevel
 ; ---------------------------------------------------------------------------
-        bra.w   sLevel
+        dc.l    sLevel
 ; ---------------------------------------------------------------------------
-        bra.w   sSpecial
+        dc.l    sSpecial
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
-                move.w  Checksum,d7
-                Console.Run     ChecksumErr_ConsProg
-                even
+        move.w  Checksum,d7
+        Console.Run     ChecksumErr_ConsProg
+        even
 
 ChecksumErr_ConsProg:
-                Console.SetXY   #2,#11
-                Console.WriteLine   "I'm very sorry for this inconvience"
-                Console.WriteLine   "   but the checksum is %<pal1>incorrect!"
-                Console.BreakLine
-                Console.SetXY   #7,#16
-                Console.WriteLine   "%<pal0>Calculated Checksum: %<pal3>$%<.w d0>"
-                Console.WriteLine   "  %<pal0>Checksum in ROM: %<pal3>$%<.w d7>"
-                rts
+        Console.SetXY   #2,#11
+        Console.WriteLine   "I'm very sorry for this inconvience"
+        Console.WriteLine   "   but the checksum is %<pal1>incorrect!"
+        Console.BreakLine
+        Console.SetXY   #7,#16
+        Console.WriteLine   "%<pal0>Calculated Checksum: %<pal3>$%<.w d0>"
+        Console.WriteLine   "  %<pal0>Checksum in ROM: %<pal3>$%<.w d7>"
+        rts
 ; ---------------------------------------------------------------------------
 ArtText:    incbin "unsorted/debugtext.unc"
         even
