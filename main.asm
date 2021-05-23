@@ -182,6 +182,7 @@ endinit
 ; ---------------------------------------------------------------------------
 
 loc_306:
+        waitDMA
         btst    #6,($A1000D).l
         beq.s   DoChecksum
         cmpi.l  #'init',(ChecksumStr).w
@@ -706,20 +707,8 @@ loc_10F6:
         move.w  #$8F02,(a5)
         clr.l   (dword_FFF616).w
         clr.l   (dword_FFF61A).w
-        lea (SprTableBuff).w,a1
-        moveq   #0,d0
-        move.w  #$A0,d1
-
-loc_111C:
-        move.l  d0,(a1)+
-        dbf d1,loc_111C
-        lea (ScrollTable).w,a1
-        moveq   #0,d0
-        move.w  #$100,d1
-
-loc_112C:
-        move.l  d0,(a1)+
-        dbf d1,loc_112C
+        clrRAM  SprTableBuff
+        clrRAM  ScrollTable
         rts
 ; ---------------------------------------------------------------------------
 
@@ -1610,12 +1599,13 @@ loc_24BC:
         moveq   #3,d2
         bsr.w   LoadPlaneMaps
         moveq   #0,d0
-        bsr.w   PalLoadNormal
+        bsr.w   PalLoadFade
         move.w  #$28,(PalCycOffset).w
         move.w  #$B4,(GlobalTimer).w
         move.w  (ModeReg2).w,d0
         ori.b   #$40,d0
         move.w  d0,(VdpCtrl).l
+        bsr.w   Pal_FadeTo
         music   mus_SEGA
 
 loc_2528:
@@ -1649,13 +1639,9 @@ sTitle:
         andi.b  #$BF,d0
         move.w  d0,(VdpCtrl).l
         bsr.w   sub_10A6
-        lea (ObjectsList).w,a1
-        moveq   #0,d0
-        move.w  #$7FF,d1
 
-loc_2592:
-        move.l  d0,(a1)+
-        dbf d1,loc_2592
+        clrRAM  ObjectsList
+
         lea (ArtTitleMain).l,a0
         move.w  #$4000,d0
         jsr TwimDec
@@ -1731,13 +1717,9 @@ loc_26E4:
         beq.w   loc_27AA
         moveq   #2,d0
         bsr.w   PalLoadNormal
-        lea (ScrollTable).w,a1
-        moveq   #0,d0
-        move.w  #$DF,d1
 
-loc_2710:
-        move.l  d0,(a1)+
-        dbf d1,loc_2710
+        clrRAM  ScrollTable
+
         move.l  d0,(dword_FFF616).w
         ;disable_ints
         lea (VdpData).l,a6
@@ -2100,13 +2082,8 @@ loc_2C0A:
         beq.s   .cont           ; if not, continue
         move.w  #$8100|%01111100,(a6)
 .cont:
-        lea (ObjectsList).w,a1
-        moveq   #0,d0
-        move.w  #$7FF,d1
+        clrRAM  ObjectsList
 
-loc_2C4C:
-        move.l  d0,(a1)+
-        dbf d1,loc_2C4C
         lea (CameraX).w,a1
         moveq   #0,d0
         move.w  #$3F,d1
@@ -2121,6 +2098,7 @@ loc_2C5C:
 loc_2C6C:
         move.l  d0,(a1)+
         dbf d1,loc_2C6C
+
         moveq   #3,d0
         bsr.w   PalLoadNormal
         tst.b   (word_FFF662).w ; DW: has the RAM been set?
@@ -2358,66 +2336,6 @@ off_3100:   dc.l demoin_GHZ, demoin_LZ, demoin_MZ, demoin_SLZ, demoin_MZ
         dc.l demoin_GHZ, demoin_SS
 ; ---------------------------------------------------------------------------
 
-sub_3166:
-        lea (word_3196).l,a0
-        move.w  #$1F,d1
-
-loc_3170:
-        move.w  (a0)+,(a1)+
-        dbf d1,loc_3170
-
-locret_3176:
-        rts
-; ---------------------------------------------------------------------------
-
-sub_3178:
-        lea ((Chunks)&$FFFFFF).l,a1
-        lea (word_31D6).l,a0
-        move.w  #$B,d1
-
-loc_3188:
-        move.w  (a0)+,d0
-        ori.w   #$2000,(a1,d0.w)
-        dbf d1,loc_3188
-        rts
-; ---------------------------------------------------------------------------
-
-word_3196:  dc.w $2024, $2808, $2808, $2808, $207B, 0, 0, 0, $2024
-        dc.w $2808, $207B, 0, 0, 0, 0, 0, $30C7, $30C7, $30C7
-        dc.w $30C7, $30C7, 0, 0, 0, $3024, $3808, $307B, 0, 0
-        dc.w 0, 0, 0
-
-word_31D6:  dc.w $517E, $519E, $51BE, $5360, $5362, $5364, $5380, $5382
-        dc.w $5384, $53A0, $53A2, $53A4
-; ---------------------------------------------------------------------------
-
-sub_3326:
-        move.w  (a0)+,(VdpData).l
-        dbf d1,sub_3326
-        rts
-; ---------------------------------------------------------------------------
-ConvertPalInds:
-        moveq   #0,d0                   ; this code converts palette indices from 1 to 6
-        move.b  (a0)+,d0                ; for example, $11 will be turned into $66
-        ror.w   #1,d0
-        lsr.b   #3,d0
-        rol.w   #1,d0
-        move.b  @1bpp(pc,d0.w),d2
-        lsl.w   #8,d2
-        moveq   #0,d0
-        move.b  (a0)+,d0
-        ror.w   #1,d0
-        lsr.b   #3,d0
-        rol.w   #1,d0
-        move.b  @1bpp(pc,d0.w),d2
-        move.w  d2,(VdpData).l
-        dbf d1,sub_3326
-        rts
-; ---------------------------------------------------------------------------
-
-@1bpp:      dc.b 0, 6, $60, $66
-; ---------------------------------------------------------------------------
-
 oscInit:
         lea (oscValues).w,a1
         lea (oscInitTable).l,a2
@@ -2582,13 +2500,8 @@ loc_3534:
         moveq   #$14,d0
         bsr.w   sub_14E2
         bsr.w   ssLoadBG
-        lea (ObjectsList).w,a1
-        moveq   #0,d0
-        move.w  #$7FF,d1
+        clrRAM  ObjectsList
 
-loc_3554:
-        move.l  d0,(a1)+
-        dbf d1,loc_3554
         lea (CameraX).w,a1
         moveq   #0,d0
         move.w  #$3F,d1
@@ -2603,13 +2516,8 @@ loc_3564:
 loc_3574:
         move.l  d0,(a1)+
         dbf d1,loc_3574
-        lea (NemBuffer).w,a1
-        moveq   #0,d0
-        move.w  #$7F,d1
+        clrRAM  NemBuffer
 
-loc_3584:
-        move.l  d0,(a1)+
-        dbf d1,loc_3584
         moveq   #$A,d0
         bsr.w   palLoadFade
         jsr sub_10B70
@@ -22001,7 +21909,7 @@ LayoutSBZ2BG:   incbin "levels/SBZ/Background 2.unc"
         even
 LayoutEnding1FG:incbin "levels/Ending/Foreground 1.unc"
         even
-LayoutEnding1BG:dc.b 0, 0, 0, 0
+LayoutEnding1BG:
 
 byte_6E3D6: dc.b 0, 0, 0, 0
 

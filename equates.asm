@@ -18,14 +18,14 @@ byte_FF8000:	rs.b $2400
 Layout:		rs.b $400	; level layout
 ScrollBuffer:	rs.b $200
 NemBuffer:	rs.b $100	; used for the Nemesis decompressor
-NemBuffer_End:
+NemBuffer_End:	rs.b 0
 byte_FFAB00:	rs.b $100
 DisplayLists:	rs.b $400
 Blocks:		rs.b $1800	; level blocks
 SonicArtBuf:	rs.b $300
 SonicPosTable:	rs.b $100
 ScrollTable:	rs.b $400
-ScrollTable_End:
+ScrollTable_End:rs.b 0
 ObjectsList:	rs.b $40	; object RAM
 byte_FFD040:	rs.b $40
 byte_FFD080:	rs.b $40
@@ -58,7 +58,7 @@ byte_FFD600:	rs.b $40
 		rs.b $40
 		rs.b $40
 		rs.b $40
-ObjectsList_End:
+ObjectsList_End:	rs.b 0
 LevelObjectsList:rs.b $1800
 SoundMemory:	rs.b $600	; used for the sound driver
 GameMode:	rs.b 1		; used for the screen modes
@@ -195,6 +195,7 @@ unk_FFF72E:	rs.w 1
 unk_FFF730:	rs.w 1
 unk_FFF732:	rs.w 1
 CameraXCoarse:	rs.b 1
+CameraRAM_End:	rs.b 0
 		rs.b 1
 		rs.b 1
 		rs.b 1
@@ -203,7 +204,6 @@ CameraXCoarse:	rs.b 1
 unk_FFF73A:	rs.w 1
 unk_FFF73C:	rs.w 1
 unk_FFF73E:	rs.w 1
-CameraRAM_End:
 unk_FFF740:	rs.b 1
 unk_FFF741:	rs.b 1
 EventsRoutine:	rs.b 1
@@ -361,7 +361,7 @@ unk_FFF7F0:	rs.l 1
 		rs.b 1
 SprTableBuff:	rs.b $280
 		rs.b $80					; unused??
-SprTableBuff_End:
+SprTableBuff_End:	rs.b 0
 Palette:	rs.b $80
 PaletteTarget:	rs.b $80
 byte_FFFC00:	rs.b $100
@@ -399,7 +399,7 @@ word_FFFE54:	rs.w 1
 word_FFFE56:	rs.w 1
 byte_FFFE58:	rs.w 1
 oscValues:	rs.b $42
-oscValues_End:
+oscValues_End:	rs.b 0
 GHZSpikeTimer:	rs.b 1
 GHZSpikeFrame:	rs.b 1
 RingTimer:	rs.b 1
