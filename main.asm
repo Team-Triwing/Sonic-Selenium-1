@@ -224,8 +224,7 @@ loc_36A:
         clr.b   (GameMode).w
 
 ScreensLoop:
-        move.b  (GameMode).w,d0 ; there's probably a better way to check for invalid
-        blt.s   InvalidGMErr    ; game modes, but this'll work I suppose
+        move.b  (GameMode).w,d0
         andi.w  #$1C,d0
         jsr ScreensArray(pc,d0.w)
         bra.s   ScreensLoop
@@ -242,12 +241,21 @@ ScreensArray:
 ; ---------------------------------------------------------------------------
         bra.w   sSpecial
 ; ---------------------------------------------------------------------------
-InvalidGMErr:
-        __ErrorMessage "INVALID GAME MODE", _eh_default|_eh_address_error|_eh_disassemble
-; ---------------------------------------------------------------------------
 
 ChecksumError:
-        __ErrorMessage "CHECKSUM INCORRECT", _eh_default
+                move.w  Checksum,d7
+                Console.Run     ChecksumErr_ConsProg
+                even
+
+ChecksumErr_ConsProg:
+                Console.SetXY   #2,#11
+                Console.WriteLine   "I'm very sorry for this inconvience"
+                Console.WriteLine   "   but the checksum is %<pal1>incorrect!"
+                Console.BreakLine
+                Console.SetXY   #7,#16
+                Console.WriteLine   "%<pal0>Calculated Checksum: %<pal3>$%<.w d0>"
+                Console.WriteLine   "  %<pal0>Checksum in ROM: %<pal3>$%<.w d7>"
+                rts
 ; ---------------------------------------------------------------------------
 ArtText:    incbin "unsorted/debugtext.unc"
         even
@@ -273,7 +281,6 @@ loc_B3C:
         move.b  #1,(HintFlag).w
         andi.w  #$3E,d0
         move.w  off_B6A(pc,d0.w),d0
-        blt.s   InvalidVINTRout     ; another failsafe
         jsr off_B6A(pc,d0.w)
 
 loc_B58:
@@ -289,7 +296,6 @@ nullsub_3:
 
 off_B6A:    dc.w nullsub_3-off_B6A, loc_B7E-off_B6A, sub_B90-off_B6A, sub_BAA-off_B6A, loc_BBA-off_B6A
         dc.w loc_CBC-off_B6A, sub_D88-off_B6A, sub_E58-off_B6A, sub_BB0-off_B6A, sub_E70-off_B6A
-InvalidVINTRout:        __ErrorMessage "INVALID V-INT ROUTINE", _eh_default
 ; ---------------------------------------------------------------------------
 
 loc_B7E:

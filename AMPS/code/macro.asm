@@ -42,7 +42,7 @@ TEMPO_ALGORITHM =	1
 ; if Vladik's error debugger is installed, then the error will be displayed
 ; else, the CPU is trapped
 
-safe =	0
+;safe =	0
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Channel configuration
