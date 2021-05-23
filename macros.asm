@@ -43,50 +43,51 @@ vsync:			macro
 ; ---------------------------------------------------------------------------
 
 ; enum object, width 64 bytes
-id		equ 0
-render		equ 1
-tile		equ 2
-map		equ 4
-xpos		equ 8
-xpix		equ $A
-ypos		equ $C
-ypix		equ $E
-xvel		equ $10
-yvel		equ $12
-yrad		equ $16
-xrad		equ $17
-prio		equ $18
-frame		equ $1A
-anipos		equ $1B
-ani		equ $1C
-anilast		equ $1D
-anidelay	equ $1E
-col		equ $20
-colprop		equ $21
-status		equ $22
-respawn		equ $23
-act		equ $24
-subact		equ $25
-angle		equ $26
-arg		equ $28
-size		equ $40
-
-; ---------------------------------------------------------------------------
-
-; enum player, width 64 bytes
-inertia		equ $14
-air		equ $20
-invulnerable	equ $30
-invincible	equ $32
-speedshoes	equ $34
-sensorfront	equ $36
-sensorback	equ $37
-convex		equ $38
-spindashflag equ $39
-spindashtimer equ $3A
-jumping		equ $3C
-platform	equ $3D
-lock		equ $3E
+	rsreset
+id			rs.b 1
+render		rs.b 1
+tile		rs.w 1
+map			rs.l 1
+xpos		rs.w 1
+xpix		rs.w 1
+ypos		rs.w 1
+ypix		rs.w 1
+xvel		rs.w 1
+yvel		rs.w 1
+inertia		rs.w 1		; sonic specific (!)
+yrad		rs.b 1
+xrad		rs.b 1
+prio		rs.w 1
+frame		rs.b 1
+anipos		rs.b 1
+ani			rs.b 1
+anilast		rs.b 1
+anidelay	rs.b 1
+			rs.b 1
+col			rs.b 1
+air			equ col		; sonic specific (!)
+colprop		rs.b 1
+status		rs.b 1
+respawn		rs.b 1
+act			rs.b 1
+subact		rs.b 1
+angle		rs.w 1
+arg			rs.b 1
+			rs.b 1
+			rs.b 6
+invulnerable	rs.w 1	; sonic specific (!)
+invincible	rs.w 1		; sonic specific (!)
+speedshoes	rs.w 1		; sonic specific (!)
+sensorfront	rs.b 1		; sonic specific (!)
+sensorback	rs.b 1		; sonic specific (!)
+convex		rs.b 1		; sonic specific (!)
+spindashflag	rs.b 1	; sonic specific (!)
+spindashtimer	rs.w 1	; sonic specific (!)
+jumping		rs.b 1		; sonic specific (!)
+platform	rs.b 1		; sonic specific (!)
+lock		rs.b 1		; sonic specific (!)
+			rs.b 1
+size		rs.b 1
 
 ; ---------------------------------------------------------------------------
 
@@ -206,6 +207,197 @@ jmi:		macro loc
 		jmp	loc
 	.nojump\@:
 		endm
+
+; -------------------------------------------------------------------------
+; Clear a section of memory
+; -------------------------------------------------------------------------
+; PARAMETERS:
+;	saddr	- Address to start clearing memory at
+;	eaddr	- Address to finish clearing memory at
+;		  (not required if [saddr]_end exists)
+; -------------------------------------------------------------------------
+	
+clrRAM macro &
+	saddr, eaddr
+	
+	local	endaddr
+	if narg<2
+endaddr		EQUS	"\saddr\_end"		; Use [saddr]_end
+	else
+endaddr		EQUS	"\eaddr"		; Use eaddr
+	endif
+clrsize		=	(\endaddr-\saddr)&$FFFFFF
+
+	moveq	#0,d0
+
+	if (((\saddr)&$8000)&((\saddr)<0))=0	; Optimize setting saddr to a1
+		lea	\saddr,a1
+	else
+		lea	(\saddr).w,a1
+	endif
+
+	move.w	#clrsize>>2-1,d1
+
+.Clear\@:
+	move.l	d0,(a1)+			; Clear data
+	dbf	d1,.Clear\@			; Loop until data is cleared
+
+	if clrsize&2
+		move.w	d0,(a1)+		; Clear remaining word of data
+	elseif clrsize&1
+		move.b	d0,(a1)+		; Clear remaining byte of data
+	endif
+
+	endm
+	
+; -------------------------------------------------------------------------
+; Wait for DMA to finish
+; -------------------------------------------------------------------------
+; PARAMETERS:
+;	ctrl	- VDP control port as an address register
+;		  (If left blank, this just uses VDP_CTRL instead)
+; -------------------------------------------------------------------------
+
+waitDMA macro &
+	ctrl
+
+.Wait\@:
+	if narg>0
+		move.w	(\ctrl),-(sp)	; Get VDP status
+	else
+		move.w	VDP_CTRL,-(sp)	; Get VDP status
+	endif
+	andi.w	#2,(sp)+		; Is DMA active?
+	bne.s	.Wait\@			; If so, wait
+
+	endm
+
+; -------------------------------------------------------------------------
+; VDP command instruction
+; -------------------------------------------------------------------------
+; PARAMETERS:
+;	addr	- Address in VDP memory
+;	type	- Type of VDP memory
+;	rwd	- VDP command
+; -------------------------------------------------------------------------
+
+VVRAM		EQU	%100001			; VRAM
+VCRAM		EQU	%101011			; CRAM
+VVSRAM		EQU	%100101			; VSRAM
+VREAD		EQU	%001100			; VDP read
+VWRITE		EQU	%000111			; VDP write
+VDMA		EQU	%100111			; VDP DMA
+
+; -------------------------------------------------------------------------
+
+vdpCmd macro &
+	ins, addr, type, rwd, end, end2
+	
+	if narg=5
+		\ins	#((((V\type&V\rwd)&3)<<30)|((\addr&$3FFF)<<16)|(((V\type&V\rwd)&$FC)<<2)|((\addr&$C000)>>14)), \end
+	elseif narg>=6
+		\ins	#((((V\type&V\rwd)&3)<<30)|((\addr&$3FFF)<<16)|(((V\type&V\rwd)&$FC)<<2)|((\addr&$C000)>>14))\end, \end2
+	else
+		\ins	((((V\type&V\rwd)&3)<<30)|((\addr&$3FFF)<<16)|(((V\type&V\rwd)&$FC)<<2)|((\addr&$C000)>>14))
+	endif
+
+	endm
+
+
+; -------------------------------------------------------------------------
+; VDP DMA from 68000 memory to VDP memory
+; -------------------------------------------------------------------------
+; PARAMETERS:
+;	src	- Source address in 68000 memory
+;	dest	- Destination address in VDP memory
+;	len	- Length of data in bytes
+;	type	- Type of VDP memory
+;	ctrl	- VDP control port as an address register
+;		  (If left blank, this just uses VDP_CTRL instead)
+; -------------------------------------------------------------------------
+
+dma68k macro &
+	src, dest, len, type, ctrl
+
+	if narg>4
+		move.l	#$94009300|((((\len)/2)&$FF00)<<8)|(((\len)/2)&$FF),(\ctrl)
+		move.l	#$96009500|((((\src)/2)&$FF00)<<8)|(((\src)/2)&$FF),(\ctrl)
+		move.w	#$9700|(((\src)>>17)&$7F),(\ctrl)
+		vdpCmd	move.w,\dest,\type,DMA,>>16,(\ctrl)
+		vdpCmd	move.w,\dest,\type,DMA,&$FFFF,-(sp)
+		move.w	(sp)+,(\ctrl)
+	else
+		move.l	#$94009300|((((\len)/2)&$FF00)<<8)|(((\len)/2)&$FF),VDP_CTRL
+		move.l	#$96009500|((((\src)/2)&$FF00)<<8)|(((\src)/2)&$FF),VDP_CTRL
+		move.w	#$9700|(((\src)>>17)&$7F),VDP_CTRL
+		vdpCmd	move.w,\dest,\type,DMA,>>16,VDP_CTRL
+		vdpCmd	move.w,\dest,\type,DMA,&$FFFF,-(sp)
+		move.w	(sp)+,VDP_CTRL
+	endif
+
+	endm
+
+; -------------------------------------------------------------------------
+; Fill VRAM with byte
+; Auto-increment should be set to 1 beforehand
+; -------------------------------------------------------------------------
+; PARAMETERS:
+;	byte	- Byte to fill VRAM with
+;	addr	- Address in VRAM
+;	len	- Length of fill in bytes
+;	ctrl	- VDP control port as an address register
+;		  (If left blank, this just uses VDP_CTRL instead)
+; -------------------------------------------------------------------------
+
+dmaFill macro &
+	byte, addr, len, ctrl
+
+	if narg>3
+		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),(\ctrl)
+		move.w	#$9780,(\ctrl)
+		move.l	#$40000080|(((\addr)&$3FFF)<<16)|(((\addr)&$C000)>>14),(\ctrl)
+		move.w	#(\byte)<<8,-4(\ctrl)
+		waitDMA	\ctrl
+	else
+		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),VDP_CTRL
+		move.w	#$9780,VDP_CTRL
+		move.l	#$40000080|(((\addr)&$3FFF)<<16)|(((\addr)&$C000)>>14),VDP_CTRL
+		move.w	#(\byte)<<8,VDP_DATA
+		waitDMA
+	endif
+
+	endm
+
+; -------------------------------------------------------------------------
+; Copy a region of VRAM to a location in VRAM
+; Auto-increment should be set to 1 beforehand
+; -------------------------------------------------------------------------
+; PARAMETERS:
+;	src	- Source address in VRAM
+;	dest	- Destination address in VRAM
+;	len	- Length of copy in bytes
+;	ctrl	- VDP control port as an address register
+;		  (If left blank, this just uses the address instead)
+; -------------------------------------------------------------------------
+
+dmaCopy macro &
+	src, dest, len, ctrl
+	
+	if narg>3
+		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),(\ctrl)
+		move.l	#$96009500|(((\src)&$FF00)<<8)|((\src)&$FF),(\ctrl)
+		move.w	#$97C0,(\ctrl)
+		move.l	#$000000C0|(((\dest)&$3FFF)<<16)|(((\dest)&$C000)>>14),(\ctrl)
+		waitDMA	\ctrl
+	else
+		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),VDP_CTRL
+		move.l	#$96009500|(((\src)&$FF00)<<8)|((\src)&$FF),VDP_CTRL
+		move.w	#$97C0,VDP_CTRL
+		move.l	#$000000C0|(((\dest)&$3FFF)<<16)|(((\dest)&$C000)>>14),VDP_CTRL
+		waitDMA
+	endif
+
+	endm
 
 SetGfxMode macro mode
     move.w  #VDPREG_MODE4|(mode), (VdpCtrl)
