@@ -185,7 +185,6 @@ unk_FFF710:	rs.l 1
 unk_FFF714:	rs.l 1
 unk_FFF718:	rs.l 1
 unk_FFF71C:	rs.l 1
-CameraRAM_End:
 unk_FFF720:	rs.l 1
 unk_FFF724:	rs.w 1
 unk_FFF726:	rs.w 1
@@ -204,6 +203,7 @@ CameraXCoarse:	rs.b 1
 unk_FFF73A:	rs.w 1
 unk_FFF73C:	rs.w 1
 unk_FFF73E:	rs.w 1
+CameraRAM_End:
 unk_FFF740:	rs.b 1
 unk_FFF741:	rs.b 1
 EventsRoutine:	rs.b 1
