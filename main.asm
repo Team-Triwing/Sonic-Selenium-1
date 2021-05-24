@@ -214,7 +214,7 @@ CS_Remains:
 
 CS_Finish:
 		cmp.w 	(Checksum).w,d0 ; does the checksum match?
-		bne.w 	CheckSumError ; if not, branch
+		bne.s 	CheckSumError ; if not, branch
 
 loc_36A:
         clrRAM  Chunks,DemoNum
