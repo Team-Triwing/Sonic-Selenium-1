@@ -48,7 +48,7 @@ StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
         dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
         dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
         dc.l ErrorTrap, ErrorTrap
-        dc.b 'SEGA GENESIS    '             ; Console name
+        dc.b 'SEGA Genesis    '             ; Console name
         dc.b 'RPNTMLD         '             ; Copyright/release date (placeholder for romfix)
         dc.b '                                                '; Domestic name (placeholder for romfix)
         dc.b '                                                '; International name (placeholder for romfix)
@@ -21635,67 +21635,11 @@ ArtAnimalFlicky:incbin "levels/shared/Animals/Flicky.nem"
         even
 ArtAnimalRicky: incbin "levels/shared/Animals/Ricky.nem"
         even
-BlocksGHZ:  incbin "levels/GHZ/Blocks.eni"
-        even
-TilesGHZ:   incbin "levels/GHZ/Tiles.nem"
-        even
-ChunksGHZ:  incbin "levels/GHZ/Chunks.kosp"
-        even
-BlocksLZ:   incbin "levels/LZ/Blocks.eni"
-        even
-TilesLZ:    incbin "levels/LZ/Tiles.nem"
-        even
-ChunksLZ:   incbin "levels/LZ/Chunks.kosp"
-        even
-BlocksMZ:   incbin "levels/MZ/Blocks.eni"
-        even
-TilesMZ:    incbin "levels/MZ/Tiles.nem"
-        even
-ChunksMZ:   incbin "levels/MZ/Chunks.kosp"
-        even
-BlocksSLZ:  incbin "levels/SLZ/Blocks.eni"
-        even
-TilesSLZ:   incbin "levels/SLZ/Tiles.nem"
-        even
-ChunksSLZ:  incbin "levels/SLZ/Chunks.kosp"
-        even
-BlocksSYZ:  incbin "levels/SYZ/Blocks.eni"
-        even
-TilesSYZ:   incbin "levels/SYZ/Tiles.nem"
-        even
-ChunksSYZ:  incbin "levels/SYZ/Chunks.kosp"
-        even
-BlocksSBZ:  incbin "levels/SBZ/Blocks.eni"
-        even
-TilesSBZ:   incbin "levels/SBZ/Tiles.nem"
-        even
-ChunksSBZ:  incbin "levels/SBZ/Chunks.kosp"
-        even
-BlocksTS:   incbin "levels/TS/Blocks.twiz"
-        even
-TilesTS:    incbin "levels/TS/Tiles.twim"
-        even
-ChunksTS:   incbin "levels/TS/Chunks.twiz"
-        even
 byte_60000: incbin "unknown/60000.dat"
         even
 byte_60864: incbin "unknown/60864.dat"
         even
 byte_60BB0: incbin "unknown/60BB0.dat"
-        even
-demoin_GHZ: incbin "demoinputs/GHZ.dat"
-        even
-demoin_LZ:  incbin "demoinputs/LZ.dat"
-        even
-demoin_MZ:  incbin "demoinputs/MZ.dat"
-        even
-demoin_SLZ: incbin "demoinputs/SLZ.dat"
-        even
-demoin_SYZ: incbin "demoinputs/SLZ.dat" ; will record an actual demo for SYZ later
-        even
-demoin_SBZ: incbin "demoinputs/SBZ.dat"
-        even
-demoin_SS:  incbin "demoinputs/SS.dat"
         even
 
 off_63000:  dc.w byte_63020-off_63000, byte_63026-off_63000, byte_6302C-off_63000, byte_63032-off_63000
@@ -21790,6 +21734,66 @@ ArtSpecialUpDown:incbin "screens/special stage/Art Up Down.nem"
         even
 ArtSpecialEmerald:incbin "screens/special stage/Art Emerald.nem"
         even
+Spec_Layout:    incbin "unknown/6AB08.dat"
+        even
+byte_6B018: incbin "unknown/6B018.dat"
+        even
+byte_6B218: incbin "unknown/6B218.dat"
+        even
+byte_6B618: incbin "unknown/6B618.dat"
+        even
+byte_6BA98: incbin "unknown/6BA98.dat"
+        even
+byte_6BD98: incbin "unknown/6BD98.dat"
+        even
+byte_6C398: incbin "unknown/6C398.dat"
+        even
+byte_6C998: incbin "unknown/6C998.dat"
+        even
+
+BlocksGHZ:  incbin "levels/GHZ/Blocks.eni"
+        even
+TilesGHZ:   incbin "levels/GHZ/Tiles.nem"
+        even
+ChunksGHZ:  incbin "levels/GHZ/Chunks.kosp"
+        even
+BlocksLZ:   incbin "levels/LZ/Blocks.eni"
+        even
+TilesLZ:    incbin "levels/LZ/Tiles.nem"
+        even
+ChunksLZ:   incbin "levels/LZ/Chunks.kosp"
+        even
+BlocksMZ:   incbin "levels/MZ/Blocks.eni"
+        even
+TilesMZ:    incbin "levels/MZ/Tiles.nem"
+        even
+ChunksMZ:   incbin "levels/MZ/Chunks.kosp"
+        even
+BlocksSLZ:  incbin "levels/SLZ/Blocks.eni"
+        even
+TilesSLZ:   incbin "levels/SLZ/Tiles.nem"
+        even
+ChunksSLZ:  incbin "levels/SLZ/Chunks.kosp"
+        even
+BlocksSYZ:  incbin "levels/SYZ/Blocks.eni"
+        even
+TilesSYZ:   incbin "levels/SYZ/Tiles.nem"
+        even
+ChunksSYZ:  incbin "levels/SYZ/Chunks.kosp"
+        even
+BlocksSBZ:  incbin "levels/SBZ/Blocks.eni"
+        even
+TilesSBZ:   incbin "levels/SBZ/Tiles.nem"
+        even
+ChunksSBZ:  incbin "levels/SBZ/Chunks.kosp"
+        even
+BlocksTS:   incbin "levels/TS/Blocks.twiz"
+        even
+TilesTS:    incbin "levels/TS/Tiles.twim"
+        even
+ChunksTS:   incbin "levels/TS/Chunks.twiz"
+        even
+
 colAngles:  incbin "levels/shared/Collision Angles.dat"
         even
 colWidth:   incbin "levels/shared/Collision Widths.dat"
@@ -21807,22 +21811,6 @@ colSLZ:     incbin "levels/SLZ/Collision.dat"
 colSYZ:     incbin "levels/SYZ/Collision.dat"
         even
 colSBZ:     incbin "levels/SBZ/Collision.dat"
-        even
-Spec_Layout:    incbin "unknown/6AB08.dat"
-        even
-byte_6B018: incbin "unknown/6B018.dat"
-        even
-byte_6B218: incbin "unknown/6B218.dat"
-        even
-byte_6B618: incbin "unknown/6B618.dat"
-        even
-byte_6BA98: incbin "unknown/6BA98.dat"
-        even
-byte_6BD98: incbin "unknown/6BD98.dat"
-        even
-byte_6C398: incbin "unknown/6C398.dat"
-        even
-byte_6C998: incbin "unknown/6C998.dat"
         even
 
 LayoutArray:    dc.w LayoutGHZ1FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6E3D6-LayoutArray
@@ -21976,6 +21964,21 @@ ObjListSBZ3:    incbin "levels/SBZ/Objects 3.unc"
         even
 
 ObjListNull:    dc.w $FFFF, 0, 0
+
+demoin_GHZ: incbin "demoinputs/GHZ.dat"
+        even
+demoin_LZ:  incbin "demoinputs/LZ.dat"
+        even
+demoin_MZ:  incbin "demoinputs/MZ.dat"
+        even
+demoin_SLZ: incbin "demoinputs/SLZ.dat"
+        even
+demoin_SYZ: incbin "demoinputs/SLZ.dat" ; will record an actual demo for SYZ later
+        even
+demoin_SBZ: incbin "demoinputs/SBZ.dat"
+        even
+demoin_SS:  incbin "demoinputs/SS.dat"
+        even
         
 ; end of 'ROM'
         include "AMPS/code/smps2asm.asm"
