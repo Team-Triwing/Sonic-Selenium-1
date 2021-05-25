@@ -313,7 +313,7 @@ PauseFlag:	rs.w 1		; self explanatory
 word_FFF644:	rs.w 1
 		rs.b 1
 		rs.b 1
-HintFlag:	rs.w 1		; used when the palette should be transferred to the next horizontal interrupt
+HintFlag:	rs.b 1		; used when the palette should be transferred to the next horizontal interrupt
 		rs.b 1
 		rs.b 1
 word_FFF64C:	rs.w 1
@@ -559,8 +559,7 @@ unk_FFF7F0:	rs.l 1
 		rs.b 1
 		rs.b 1
 		rs.b 1
-SprTableBuff:	rs.b $280
-		rs.b $80					; unused??
+SprTableBuff:	rs.b $300
 SprTableBuff_End:	rs.b 0
 Palette:	rs.b $80
 PaletteTarget:	rs.b $80

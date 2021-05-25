@@ -493,13 +493,7 @@ hint:
         beq.s   locret_F3A
         move.l  a5,-(sp)
         lea (VdpCtrl).l,a5
-        move.l  #$94009340,(a5)
-        move.l  #$96FD95C0,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$C000,(a5)
-        move.w  #$80,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        movem.l (sp)+,a5
+        dma68k  Palette,0,$80,CRAM,a5
         clr.b   (HintFlag).w
 
 locret_F3A:
@@ -519,8 +513,6 @@ padRead:
         lea ($A10003).l,a1
         bsr.s   sub_FDC
         addq.w  #2,a1
-        bsr.s   sub_FDC
-        rts
 ; ---------------------------------------------------------------------------
 
 sub_FDC:
