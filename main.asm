@@ -28,7 +28,7 @@ Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The c
 z80_ram:    equ $A00000
 z80_bus_request equ $A11100
 z80_reset:  equ $A11200
-Drvmem      equ $FFFFF000
+Drvmem      equ SoundMemory
 
         include "AMPS/lang.asm"
         include "AMPS/code/macro.asm"
