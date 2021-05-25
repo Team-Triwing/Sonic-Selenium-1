@@ -221,10 +221,13 @@ loc_36A:
         bsr.w   vdpInit
         jsr LoadDualPCM
         bsr.w   padInit
-        command mus_Reset
+        command mus_Stop
         clr.b   (GameMode).w
 
 ScreensLoop:
+        move.b  (HW_VERSION).l,d0
+        andi.b  #$C0,d0
+        move.b  d0,(ConsoleRegion).w
         move.b  (GameMode).w,d0
         andi.w  #$1C,d0
         movea.l ScreensArray(pc,d0.w),a0
