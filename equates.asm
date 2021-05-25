@@ -43,6 +43,23 @@ VRAM_DMA_CMD:   equ $40000080
 CRAM_DMA_CMD:   equ $C0000080
 VSRAM_DMA_CMD:  equ $40000090
 
+; VRAM data
+vram_fg:	equ $C000	; foreground namespace
+vram_bg:	equ $E000	; background namespace
+vram_sonic:	equ $F000	; Sonic graphics
+vram_sprites:	equ $F800	; sprite table
+vram_hscroll:	equ $FC00	; horizontal scroll table
+
+; Colors
+cBlack:		equ $000		; black
+cWhite:		equ $EEE		; white
+cBlue:		equ $E00		; blue
+cGreen:		equ $0E0		; green
+cRed:		equ $00E		; red
+cYellow:	equ cGreen+cRed		; yellow
+cAqua:		equ cGreen+cBlue	; aqua
+cMagenta:	equ cBlue+cRed		; magenta
+
 ; -------------------------------------------------------------------------
 ; I/O
 ; -------------------------------------------------------------------------
@@ -258,8 +275,8 @@ byte_FFD600:	rs.b $40
 		rs.b $40
 		rs.b $40
 		rs.b $40
-ObjectsList_End:	rs.b 0
 LevelObjectsList:rs.b $1800
+ObjectsList_End:	rs.b 0
 SoundMemory:	rs.b $600	; used for the sound driver
 GameMode:	rs.b 1		; used for the screen modes
 		rs.b 1
@@ -395,7 +412,6 @@ unk_FFF72E:	rs.w 1
 unk_FFF730:	rs.w 1
 unk_FFF732:	rs.w 1
 CameraXCoarse:	rs.b 1
-CameraRAM_End:	rs.b 0
 		rs.b 1
 		rs.b 1
 		rs.b 1
@@ -406,6 +422,7 @@ unk_FFF73C:	rs.w 1
 unk_FFF73E:	rs.w 1
 unk_FFF740:	rs.b 1
 unk_FFF741:	rs.b 1
+CameraRAM_End:	rs.b 0
 EventsRoutine:	rs.b 1
 		rs.b 1
 unk_FFF744:	rs.b 1
@@ -437,7 +454,7 @@ PlayerTopSpeed:	rs.w 1		; these and the next 2 are self-explanatory
 PlayerAccel:	rs.w 1
 PlayerDecel:	rs.w 1
 SonicLastDPLCID:rs.b 1		; previous DPLC frame for Sonic
-SonicVRAMReset:	rs.b 1		; for when Sonic's art neers to be updated in VRAM
+		rs.b 1
 unk_FFF768:	rs.w 1
 unk_FFF76A:	rs.w 1
 unk_FFF76C:	rs.w 1

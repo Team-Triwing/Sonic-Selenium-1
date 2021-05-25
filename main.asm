@@ -17231,17 +17231,6 @@ loc_F25C:
         move.b  #0,$3C(a0)
         rts
 ; ---------------------------------------------------------------------------
-        lea (byte_FFD400).w,a1
-        move.w  xpos(a0),d0
-        bsr.w   sub_F290
-        lea (byte_FFD500).w,a1
-        move.w  ypos(a0),d0
-        bsr.w   sub_F290
-        lea (byte_FFD600).w,a1
-        move.w  $14(a0),d0
-        bsr.w   sub_F290
-        rts
-; ---------------------------------------------------------------------------
 
 sub_F290:
         swap    d0
