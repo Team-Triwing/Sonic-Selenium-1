@@ -1482,7 +1482,7 @@ palGHZ:     incbin "levels/GHZ/Main.pal"
         even
 palLZ:      incbin "levels/LZ/Main.pal"
         even
-palGHZNight:    incbin "levels/GHZ/Night.pal"
+palGHZNight:    incbin "Splash/SEGAPAL.bin"
         even
 palMZ:      incbin "levels/MZ/Main.pal"
         even
@@ -1644,12 +1644,56 @@ loc_2528:
         beq.s   loc_2528
 
 loc_2544:
-        move.b  #4,(GameMode).w
-        rts
+
+; ---------------------------------------------------------------------------
+; ============================================================================================
+; Splash Screen example
+; This version is for splash screens that load AFTER the Splash screen
+; For A version that replaces the Splash screen, read the guide this code came from!
+; 2014, Hitaxas
+; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
+; ============================================================================================
+SplashScreen2:
+    command mus_FadeOut             ; set music ID to "stop music"
+    bsr.w     Pal_FadeFrom          ; fade palettes out
+    bsr.w     ClearScreen           ; clear the plane mappings
+    ; load art, mappings and the palette
+    lea     ((Chunks)&$FFFFFF).l,a1          ; load dump location
+    lea     MapSplash.l,a0          ; load compressed mappings address
+    move.w  #320,d0             ; prepare pattern index value to patch to mappings
+    bsr.w     EniDec            ; decompress and dump
+    lea     ((Chunks)&$FFFFFF).l,a1
+    move.l  #$60000003,d0
+    moveq   #39,d1
+    moveq   #30,d2
+    bsr.w   LoadPlaneMaps         ; flush mappings to VRAM
+    move.l  #$68000000,($FFC00004).l    ; set vdp loc
+    lea     ArtSplash.l,a0           ; load background art
+    jsr     NemesisDec              ; run NemDec to decompress art for display
+    move.b   #$B,d0
+    bsr.w   PalLoadFade
+    bsr.w Pal_FadeTo          ; fade palette in
+    music   mus_Splash
+    move.w  #5*60,(GlobalTimer).w     ; set delay time (5 seconds on a 60hz system)
+    btst    #6,(ConsoleRegion).w    ; is this a PAL machine?
+    beq.s   Splash_MainLoop2           ; if not, continue
+    move.w  #5*50,(GlobalTimer).w     ; set delay time (5 seconds on a 50hz system)
+ 
+Splash_MainLoop2:
+    move.b  #2,(VintRoutine).w        ; set V-blank routine to run
+    vsync                           ; wait for V-blank (decreases "Demo_Time_left")
+    tst.b   (padPress1).w           ; has player 1 pressed start button?
+    bmi.s   Splash_GotoTitle2         ; if so, branch
+    tst.w   (GlobalTimer).w           ; has the delay time finished?
+    bne.s   Splash_MainLoop2          ; if not, branch
+ 
+Splash_GotoTitle2:
+    move.b  #$04,(GameMode).w      ; set the screen mode to Title Screen
+    rts                     ; return
 ; ---------------------------------------------------------------------------
 
 sTitle:
-        command mus_Stop
+        command mus_FadeOut
         bsr.w   ClearPLC
         bsr.w   Pal_FadeFrom
         clr.b   (word_FFF662).w
@@ -21529,6 +21573,10 @@ ArtCred:    incbin "screens/title/CreditsText/Sprite.nem"
 ArtSega:    incbin "screens/sega/Main.twim"
         even
 MapSega:    incbin "unknown/18A56.eni"
+        even
+ArtSplash:  incbin "Splash/SEGAARTNEM.bin"
+        even
+MapSplash:  incbin "Splash/SEGAMAPSE.bin"
         even
 byte_18A62: incbin "unknown/18A62.unc"
         even
