@@ -572,7 +572,7 @@ DebugRoutine:	rs.w 1
 DebugTimer:	rs.b 1
 DebugSpeed:	rs.b 1
 VintCounter:	rs.b 1
-Saversong:		rs.b 1
+		rs.b 1
 		rs.b 1
 byte_FFFE0F:	rs.b 1
 curzone:	rs.b 1
