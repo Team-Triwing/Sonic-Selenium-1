@@ -16,8 +16,8 @@ TwizVRAM	=	TwizHuffCopy+(TwizHuffCopyMax*$02)	; $4 bytes
 TwizSize	=	TwizVRAM+$04				; $2 bytes
 ; ---------------------------------------------------------------------------
 TwizBufferSize	=	$1000
-TwizBufferPre	=	$FFFF8400				; $1000 bytes
-TwizBuffer	=	$FFFF9400				; $1000 bytes
+TwizBufferPre	=	byte_FF8000				; $1000 bytes
+TwizBuffer	=	byte_FF8000+$1000			; $1000 bytes
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Twizzler decompression
