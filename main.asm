@@ -283,7 +283,7 @@ vint:
 loc_B3C:
         move.b  (VintRoutine).w,d0
         clr.b   (VintRoutine).w
-        move.b  #1,(HintFlag).w
+        st.b    (HintFlag).w
         andi.w  #$3E,d0
         move.w  off_B6A(pc,d0.w),d0
         jsr off_B6A(pc,d0.w)
@@ -500,7 +500,7 @@ hint:
         clr.b   (HintFlag).w
 
 locret_F3A:
-        rtr
+        rte
 ; ---------------------------------------------------------------------------
 
 padInit:
