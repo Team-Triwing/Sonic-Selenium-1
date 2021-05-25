@@ -11,7 +11,6 @@
 TwizHuffRetMax	=	$12
 TwizHuffCopyMax	=	$0C
 ; ---------------------------------------------------------------------------
-TwizHuffRet	=	$FFFFAA00				; $48 bytes
 TwizHuffCopy	=	TwizHuffRet+(TwizHuffRetMax*$04)	; $18 bytes
 TwizVRAM	=	TwizHuffCopy+(TwizHuffCopyMax*$02)	; $4 bytes
 TwizSize	=	TwizVRAM+$04				; $2 bytes

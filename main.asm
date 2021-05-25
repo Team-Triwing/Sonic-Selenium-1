@@ -680,7 +680,7 @@ ProcessDMAQueue_Done:
 ; End of function ProcessDMAQueue
 ; ---------------------------------------------------------------------------
 
-sub_10A6:
+ClearScreen:
         lea (VdpCtrl).l,a5
         move.w  #$8F01,(a5)
         move.l  #$940F93FF,(a5)
@@ -1573,6 +1573,9 @@ sSega:
         command mus_FadeOut
         bsr.w   ClearPLC
         bsr.w   Pal_FadeFrom
+        clrRAM  Chunks
+        clrRAM  Layout
+        clrRAM  Blocks
         clr.b   (word_FFF662).w
         lea (VdpCtrl).l,a6
         move.w  #$8004,(a6)
@@ -1585,7 +1588,7 @@ sSega:
         move.w  d0,(VdpCtrl).l
 
 loc_24BC:
-        bsr.w   sub_10A6
+        bsr.w   ClearScreen
         lea (ArtSega).l,a0
         move.w  #0,d0
         jsr TwimDec
@@ -1638,7 +1641,7 @@ sTitle:
         move.w  (ModeReg2).w,d0
         andi.b  #$BF,d0
         move.w  d0,(VdpCtrl).l
-        bsr.w   sub_10A6
+        bsr.w   ClearScreen
 
         clrRAM  ObjectsList
 
@@ -2055,7 +2058,7 @@ sLevel:
         move.l  #$70000002,(VdpCtrl).l
         lea (ArtTitleCards).l,a0
         bsr.w   NemesisDec
-        bsr.w   sub_10A6
+        bsr.w   ClearScreen
         moveq   #0,d0
         move.b  (curzone).w,d0
         lsl.w   #4,d0
@@ -2484,7 +2487,7 @@ sSpecial:
         move.w  (ModeReg2).w,d0
         andi.b  #$BF,d0
         move.w  d0,(VdpCtrl).l
-        bsr.w   sub_10A6
+        bsr.w   ClearScreen
         lea (VdpCtrl).l,a5
         move.w  #$8F01,(a5)
         move.l  #$946F93FF,(a5)

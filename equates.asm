@@ -212,13 +212,16 @@ byte_FF400C:	rs.b $22
 byte_FF402E:	rs.b $3D2
 byte_FF4400:	rs.b $3C00
 byte_FF8000:	rs.b $2400
+Chunks_End:	rs.b 0
 Layout:		rs.b $400	; level layout
+Layout_End:	rs.b 0
 ScrollBuffer:	rs.b $200
 NemBuffer:	rs.b $100	; used for the Nemesis decompressor
-NemBuffer_End:	rs.b 0
 byte_FFAB00:	rs.b $100
+NemBuffer_End:	rs.b 0
 DisplayLists:	rs.b $400
 Blocks:		rs.b $1800	; level blocks
+Blocks_End:	rs.b 0
 SonicArtBuf:	rs.b $300
 SonicPosTable:	rs.b $100
 ScrollTable:	rs.b $400
@@ -615,5 +618,6 @@ DemoNum:	rs.w 1
 ConsoleRegion:	rs.b 1
 EditModeFlag:	rs.w 1
 ChecksumStr:	rs.l 1
+TwizHuffRet:	rs.b $48
 ; end of 'RAM'
 			even
