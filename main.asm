@@ -58,8 +58,8 @@ Checksum:   dc.w 0                          ; Checksum
         dc.b 'J               '             ; I/O support (3-button joypad)
 
 		dc.l StartOfROM
-RomEndLoc:dc.l	EndOfROM               		; ROM region
-        dc.l $FF0000, $FFFFFF               ; RAM region
+RomEndLoc:dc.l	EndOfROM-1             		; ROM region
+        dc.l RAM_START, RAM_END-1           ; RAM region
     if RecordableDemo=1
         dc.b "RA",$E8,$20
         dc.l $200000

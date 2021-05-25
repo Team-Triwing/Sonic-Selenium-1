@@ -1,5 +1,3 @@
-
-
 align		macro pos,num
 	if narg=1
 		dcb.b ((\pos)-(offset(*)%(\pos)))%(\pos),$FF
@@ -40,89 +38,6 @@ vsync:			macro
 @wait\@:	tst.b	(VintRoutine).w
 		bne.s	@wait\@
 		endm
-; ---------------------------------------------------------------------------
-
-; enum object, width 64 bytes
-	rsreset
-id			rs.b 1
-render		rs.b 1
-tile		rs.w 1
-map			rs.l 1
-xpos		rs.w 1
-xpix		rs.w 1
-ypos		rs.w 1
-ypix		rs.w 1
-xvel		rs.w 1
-yvel		rs.w 1
-inertia		rs.w 1		; sonic specific (!)
-yrad		rs.b 1
-xrad		rs.b 1
-prio		rs.w 1
-frame		rs.b 1
-anipos		rs.b 1
-ani			rs.b 1
-anilast		rs.b 1
-anidelay	rs.b 1
-			rs.b 1
-col			rs.b 1
-air			equ col		; sonic specific (!)
-colprop		rs.b 1
-status		rs.b 1
-respawn		rs.b 1
-act			rs.b 1
-subact		rs.b 1
-angle		rs.w 1
-arg			rs.b 1
-			rs.b 1
-			rs.b 6
-invulnerable	rs.w 1	; sonic specific (!)
-invincible	rs.w 1		; sonic specific (!)
-speedshoes	rs.w 1		; sonic specific (!)
-sensorfront	rs.b 1		; sonic specific (!)
-sensorback	rs.b 1		; sonic specific (!)
-convex		rs.b 1		; sonic specific (!)
-spindashflag	rs.b 1	; sonic specific (!)
-spindashtimer	rs.w 1	; sonic specific (!)
-jumping		rs.b 1		; sonic specific (!)
-platform	rs.b 1		; sonic specific (!)
-lock		rs.b 1		; sonic specific (!)
-			rs.b 1
-size		rs.b 1
-
-; ---------------------------------------------------------------------------
-
-; sonic 2 naming convention
-x_pos	equ	xpos
-y_pos	equ	ypos
-x_sub	equ	xpix
-y_sub	equ	ypix
-x_vel	equ	xvel
-y_vel	equ	yvel
-x_radius	equ	xrad
-y_radius	equ	yrad
-routine	equ	act
-routine_secondary	equ	subact
-priority	equ	prio
-move_lock	equ	lock
-stick_to_convex	equ	convex
-subtype	equ	arg
-anim_frame_duration	equ	anilast
-collision_flags	equ	col
-collision_property	equ	colprop
-anim_frame	equ	anipos
-anim	equ	ani
-art_tile	equ	tile
-render_flags	equ	render
-mappings	equ	map
-mapping_frame	equ	frame
-invulnerable_time	equ	invulnerable
-invincibility_time	equ	invincible
-speedshoes_time	equ	speedshoes
-next_tilt	equ	sensorfront
-tilt	equ	sensorback
-spindash_flag	equ	spindashflag
-spindash_counter	equ	spindashtimer
-interact	equ	platform
 
 ; ---------------------------------------------------------------------------
 ; long conditional jumps
@@ -402,48 +317,3 @@ dmaCopy macro &
 SetGfxMode macro mode
     move.w  #VDPREG_MODE4|(mode), (VdpCtrl)
     endm
-	
-VDPREG_MODE1:     equ $8000  ; Mode register #1
-VDPREG_MODE2:     equ $8100  ; Mode register #2
-VDPREG_MODE3:     equ $8B00  ; Mode register #3
-VDPREG_MODE4:     equ $8C00  ; Mode register #4
-
-VDPREG_PLANEA:    equ $8200  ; Plane A table address
-VDPREG_PLANEB:    equ $8400  ; Plane B table address
-VDPREG_SPRITE:    equ $8500  ; Sprite table address
-VDPREG_WINDOW:    equ $8300  ; Window table address
-VDPREG_HSCROLL:   equ $8D00  ; HScroll table address
-
-VDPREG_SIZE:      equ $9000  ; Plane A and B size
-VDPREG_WINX:      equ $9100  ; Window X split position
-VDPREG_WINY:      equ $9200  ; Window Y split position
-VDPREG_INCR:      equ $8F00  ; Autoincrement
-VDPREG_BGCOL:     equ $8700  ; Background color
-VDPREG_HRATE:     equ $8A00  ; HBlank interrupt rate
-
-VDPREG_DMALEN_L:  equ $9300  ; DMA length (low)
-VDPREG_DMALEN_H:  equ $9400  ; DMA length (high)
-VDPREG_DMASRC_L:  equ $9500  ; DMA source (low)
-VDPREG_DMASRC_M:  equ $9600  ; DMA source (mid)
-VDPREG_DMASRC_H:  equ $9700  ; DMA source (high)
-
-VdpCtrl:    equ $C00004  ; VDP control port
-VdpData:    equ $C00000  ; VDP data port
-HvCounter:  equ $C00008  ; H/V counter
-
-GFXMODE_256x224:      equ %00000000
-GFXMODE_320x224:      equ %10000001
-GFXMODE_256x448:      equ %00000110
-GFXMODE_320x448:      equ %10000111
-GFXMODE_256x224_SH:   equ %00001000
-GFXMODE_320x224_SH:   equ %10001001
-GFXMODE_256x448_SH:   equ %00001110
-GFXMODE_320x448_SH:   equ %10001111
-
-VRAM_ADDR_CMD:  equ $40000000
-CRAM_ADDR_CMD:  equ $C0000000
-VSRAM_ADDR_CMD: equ $40000010
-
-VRAM_DMA_CMD:   equ $40000080
-CRAM_DMA_CMD:   equ $C0000080
-VSRAM_DMA_CMD:  equ $40000090
