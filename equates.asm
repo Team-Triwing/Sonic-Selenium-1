@@ -556,8 +556,7 @@ unk_FFF7F0:	rs.l 1
 		rs.b 1
 		rs.b 1
 		rs.b 1
-SprTableBuff:	rs.b $280
-		rs.b $80					; unused??
+SprTableBuff:	rs.b $300
 SprTableBuff_End:	rs.b 0
 Palette:	rs.b $80
 PaletteTarget:	rs.b $80

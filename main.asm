@@ -28,7 +28,7 @@ Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The c
 z80_ram:    equ $A00000
 z80_bus_request equ $A11100
 z80_reset:  equ $A11200
-Drvmem      equ $FFFFF000
+Drvmem      equ SoundMemory
 
         include "AMPS/lang.asm"
         include "AMPS/code/macro.asm"
@@ -183,7 +183,7 @@ endinit
 
 loc_306:
         waitDMA
-        btst    #6,($A1000D).l
+        btst    #6,(IO_C_CTRL).l
         beq.s   DoChecksum
         cmpi.l  #'init',(ChecksumStr).w
         beq.s   loc_36A
@@ -508,15 +508,15 @@ locret_F3A:
 
 padInit:
         moveq   #$40,d0
-        move.b  d0,($A10009).l
-        move.b  d0,($A1000B).l
-        move.b  d0,($A1000D).l
+        move.b  d0,(IO_A_CTRL).l
+        move.b  d0,(IO_B_CTRL).l
+        move.b  d0,(IO_C_CTRL).l
         rts
 ; ---------------------------------------------------------------------------
 
 padRead:
         lea (padHeld1).w,a0
-        lea ($A10003).l,a1
+        lea (IO_A_DATA).l,a1
         bsr.s   sub_FDC
         addq.w  #2,a1
         bsr.s   sub_FDC
