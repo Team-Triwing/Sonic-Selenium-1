@@ -383,7 +383,3 @@ dmaCopy macro &
 	endif
 
 	endm
-
-SetGfxMode macro mode
-    move.w  #VDPREG_MODE4|(mode), (VdpCtrl)
-    endm
