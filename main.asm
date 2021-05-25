@@ -6,6 +6,7 @@
 ; |                       Octavian Dima, personal use                       |
 ; +-------------------------------------------------------------------------+
 
+        include "macros.asm"
         include "equates.asm"
 ;
 ; Input SHA256 : 078AAB438B99DC370ACC45549F752A332DBD0C348E2682DF1211BCBFB94F4C42
@@ -32,7 +33,6 @@ Drvmem      equ $FFFFF000
         include "AMPS/lang.asm"
         include "AMPS/code/macro.asm"
         include "error/debugger.asm"    
-        include "macros.asm"
 ; ---------------------------------------------------------------------------
 StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
         dc.l IllegalInstr, ZeroDiv, ChkInstr, TrapvInstr, PrivilegeViol
