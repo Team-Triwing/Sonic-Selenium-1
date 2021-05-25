@@ -972,6 +972,31 @@ loc_13A2:
         movem.l (sp)+,a1-a2
         rts
 ; ---------------------------------------------------------------------------
+; ---------------------------------------------------------------
+; uncompressed art to VRAM loader
+; ---------------------------------------------------------------
+; INPUT:
+;       a0      - Source Offset
+;   d0  - length in tiles
+; ---------------------------------------------------------------
+LoadUncArt:
+        move    #$2700,sr   ; disable interrupts
+        lea VdpData.l,a6    ; get VDP data port
+ 
+LoadArt_Loop:
+        move.l  (a0)+,(a6)  ; transfer 4 bytes
+        move.l  (a0)+,(a6)  ; transfer 4 more bytes
+        move.l  (a0)+,(a6)  ; and so on and so forth
+        move.l  (a0)+,(a6)  ;
+        move.l  (a0)+,(a6)  ;
+        move.l  (a0)+,(a6)  ;
+        move.l  (a0)+,(a6)  ; in total transfer 32 bytes
+        move.l  (a0)+,(a6)  ; which is 1 full tile
+ 
+        dbf d0, LoadArt_Loop; loop until d0 = 0
+        move    #$2300,sr   ; enable interrupts
+        rts
+; ---------------------------------------------------------------------------
 
 plcReplace:
         movem.l a1-a2,-(sp)
@@ -1568,9 +1593,12 @@ sSega:
         command mus_FadeOut
         bsr.w   ClearPLC
         bsr.w   Pal_FadeFrom
+
         clrRAM  Chunks
         clrRAM  Layout
         clrRAM  Blocks
+        clrRAM  ObjectsList
+
         clr.b   (word_FFF662).w
         lea (VdpCtrl).l,a6
         move.w  #$8004,(a6)
@@ -1638,6 +1666,9 @@ sTitle:
         move.w  d0,(VdpCtrl).l
         bsr.w   ClearScreen
 
+        clrRAM  Chunks
+        clrRAM  Blocks
+        clrRAM  Layout
         clrRAM  ObjectsList
 
         lea (ArtTitleMain).l,a0
@@ -2050,9 +2081,10 @@ sLevel:
 .notset
         bsr.w   ClearPLC
         bsr.w   Pal_FadeFrom
-        move.l  #$70000002,(VdpCtrl).l
-        lea (ArtTitleCards).l,a0
-        bsr.w   NemesisDec
+        move.l  #$70000002,($C00004).l
+        lea ArtTitleCards,a0
+        move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
+        jsr LoadUncArt
         bsr.w   ClearScreen
         moveq   #0,d0
         move.b  (curzone).w,d0
@@ -2600,9 +2632,10 @@ loc_47D4:
 		move.w	#$8407,(a6)
 		move.w	#$9001,(a6)
 		bsr.w	ClearPLC
-		move.l	#$70000002,(VdpCtrl).l
-		lea	(ArtTitleCards).l,a0 ; load title card patterns
-		bsr.w	NemesisDec
+		move.l  #$70000002,($C00004).l
+        lea ArtTitleCards,a0
+        move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
+        jsr LoadUncArt
 		jsr		sub_3048
 		move	#$2300,sr
 		moveq	#$11,d0
@@ -13742,8 +13775,12 @@ sub_C81C:
         clr.b   (byte_FFFE2C).w
         clr.b   (byte_FFFE1E).w
         move.b  #$3A,(byte_FFD600).w
-        moveq   #$10,d0
-        jsr (plcReplace).l
+        move.l  a0,-(sp)
+        move.l  #$70000002,($C00004).l
+        lea ArtTitleCards,a0
+        move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
+        jsr LoadUncArt
+        move.l  (sp)+,a0
         move.b  #1,(byte_FFFE58).w
         moveq   #0,d0
         move.b  (dword_FFFE22+1).w,d0
@@ -21586,8 +21623,8 @@ ArtBasaran: incbin "levels/MZ/Basaran/Art.nem"
         even
 ArtSplats:  incbin "levels/shared/Splats/Art.nem"
         even
-ArtTitleCards:  incbin "levels/shared/Title Cards/Art.nem"
-        even
+ArtTitleCards:  incbin "levels/shared/Title Cards/Art.unc"
+ArtTitleCards_End:        even
 ArtHUD:     incbin "levels/shared/HUD/Main.nem"
         even
 ArtLives:   incbin "levels/shared/HUD/Lives.nem"

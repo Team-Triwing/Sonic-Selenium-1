@@ -393,6 +393,7 @@ unk_FFF6FA:	rs.b 1
 		rs.b 1
 		rs.b 1
 		rs.b 1
+plcList_End:
 CameraRAM:
 CameraX:	rs.l 1
 CameraY:	rs.l 1
