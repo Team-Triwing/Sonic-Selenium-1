@@ -335,30 +335,9 @@ sub_BB0:
 
 loc_BBA:
         bsr.w   padRead
-        lea (VdpCtrl).l,a5
-        move.l  #$94009340,(a5)
-        move.l  #$96FD9580,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$C000,(a5)
-        move.w  #$80,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        lea (VdpCtrl).l,a5
-        move.l  #$940193C0,(a5)
-        move.l  #$96E69500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7C00,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        move.w  #$8407,(a5)
-        move.w  (word_FFF624).w,(a5)
-        move.w  (word_FFF61E).w,(word_FFF622).w
-        lea (VdpCtrl).l,a5
-        move.l  #$94019340,(a5)
-        move.l  #$96FC9500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7800,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
+        writeCRAM       Palette,$80,0
+        writeVRAM       SprTableBuff,$280,vram_sprites
+        writeVRAM       ScrollTable,$380,vram_hscroll
         jsr (ProcessDMAQueue).l
 
 loc_C7A:
@@ -385,27 +364,9 @@ locret_CBA:
 
 loc_CBC:
         bsr.w   padRead
-        lea (VdpCtrl).l,a5
-        move.l  #$94009340,(a5)
-        move.l  #$96FD9580,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$C000,(a5)
-        move.w  #$80,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        lea (VdpCtrl).l,a5
-        move.l  #$94019340,(a5)
-        move.l  #$96FC9500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7800,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        lea (VdpCtrl).l,a5
-        move.l  #$940193C0,(a5)
-        move.l  #$96E69500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7C00,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
+        writeCRAM       Palette,$80,0
+        writeVRAM       SprTableBuff,$280,vram_sprites
+        writeVRAM       ScrollTable,$380,vram_hscroll
         bsr.w   sSpecialPalCyc
         jsr (ProcessDMAQueue).l
 
@@ -420,27 +381,9 @@ locret_D86:
 
 sub_D88:
         bsr.w   padRead
-        lea (VdpCtrl).l,a5
-        move.l  #$94009340,(a5)
-        move.l  #$96FD9580,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$C000,(a5)
-        move.w  #$80,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        lea (VdpCtrl).l,a5
-        move.l  #$94019340,(a5)
-        move.l  #$96FC9500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7800,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        lea (VdpCtrl).l,a5
-        move.l  #$940193C0,(a5)
-        move.l  #$96E69500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7C00,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
+        writeCRAM       Palette,$80,0
+        writeVRAM       SprTableBuff,$280,vram_sprites
+        writeVRAM       ScrollTable,$380,vram_hscroll
         jsr (ProcessDMAQueue).l
 
 loc_E3A:
@@ -467,27 +410,9 @@ sub_E70:
 
 sub_E78:
         bsr.w   padRead
-        lea (VdpCtrl).l,a5
-        move.l  #$94009340,(a5)
-        move.l  #$96FD9580,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$C000,(a5)
-        move.w  #$80,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        lea (VdpCtrl).l,a5
-        move.l  #$94019340,(a5)
-        move.l  #$96FC9500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7800,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
-        lea (VdpCtrl).l,a5
-        move.l  #$940193C0,(a5)
-        move.l  #$96E69500,(a5)
-        move.w  #$977F,(a5)
-        move.w  #$7C00,(a5)
-        move.w  #$83,(word_FFF644).w
-        move.w  (word_FFF644).w,(a5)
+        writeCRAM       Palette,$80,0
+        writeVRAM       SprTableBuff,$280,vram_sprites
+        writeVRAM       ScrollTable,$380,vram_hscroll
         rts
 ; ---------------------------------------------------------------------------
 
