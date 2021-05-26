@@ -1706,7 +1706,7 @@ Splash_GotoTitle2:
 ; ---------------------------------------------------------------------------
 
 sTitle:
-        command mus_FadeOut
+        command mus_Stop
         bsr.w   ClearPLC
         bsr.w   Pal_FadeFrom
         clr.b   (word_FFF662).w
