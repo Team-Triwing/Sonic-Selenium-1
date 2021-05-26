@@ -2244,7 +2244,7 @@ loc_2D54:
         move.b  d0,(LevelRestart).w
         move.w  d0,(LevelFrames).w
         bsr.w   oscInit
-        move.b  #1,(byte_FFFE1F).w
+        st.b	(byte_FFFE1F).w
         move.b  #1,(ExtraLifeFlags).w
         move.b  #1,(byte_FFFE1E).w
         clr.w   (unk_FFF790).w
@@ -2701,8 +2701,8 @@ loc_47D4:
 		bsr.w	PLCadd
 		moveq	#$1B,d0
 		bsr.w	PLCreplace		; load results screen patterns
-		move.b	#1,(byte_FFFE1F).w ; update score	counter
-		move.b	#1,(byte_FFFE58).w ; update ring bonus counter
+		st.b	(byte_FFFE1F).w ; update score	counter
+		st.b    (byte_FFFE58).w ; update ring bonus counter
 		move.w	(Rings).w,d0
 		mulu.w	#10,d0		; multiply rings by 10
 		move.w	d0,(word_FFFE54).w ; set rings bonus
@@ -4756,7 +4756,7 @@ Obj_SSResults_Display:
 
 Obj_SSResults_RingBonus:			; XREF: Obj_SSResults_Index
 		bsr.w	ObjectDisplay
-		move.b	#1,(byte_FFFE58).w ; set ring bonus update flag
+		st.b    (byte_FFFE58).w ; set ring bonus update flag
 		tst.w	(word_FFFE54).w	; is ring bonus	- zero?
 		beq.s	loc_C8C4	; if yes, branch
 		subi.w	#10,(word_FFFE54).w ; subtract 10	from ring bonus
@@ -11653,7 +11653,7 @@ loc_A790:
 
 loc_A794:
         bsr.w   ObjectDisplay
-        move.b  #1,(byte_FFFE58).w
+        st.b    (byte_FFFE58).w
         moveq   #0,d0
         tst.w   (word_FFFE54).w
         beq.s   loc_A7B0
@@ -13838,7 +13838,7 @@ sub_C81C:
         move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
         jsr LoadUncArt
         move.l  (sp)+,a0
-        move.b  #1,(byte_FFFE58).w
+        st.b    (byte_FFFE58).w
         moveq   #0,d0
         move.b  (dword_FFFE22+1).w,d0
         mulu.w  #$3C,d0
@@ -20476,7 +20476,7 @@ ObjHUD_Display:
 ; ---------------------------------------------------------------------------
 
 ScoreAdd:
-        move.b  #1,(byte_FFFE1F).w
+        st.b	(byte_FFFE1F).w
         lea (unk_FFFE50).w,a2
         lea (dword_FFFE26).w,a3
         add.l   d0,(a3)
@@ -22096,5 +22096,4 @@ mergecode   SECTION file("AMPS/.z80.dat"), org(0)   ; create settings file for s
     opt ae+
         include "error/ErrorHandler.asm"
 ; ===========================================================================
-EndOfROM:
-                end
+EndOfROM:       end
