@@ -17,4 +17,4 @@ A hack based on [the MDDC disassembly of the Sonic 1 Prototype](https://github.c
 * MainMemory - SonLVL
 * Flamewing - Saxman compressor, and improved Enigma/Kosinski+/Saxman decompressors
 * MarkeyJester - Twizzler compression
-~~* Rob Northen Computing - RNC compression~~ (still trying to find a use for it)
+* ~~Rob Northen Computing - RNC compression~~ (still trying to find a use for it)
