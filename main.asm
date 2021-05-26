@@ -1164,6 +1164,9 @@ loc_14F4:
 EnigmaDec:
         include "compression/Enigma.asm"
 ; ---------------------------------------------------------------------------
+        include "compression/RNC_1.asm"
+        include "compression/RNC_2.asm"
+; ---------------------------------------------------------------------------
 KosinskiPlusDec:
         include "compression/KosinskiPlus.asm"
 ; ---------------------------------------------------------------------------
