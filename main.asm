@@ -269,7 +269,7 @@ ArtLSText:  incbin "unsorted/levelselecttext.unc"
 ; ---------------------------------------------------------------------------
 
 vint:
-        movem.l d0-a6,-(sp)
+        pusha
         tst.b   (VintRoutine).w
         beq.s   loc_B58
         move.w  (VdpCtrl).l,d0
@@ -291,7 +291,7 @@ loc_B3C:
 loc_B58:
         addq.l  #1,(VintCounter).w
         jsr UpdateAMPS
-        movem.l (sp)+,d0-a6
+        popa
         rte
 ; ---------------------------------------------------------------------------
 
