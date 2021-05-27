@@ -189,32 +189,32 @@ loc_306:
 	beq.s   loc_36A
 
 DoChecksum:
-	movea.w #EndOfHeader,a0 		; prepare start address
-	move.l 	(RomEndLoc).w,d7; load size
-	sub.l 	a0,d7 			; minus start address
-	move.b 	d7,d5 			; copy end nybble
-	andi.w 	#$000F,d5 		; get only the remaining nybble
-	lsr.l 	#$04,d7 		; divide the size by 20
-	move.w 	d7,d6 			; load lower word size
-	swap 	d7 				; get upper word size
-	moveq 	#$00,d0 		; clear d0
+	movea.w #EndOfHeader,a0 	; prepare start address
+	move.l 	(RomEndLoc).w,d7 	; load size
+	sub.l 	a0,d7 				; minus start address
+	move.b 	d7,d5 				; copy end nybble
+	andi.w 	#$000F,d5 			; get only the remaining nybble
+	lsr.l 	#$04,d7 			; divide the size by 20
+	move.w 	d7,d6 				; load lower word size
+	swap 	d7 					; get upper word size
+	moveq 	#$00,d0 			; clear d0
 
 CS_MainBlock:
 	rept 8
-	add.w 	(a0)+,d0 ; modular checksum (8 words)
+	add.w 	(a0)+,d0 			; modular checksum (8 words)
 	endr
-	dbf 	d6,CS_MainBlock ; repeat until all main block sections are done
-	dbf 	d7,CS_MainBlock ; ''
-	subq.w 	#$01,d5 ; decrease remaining nybble for dbf
-	bpl.s 	CS_Finish ; if there is no remaining nybble, branch
+	dbf 	d6,CS_MainBlock 	; repeat until all main block sections are done
+	dbf 	d7,CS_MainBlock 	; ''
+	subq.w 	#$01,d5 			; decrease remaining nybble for dbf
+	bpl.s 	CS_Finish 			; if there is no remaining nybble, branch
 
 CS_Remains:
-	add.w 	(a0)+,d0 ; add remaining words
-	dbf 	d5,CS_Remains ; repeat until the remaining words are done
+	add.w 	(a0)+,d0 			; add remaining words
+	dbf 	d5,CS_Remains 		; repeat until the remaining words are done
 
 CS_Finish:
-	cmp.w 	(Checksum).w,d0 ; does the checksum match?
-	bne.s 	CheckSumError ; if not, branch
+	cmp.w 	(Checksum).w,d0 	; does the checksum match?
+	bne.s 	CheckSumError 		; if not, branch
 
 loc_36A:
 	clrRAM  Chunks,DemoNum
@@ -276,9 +276,9 @@ vint:
 	move.l  #VSRAM_ADDR_CMD,(VdpCtrl).l
 	move.l  (dword_FFF616).w,(VdpData).l
 	btst    #6,(ConsoleRegion).w    ; is this a PAL machine?
-	beq.s   loc_B3C         ; if not, continue
+	beq.s   loc_B3C         		; if not, continue
 	move.w  #$700,d0
-	dbvs    d0,*            ; do some delay
+	dbvs    d0,*            		; do some delay
 
 loc_B3C:
 	move.b  (VintRoutine).w,d0
@@ -1557,11 +1557,7 @@ loc_24BC:
 	lea (MapSega).l,a0
 	move.w  #0,d0
 	bsr.w   EnigmaDec
-	lea ((Chunks)&$FFFFFF).l,a1
-	move.l  #$461C0003,d0
-	moveq   #$B,d1
-	moveq   #3,d2
-	bsr.w   LoadPlaneMaps
+	copyTilemap (Chunks)&$FFFFFF,$C61C,$B,3
 	moveq   #0,d0
 	bsr.w   PalLoadFade
 	move.w  #$28,(PalCycOffset).w
@@ -1592,42 +1588,38 @@ loc_2544:
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
 SplashScreen2:
-    command mus_FadeOut             ; set music ID to "stop music"
-    bsr.w     Pal_FadeFrom          ; fade palettes out
-    bsr.w     ClearScreen           ; clear the plane mappings
+    command mus_FadeOut             	; set music ID to "stop music"
+    bsr.w   Pal_FadeFrom          		; fade palettes out
+    bsr.w   ClearScreen           		; clear the plane mappings
     ; load art, mappings and the palette
-    lea     ((Chunks)&$FFFFFF).l,a1          ; load dump location
-    lea     MapSplash.l,a0          ; load compressed mappings address
-    move.w  #320,d0             ; prepare pattern index value to patch to mappings
-    bsr.w     EniDec            ; decompress and dump
-    lea     ((Chunks)&$FFFFFF).l,a1
-    move.l  #$60000003,d0
-    moveq   #39,d1
-    moveq   #30,d2
-    bsr.w   LoadPlaneMaps         ; flush mappings to VRAM
+    lea     ((Chunks)&$FFFFFF).l,a1 	; load dump location
+    lea     MapSplash.l,a0          	; load compressed mappings address
+    move.w  #$140,d0             		; prepare pattern index value to patch to mappings
+    bsr.w   EniDec     		       		; decompress and dump
+    copyTilemap (Chunks)&$FFFFFF,$C000,$27,$1E         		; flush mappings to VRAM
     move.l  #$68000000,($FFC00004).l    ; set vdp loc
-    lea     ArtSplash.l,a0           ; load background art
-    jsr     NemesisDec              ; run NemDec to decompress art for display
-    move.b   #$B,d0
+    lea     ArtSplash.l,a0           	; load background art
+    jsr     NemesisDec              	; run NemDec to decompress art for display
+    move.b  #$B,d0
     bsr.w   PalLoadFade
-    bsr.w Pal_FadeTo          ; fade palette in
+    bsr.w 	Pal_FadeTo          		; fade palette in
     music   mus_Splash
-    move.w  #5*60,(GlobalTimer).w     ; set delay time (5 seconds on a 60hz system)
-    btst    #6,(ConsoleRegion).w    ; is this a PAL machine?
-    beq.s   Splash_MainLoop2           ; if not, continue
-    move.w  #5*50,(GlobalTimer).w     ; set delay time (5 seconds on a 50hz system)
+    move.w  #5*60,(GlobalTimer).w     	; set delay time (5 seconds on a 60hz system)
+    btst    #6,(ConsoleRegion).w    	; is this a PAL machine?
+    beq.s   Splash_MainLoop           	; if not, continue
+    move.w  #5*50,(GlobalTimer).w     	; set delay time (5 seconds on a 50hz system)
  
-Splash_MainLoop2:
-    move.b  #2,(VintRoutine).w        ; set V-blank routine to run
-    vsync                           ; wait for V-blank (decreases "Demo_Time_left")
-    tst.b   (padPress1).w           ; has player 1 pressed start button?
-    bmi.s   Splash_GotoTitle2         ; if so, branch
-    tst.w   (GlobalTimer).w           ; has the delay time finished?
-    bne.s   Splash_MainLoop2          ; if not, branch
+Splash_MainLoop:
+    move.b  #2,(VintRoutine).w       	; set V-blank routine to run
+    vsync                           	; wait for V-blank (decreases "Demo_Time_left")
+    tst.b   (padPress1).w           	; has player 1 pressed the start button?
+    bmi.s   Splash_GotoTitle         	; if so, branch
+    tst.w   (GlobalTimer).w           	; has the delay time finished?
+    bne.s   Splash_MainLoop          	; if not, branch
  
-Splash_GotoTitle2:
-    move.b  #$04,(GameMode).w      ; set the screen mode to Title Screen
-    rts                     ; return
+Splash_GotoTitle:
+    move.b  #4,(GameMode).w      		; set the screen mode to Title Screen
+    rts                     			; return
 ; ---------------------------------------------------------------------------
 
 sTitle:
@@ -1635,6 +1627,7 @@ sTitle:
 	bsr.w   ClearPLC
 	bsr.w   Pal_FadeFrom
 	clr.b   (word_FFF662).w
+	command mus_Reset
 	lea (VdpCtrl).l,a6
 	move.w  #$8004,(a6)
 	move.w  #$8230,(a6)
@@ -1659,12 +1652,9 @@ sTitle:
 	lea (ArtTitleSonic).l,a0
 	move.w  #$6000,d0
 	jsr TwimDec
-	command mus_Reset
-	lea (byte_18A62).l,a1
-	move.l  #$42060003,d0
-	moveq   #$21,d1
-	moveq   #$15,d2
-	bsr.w   LoadPlaneMaps
+
+	copyTilemap	byte_18A62,$C206,$21,$15
+
 	clr.w   (DebugRoutine).w
 	clr.w   (DemoMode).w
 	clr.w   (curzone).w
@@ -1726,13 +1716,10 @@ loc_26E4:
 	beq.w   loc_26AE
 	btst    #6,(padHeld1).w
 	beq.w   loc_27AA
-	moveq   #2,d0
-	bsr.w   PalLoadNormal
-
+	bsr.w   Pal_FadeFrom
 	clrRAM  ScrollTable
-
+	bsr.w   ClearScreen
 	move.l  d0,(dword_FFF616).w
-	;disable_ints
 	lea (VdpData).l,a6
 	move.l  #$50000003,4(a6)
 	lea (ArtLSText).l,a5
@@ -1748,8 +1735,11 @@ loc_25D8:
 loc_2732:
 	move.l  d0,(a6)
 	dbf d1,loc_2732
-	music   mus_Options
 	bsr.w   sub_292C
+	moveq   #2,d0
+	bsr.w   palLoadFade
+	bsr.w   Pal_FadeTo
+	music   mus_Options
 
 loc_273C:
 	move.b  #2,(VintRoutine).w
