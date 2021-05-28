@@ -1712,12 +1712,11 @@ loc_26AE:
 loc_26E4:
 	tst.w   (GlobalTimer).w
 	beq.w   loc_27F8
-	andi.b  #$80,(padPress1).w
+	andi.b  #J_S,(padPress1).w
 	beq.w   loc_26AE
-	btst    #6,(padHeld1).w
+	btst    #JbA,(padHeld1).w
 	beq.w   loc_27AA
 	bsr.w   Pal_FadeFrom
-	clrRAM  ScrollTable
 	bsr.w   ClearScreen
 	move.l  d0,(dword_FFF616).w
 	lea (VdpData).l,a6
@@ -1751,16 +1750,16 @@ loc_273C:
 	move.w  (LevSelOption).w,d0
 	cmpi.w  #$13,d0
 	bne.s   LevSelLevCheckStart
-	cmpi.b  #$80,(padPress1).w ; is Start pressed?
+	cmpi.b  #J_S,(padPress1).w ; is Start pressed?
 	beq.s   LevSelStartPress    ; if true, branch
-	cmpi.b  #$20,(padPress1).w ; is B pressed?
+	cmpi.b  #J_C,(padPress1).w ; is C pressed?
 	beq.s   LevSelBCPress   ; if not, branch
-	cmpi.b  #$10,(padPress1).w ; is C pressed?
+	cmpi.b  #J_B,(padPress1).w ; is B pressed?
 	beq.s   LevSelBCPress   ; if not, branch
 	bra.s   loc_273C
 ; ===========================================================================
 LevSelLevCheckStart:                ; XREF: LevelSelect
-	andi.b  #$80,(padPress1).w ; is Start pressed?
+	andi.b  #J_S,(padPress1).w ; is Start pressed?
 	beq.s   loc_273C    ; if not, branch
 	bra.s   loc_2780
 	
@@ -1788,7 +1787,7 @@ loc_2780:
 
 loc_2796:
 	andi.w  #$3FFF,d0
-	btst    #4,(padHeld1).w
+	btst    #JbB,(padHeld1).w
 	beq.s   loc_27A6
 	move.w  #3,d0
 
@@ -1908,24 +1907,24 @@ loc_28F0:
 	cmpi.w  #$13,(LevSelOption).w
 	bne.s   locret_292A
 	move.b  (padPress1).w,d1
-	andi.b  #$4C,d1
+	andi.b  #J_L|J_R|J_A,d1
 	beq.s   locret_292A
 	move.w  (LevSelSound).w,d0
-	btst    #6,d1       ; is A pressed?
+	btst    #JbA,d1       ; is A pressed?
 	bne.s   LevSel_A    ; if not, branch
-	btst    #2,d1
+	btst    #JbL,d1
 	beq.s   loc_2912
 	sfx     sfx_Switch
 	subq.w  #1,d0
     
 LevSel_A:
-	btst    #6,d1       ; is A button pressed?
+	btst    #JbA,d1       ; is A button pressed?
 	beq.s   loc_2912    ; if not, branch
 	sfx     sfx_Switch
 	addi.w  #16,d0      ; add $10 to sound test
 
 loc_2912:
-	btst    #3,d1
+	btst    #JbR,d1
 	beq.s   loc_2922
 	sfx     sfx_Switch
 	addq.w  #1,d0
