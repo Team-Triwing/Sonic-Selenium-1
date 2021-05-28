@@ -5855,7 +5855,7 @@ loc_5972:
 	move.w  #$200,prio(a0)
 	move.w  ypos(a0),$2C(a0)
 	move.w  ypos(a0),$34(a0)
-	move.w  xpos(a0),$3tile(a0)
+	move.w  xpos(a0),$32(a0)
 	move.w  #$80,angle(a0)
 	moveq   #0,d1
 	move.b  arg(a0),d0
