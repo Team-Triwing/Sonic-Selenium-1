@@ -151,7 +151,7 @@ anipos		rs.b 1
 ani			rs.b 1
 anilast		rs.b 1
 anidelay	rs.b 1
-			rs.b 1
+storedframe	rs.b 1
 col			rs.b 1
 air			equ col		; sonic specific (!)
 colprop		rs.b 1
