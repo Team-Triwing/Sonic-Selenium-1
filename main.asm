@@ -1547,8 +1547,6 @@ sSega:
 	move.w  (ModeReg2).w,d0
 	andi.b  #$BF,d0
 	move.w  d0,(VdpCtrl).l
-
-loc_24BC:
 	bsr.w   ClearScreen
 	lea (ArtSega).l,a0
 	move.w  #0,d0
@@ -1587,10 +1585,14 @@ loc_2544:
 ; 2014, Hitaxas
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
-SplashScreen2:
+SplashScreen:
     command mus_FadeOut             	; set music ID to "stop music"
     bsr.w   Pal_FadeFrom          		; fade palettes out
     bsr.w   ClearScreen           		; clear the plane mappings
+	clrRAM  Chunks
+	clrRAM  Layout
+	clrRAM  Blocks
+	clrRAM  ObjectsList 
     ; load art, mappings and the palette
     lea     ((Chunks)&$FFFFFF).l,a1 	; load dump location
     lea     MapSplash.l,a0          	; load compressed mappings address
@@ -18044,7 +18046,7 @@ loc_FDBA:
 	move.b  d0,mQueue+2.w
 	tst.b   (unk_FFF7AA).w    ; is boss mode on?
 	bne.s   loc_FDC0    ; if yes, branch 
-	move.b  #1,(word_FFF662).w
+	st.b  	(word_FFF662).w
 
 loc_FDC0:
 	moveq   #-1,d0
