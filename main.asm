@@ -184,9 +184,6 @@ endinit
 loc_306:
 	waitDMA
 	btst    #6,($A1000D).l
-	beq.s   DoChecksum
-	cmpi.l  #'init',(ChecksumStr).w
-	beq.s   loc_36A
 
 DoChecksum:
 	movea.w #EndOfHeader,a0 	; prepare start address

@@ -110,32 +110,32 @@ JbY		rs.b	1			; Bit Y
 JbX		rs.b	1			; Bit X
 JbM		rs.b	1			; Bit mode
 
-J_U		EQU	(1<<JbU)		; Up
-J_D		EQU	(1<<JbD)		; Down
-J_L		EQU	(1<<JbL)		; Left
-J_R		EQU	(1<<JbR)		; Right
-J_B		EQU	(1<<JbB)		; B
-J_C		EQU	(1<<JbC)		; C
-J_A		EQU	(1<<JbA)		; A
-J_S		EQU	(1<<JbS)		; Start
-J_Z		EQU	(1<<JbZ)		; Z
-J_Y		EQU	(1<<JbY)		; Y
-J_X		EQU	(1<<JbX)		; X
-J_M		EQU	(1<<JbM)		; Mode
+J_U	EQU	(1<<JbU)		; Up
+J_D	EQU	(1<<JbD)		; Down
+J_L	EQU	(1<<JbL)		; Left
+J_R	EQU	(1<<JbR)		; Right
+J_B	EQU	(1<<JbB)		; B
+J_C	EQU	(1<<JbC)		; C
+J_A	EQU	(1<<JbA)		; A
+J_S	EQU	(1<<JbS)		; Start
+J_Z	EQU	(1<<JbZ)		; Z
+J_Y	EQU	(1<<JbY)		; Y
+J_X	EQU	(1<<JbX)		; X
+J_M	EQU	(1<<JbM)		; Mode
 
-IObTH		EQU	6			; TH pin bit
-IObTR		EQU	5			; TR pin bit
-IObTL		EQU	4			; TL pin bit
-IO_TH		EQU	1<<IObTH		; TH pin
-IO_TR		EQU	1<<IObTR		; TR pin
-IO_TL		EQU	1<<IObTL		; TL pin
+IObTH	EQU	6			; TH pin bit
+IObTR	EQU	5			; TR pin bit
+IObTL	EQU	4			; TL pin bit
+IO_TH	EQU	1<<IObTH		; TH pin
+IO_TR	EQU	1<<IObTR		; TR pin
+IO_TL	EQU	1<<IObTL		; TL pin
 
 ; enum object, width 64 bytes
 	rsreset
-id			rs.b 1
+id		rs.b 1
 render		rs.b 1
 tile		rs.w 1
-map			rs.l 1
+map		rs.l 1
 xpos		rs.w 1
 xpix		rs.w 1
 ypos		rs.w 1
@@ -148,21 +148,21 @@ xrad		rs.b 1
 prio		rs.w 1
 frame		rs.b 1
 anipos		rs.b 1
-ani			rs.b 1
+ani		rs.b 1
 anilast		rs.b 1
 anidelay	rs.b 1
 storedframe	rs.b 1
-col			rs.b 1
-air			equ col		; sonic specific (!)
+col		rs.b 1
+air		equ col		; sonic specific (!)
 colprop		rs.b 1
 status		rs.b 1
 respawn		rs.b 1
-act			rs.b 1
+act		rs.b 1
 subact		rs.b 1
 angle		rs.w 1
-arg			rs.b 1
-			rs.b 1
-			rs.b 6
+arg		rs.b 1
+		rs.b 1
+		rs.b 6
 invulnerable	rs.w 1	; sonic specific (!)
 invincible	rs.w 1		; sonic specific (!)
 speedshoes	rs.w 1		; sonic specific (!)
@@ -276,7 +276,7 @@ byte_FFD600:	rs.b $40
 		rs.b $40
 		rs.b $40
 LevelObjectsList:rs.b $1800
-ObjectsList_End:	rs.b 0
+ObjectsList_End:rs.b 0
 SoundMemory:	rs.b $600	; used for the sound driver
 GameMode:	rs.b 1		; used for the screen modes
 		rs.b 1
@@ -359,7 +359,7 @@ word_FFF662:	rs.w 1
 word_FFF666:	rs.w 1
 LevSelOption:	rs.w 1
 LevSelSound:	rs.w 1
-SavedSong:		rs.b 1
+SavedSong:	rs.b 1
 		rs.b 1
 		rs.b 1
 		rs.b 1
@@ -393,7 +393,7 @@ unk_FFF6FA:	rs.b 1
 		rs.b 1
 		rs.b 1
 		rs.b 1
-plcList_End:
+plcList_End:	rs.b 0
 CameraRAM:
 CameraX:	rs.l 1
 CameraY:	rs.l 1
@@ -578,11 +578,12 @@ unk_FFF7F0:	rs.l 1
 		rs.b 1
 		rs.b 1
 SprTableBuff:	rs.b $300
-SprTableBuff_End:	rs.b 0
+SprTableBuff_End:rs.b 0
 Palette:	rs.b $80
 PaletteTarget:	rs.b $80
 byte_FFFC00:	rs.b $100
-		rs.b $100					; stack data!
+Stack		rs.b $100					; stack data!
+Stack_End: 	rs.b 0
 StackPointer:	rs.w 1
 LevelRestart:	rs.w 1
 LevelFrames:	rs.w 1
