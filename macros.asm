@@ -130,9 +130,9 @@ jmi:		macro loc
 
 locVRAM:	macro loc,controlport
 		if (narg=1)
-		move.l	#($40000000+((loc&$3FFF)<<16)+((loc&$C000)>>14)),(VdpCtrl).l
+		move.l	#(VRAM_ADDR_CMD+((loc&$3FFF)<<16)+((loc&$C000)>>14)),(VdpCtrl).l
 		else
-		move.l	#($40000000+((loc&$3FFF)<<16)+((loc&$C000)>>14)),controlport
+		move.l	#(VRAM_ADDR_CMD+((loc&$3FFF)<<16)+((loc&$C000)>>14)),controlport
 		endc
 		endm
 

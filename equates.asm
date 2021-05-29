@@ -233,6 +233,7 @@ Chunks_End:	rs.b 0
 Layout:		rs.b $400	; level layout
 Layout_End:	rs.b 0
 ScrollBuffer:	rs.b $200
+ScrollBuffer_End: rs.b 0
 NemBuffer:	rs.b $100	; used for the Nemesis decompressor
 byte_FFAB00:	rs.b $100
 NemBuffer_End:	rs.b 0

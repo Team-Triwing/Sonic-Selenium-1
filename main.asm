@@ -147,7 +147,7 @@ loc_28E:
 	bra.s   loc_306
 ; ---------------------------------------------------------------------------
 
-InitValues: dc.l $8000, $3FFF, $100
+InitValues: dc.l VDPREG_MODE1, $3FFF, $100
 	dc.l z80_ram                    ; Z80 RAM
 	dc.l z80_bus_request                    ; Z80 bus release
 	dc.l z80_reset                  ; Z80 reset
@@ -183,7 +183,7 @@ endinit
 
 loc_306:
 	waitDMA
-	btst    #6,($A1000D).l
+	btst    #6,(IO_C_CTRL).l
 
 DoChecksum:
 	movea.w #EndOfHeader,a0 	; prepare start address
@@ -423,15 +423,15 @@ locret_F3A:
 
 padInit:
 	moveq   #$40,d0
-	move.b  d0,($A10009).l
-	move.b  d0,($A1000B).l
-	move.b  d0,($A1000D).l
+	move.b  d0,(IO_A_CTRL).l
+	move.b  d0,(IO_B_CTRL).l
+	move.b  d0,(IO_C_CTRL).l
 	rts
 ; ---------------------------------------------------------------------------
 
 padRead:
 	lea (padHeld1).w,a0
-	lea ($A10003).l,a1
+	lea (IO_A_DATA).l,a1
 	bsr.s   sub_FDC
 	addq.w  #2,a1
 ; ---------------------------------------------------------------------------
@@ -1575,10 +1575,11 @@ SplashScreen:
     command mus_FadeOut             	; set music ID to "stop music"
     bsr.w   Pal_FadeFrom          		; fade palettes out
     bsr.w   ClearScreen           		; clear the plane mappings
+
 	clrRAM  Chunks
 	clrRAM  Layout
 	clrRAM  Blocks
-	clrRAM  ObjectsList 
+	clrRAM  ObjectsList
 
 	lea (VdpCtrl).l,a6
 	move.w  #$8004,(a6)
@@ -1639,10 +1640,12 @@ sTitle:
 	move.w  d0,(VdpCtrl).l
 	bsr.w   ClearScreen
 
+	clrRAM  ScrollBuffer
 	clrRAM  Chunks
 	clrRAM  Blocks
 	clrRAM  Layout
 	clrRAM  ObjectsList
+	clrRAM  NemBuffer
 
 	lea (ArtTitleMain).l,a0
 	move.w  #$4000,d0
@@ -1651,7 +1654,7 @@ sTitle:
 	move.w  #$6000,d0
 	jsr TwimDec
 
-	copyTilemap	byte_18A62,$C206,$21,$15
+	copyTilemap	MapTitle,$C208,$21,$15
 
 	clr.w   (DebugRoutine).w
 	clr.w   (DemoMode).w
@@ -6975,7 +6978,7 @@ off_6A64:   dc.w loc_6A6C-off_6A64, loc_6AA0-off_6A64, loc_6AB0-off_6A64, loc_6A
 
 loc_6A6C:
 	addq.b  #2,act(a0)
-	move.w  #$F0,xpos(a0)
+	move.w  #$F8,xpos(a0)
 	move.w  #$DE,xpix(a0)
 	move.l  #MapTitleSonic,map(a0)
 	move.w  #$2300,tile(a0)
@@ -7024,7 +7027,7 @@ off_6AE8:   dc.w loc_6AEE-off_6AE8, loc_6B1A-off_6AE8, locret_6B18-off_6AE8
 
 loc_6AEE:
 	addq.b  #2,act(a0)
-	move.w  #$D0,xpos(a0)
+	move.w  #$D8,xpos(a0)
 	move.w  #$130,xpix(a0)
 	move.l  #MapTitleText,map(a0)
 	move.w  #$200,tile(a0)
@@ -7038,7 +7041,7 @@ locret_6B18:
 
 loc_6B1A:
 	lea (AniTitleText).l,a1
-	bra.w   ObjectAnimate
+	bra.s   ObjectAnimate
 ; ---------------------------------------------------------------------------
 	include "screens/title/TitleSonic/Sprite.ani"
 	include "screens/title/TitleText/Sprite.ani"
@@ -21500,7 +21503,7 @@ ArtSplash:  incbin "Splash/SPLASHART.bin"
 	even
 MapSplash:  incbin "Splash/SPLASHMAP.bin"
 	even
-byte_18A62: incbin "unknown/18A62.unc"
+MapTitle: 	incbin "unknown/18A62.unc"
 	even
 ArtTitleMain:   incbin "screens/title/Main.twim"
 	even
