@@ -9,17 +9,17 @@ align		macro pos,num
 ; Macro for playing a command
 command		macro id
 	move.b #id,mQueue.w
-    endm
+	endm
 
 ; Macro for playing music
 music		macro id
 	move.b #id,mQueue+1.w
-    endm
+	endm
 
 ; Macro for playing sound effect
 sfx		macro id
 	move.b #id,mQueue+2.w
-    endm
+	endm
 		
 ; ---------------------------------------------------------------------------
 ; self-explanatory
@@ -35,7 +35,7 @@ enable_ints:	macro
 		
 vsync:			macro
 		enable_ints
-@wait\@:	tst.b	(VintRoutine).w
+@wait\@:tst.b	(VintRoutine).w
 		bne.s	@wait\@
 		endm
 
@@ -198,7 +198,7 @@ copyTilemap:	macro source,loc,width,height
 ; -------------------------------------------------------------------------
 
 pusha macro
-	movem.l	d0-a6,-(sp)			; Push registers
+		movem.l	d0-a6,-(sp)			; Push registers
 	endm
 
 ; -------------------------------------------------------------------------
@@ -206,7 +206,7 @@ pusha macro
 ; -------------------------------------------------------------------------
 
 popa macro
-	movem.l	(sp)+,d0-a6			; Pop registers
+		movem.l	(sp)+,d0-a6			; Pop registers
 	endm
 
 ; -------------------------------------------------------------------------

@@ -226,7 +226,7 @@ ScreensLoop:
 	andi.b  #$C0,d0
 	move.b  d0,(ConsoleRegion).w
 	move.b  (GameMode).w,d0
-	andi.w  #$1C,d0
+	andi.w  #$7C,d0
 	movea.l ScreensArray(pc,d0.w),a0
 	jsr (a0)
 	bra.s   ScreensLoop
@@ -272,10 +272,6 @@ vint:
 	move.w  (VdpCtrl).l,d0
 	move.l  #VSRAM_ADDR_CMD,(VdpCtrl).l
 	move.l  (dword_FFF616).w,(VdpData).l
-	btst    #6,(ConsoleRegion).w    ; is this a PAL machine?
-	beq.s   loc_B3C         		; if not, continue
-	move.w  #$700,d0
-	dbvs    d0,*            		; do some delay
 
 loc_B3C:
 	move.b  (VintRoutine).w,d0
@@ -393,8 +389,8 @@ loc_E3A:
 
 sub_E58:
 	bsr.s   sub_E78
-	bsr.w   RunObjects
-	bsr.w   ProcessMaps
+	jsr   	RunObjects
+	jsr   	ProcessMaps
 	addq.b  #1,(VintECounter).w
 	move.b  #$E,(VintRoutine).w
 	rts
@@ -630,33 +626,32 @@ loc_10F6:
 ; ---------------------------------------------------------------------------
 
 PauseGame:
-	;nop
 	tst.b   (Lives).w
 	beq.s   loc_1206
 	tst.b   (PauseFlag).w
 	bne.s   loc_11CC
-	btst    #7,(padPress1).w
+	btst    #JbS,(padPress1).w
 	beq.s   locret_120C
 
 loc_11CC:
-	move.b  #-1,(PauseFlag).w
+	st.b  	(PauseFlag).w
 	AMPS_MUSPAUSE
 
 loc_11D2:
 	move.b  #$10,(VintRoutine).w
 	vsync
-	btst    #6,(padPress1).w
+	btst    #JbA,(padPress1).w
 	beq.s   loc_11EE
 	move.b  #4,(GameMode).w
 	bra.s   loc_1206
 ; ---------------------------------------------------------------------------
 
 loc_11EE:
-	btst    #4,(padHeld1).w
+	btst    #JbB,(padHeld1).w
 	bne.s   loc_120E
-	btst    #5,(padPress1).w
+	btst    #JbC,(padPress1).w
 	bne.s   loc_120E
-	btst    #7,(padPress1).w
+	btst    #JbS,(padPress1).w
 	beq.s   loc_11D2
 
 loc_1206:
@@ -668,7 +663,7 @@ locret_120C:
 ; ---------------------------------------------------------------------------
 
 loc_120E:
-	move.b  #1,(PauseFlag).w
+	st.b  	(PauseFlag).w
 	AMPS_MUSUNPAUSE
 	rts
 ; ---------------------------------------------------------------------------
@@ -704,24 +699,24 @@ NemDec_RAM:
 ; ------------------------------------------------------------------------------
 NemesisDec:
     movem.l d0-a1/a3-a6,-(sp)
-    lea $C00000,a4      ; load VDP Data Port     
+    lea VdpData,a4      				; load VDP Data Port     
     lea NemDec_WriteRowToVDP(pc),a3
 
 NemDec_Main:
-    lea $FFFFAA00,a1        ; load Nemesis decompression buffer
-    move.w  (a0)+,d2        ; get number of patterns
-    bpl.s   @0          ; are we in Mode 0?
-    lea $A(a3),a3       ; if not, use Mode 1
+    lea NemBuffer,a1        			; load Nemesis decompression buffer
+    move.w  (a0)+,d2        			; get number of patterns
+    bpl.s   @0         	 				; are we in Mode 0?
+    lea $A(a3),a3       				; if not, use Mode 1
 @0  lsl.w   #3,d2
     movea.w d2,a5
     moveq   #7,d3
     moveq   #0,d2
     moveq   #0,d4
     bsr.w   NemDec4
-    move.b  (a0)+,d5        ; get first byte of compressed data
-    asl.w   #8,d5           ; shift up by a byte
-    move.b  (a0)+,d5        ; get second byte of compressed data
-    move.w  #$10,d6         ; set initial shift value
+    move.b  (a0)+,d5        			; get first byte of compressed data
+    asl.w   #8,d5           			; shift up by a byte
+    move.b  (a0)+,d5        			; get second byte of compressed data
+    move.w  #$10,d6         			; set initial shift value
     bsr.s   NemDec2
     movem.l (sp)+,d0-a1/a3-a6
     rts
@@ -732,37 +727,37 @@ NemDec_Main:
 
 NemDec2:
     move.w  d6,d7
-    subq.w  #8,d7           ; get shift value
+    subq.w  #8,d7           			; get shift value
     move.w  d5,d1
-    lsr.w   d7,d1           ; shift so that high bit of the code is in bit position 7
-    cmpi.b  #%11111100,d1       ; are the high 6 bits set?
-    bcc.s   NemDec_InlineData   ; if they are, it signifies inline data
+    lsr.w   d7,d1           			; shift so that high bit of the code is in bit position 7
+    cmpi.b  #%11111100,d1       		; are the high 6 bits set?
+    bcc.s   NemDec_InlineData   		; if they are, it signifies inline data
     andi.w  #$FF,d1
     add.w   d1,d1
-    sub.b   (a1,d1.w),d6        ; ~~ subtract from shift value so that the next code is read next time around
-    cmpi.w  #9,d6           ; does a new byte need to be read?
-    bcc.s   @0          ; if not, branch
+    sub.b   (a1,d1.w),d6        		; ~~ subtract from shift value so that the next code is read next time around
+    cmpi.w  #9,d6           			; does a new byte need to be read?
+    bcc.s   @0          				; if not, branch
     addq.w  #8,d6
     asl.w   #8,d5
-    move.b  (a0)+,d5        ; read next byte
+    move.b  (a0)+,d5        			; read next byte
 @0  move.b  1(a1,d1.w),d1
     move.w  d1,d0
-    andi.w  #$F,d1          ; get palette index for pixel
+    andi.w  #$F,d1          			; get palette index for pixel
     andi.w  #$F0,d0
 
 NemDec_GetRepeatCount:
-    lsr.w   #4,d0           ; get repeat count
+    lsr.w   #4,d0           			; get repeat count
 
 NemDec_WritePixel:
-    lsl.l   #4,d4           ; shift up by a nybble
-    or.b    d1,d4           ; write pixel
-    dbf d3,NemDec_WritePixelLoop; ~~
-    jmp (a3)            ; otherwise, write the row to its destination
+    lsl.l   #4,d4           			; shift up by a nybble
+    or.b    d1,d4           			; write pixel
+    dbf d3,NemDec_WritePixelLoop		; ~~
+    jmp (a3)            				; otherwise, write the row to its destination
 ; ---------------------------------------------------------------------------
 
 NemDec3:
-    moveq   #0,d4           ; reset row
-    moveq   #7,d3           ; reset nybble counter
+    moveq   #0,d4           			; reset row
+    moveq   #7,d3           			; reset nybble counter
 
 NemDec_WritePixelLoop:
     dbf d0,NemDec_WritePixel
@@ -770,18 +765,18 @@ NemDec_WritePixelLoop:
 ; ---------------------------------------------------------------------------
 
 NemDec_InlineData:
-    subq.w  #6,d6           ; 6 bits needed to signal inline data
+    subq.w  #6,d6           			; 6 bits needed to signal inline data
     cmpi.w  #9,d6
     bcc.s   @0
     addq.w  #8,d6
     asl.w   #8,d5
     move.b  (a0)+,d5
-@0  subq.w  #7,d6           ; and 7 bits needed for the inline data itself
+@0  subq.w  #7,d6           			; and 7 bits needed for the inline data itself
     move.w  d5,d1
-    lsr.w   d6,d1           ; shift so that low bit of the code is in bit position 0
+    lsr.w   d6,d1           			; shift so that low bit of the code is in bit position 0
     move.w  d1,d0
-    andi.w  #$F,d1          ; get palette index for pixel
-    andi.w  #$70,d0         ; high nybble is repeat count for pixel
+    andi.w  #$F,d1          			; get palette index for pixel
+    andi.w  #$70,d0         			; high nybble is repeat count for pixel
     cmpi.w  #9,d6
     bcc.s   NemDec_GetRepeatCount
     addq.w  #8,d6
@@ -796,16 +791,16 @@ NemDec_InlineData:
 
 NemDec_WriteRowToVDP:
 sub_12F8:
-    move.l  d4,(a4)         ; write 8-pixel row
+    move.l  d4,(a4)         			; write 8-pixel row
     subq.w  #1,a5
-    move.w  a5,d4           ; have all the 8-pixel rows been written?
-    bne.s   NemDec3         ; if not, branch
+    move.w  a5,d4           			; have all the 8-pixel rows been written?
+    bne.s   NemDec3         			; if not, branch
     rts
 ; ---------------------------------------------------------------------------
 
 NemDec_WriteRowToVDP_XOR:
-    eor.l   d4,d2           ; XOR the previous row by the current row
-    move.l  d2,(a4)         ; and write the result
+    eor.l   d4,d2           			; XOR the previous row by the current row
+    move.l  d2,(a4)         			; and write the result
     subq.w  #1,a5
     move.w  a5,d4
     bne.s   NemDec3
@@ -813,16 +808,16 @@ NemDec_WriteRowToVDP_XOR:
 ; ---------------------------------------------------------------------------
 
 NemDec_WriteRowToRAM:
-    move.l  d4,(a4)+        ; write 8-pixel row
+    move.l  d4,(a4)+        			; write 8-pixel row
     subq.w  #1,a5
-    move.w  a5,d4           ; have all the 8-pixel rows been written?
-    bne.s   NemDec3         ; if not, branch
+    move.w  a5,d4           			; have all the 8-pixel rows been written?
+    bne.s   NemDec3         			; if not, branch
     rts
 ; ---------------------------------------------------------------------------
 
 NemDec_WriteRowToRAM_XOR:
-    eor.l   d4,d2           ; XOR the previous row by the current row
-    move.l  d2,(a4)+        ; and write the result
+    eor.l   d4,d2           			; XOR the previous row by the current row
+    move.l  d2,(a4)+        			; and write the result
     subq.w  #1,a5
     move.w  a5,d4
     bne.s   NemDec3
@@ -833,11 +828,11 @@ NemDec_WriteRowToRAM_XOR:
 ; ---------------------------------------------------------------------------
 
 NemDec4:
-    move.b  (a0)+,d0        ; read first byte
+    move.b  (a0)+,d0        			; read first byte
 
 @ChkEnd:
-    cmpi.b  #$FF,d0         ; has the end of the code table description been reached?
-    bne.s   @NewPalIndex        ; if not, branch
+    cmpi.b  #$FF,d0         			; has the end of the code table description been reached?
+    bne.s   @NewPalIndex        		; if not, branch
     rts
 ; ---------------------------------------------------------------------------
 
@@ -845,37 +840,37 @@ NemDec4:
     move.w  d0,d7
 
 @ItemLoop:
-    move.b  (a0)+,d0        ; read next byte
-    bmi.s   @ChkEnd         ; ~~
+    move.b  (a0)+,d0        			; read next byte
+    bmi.s   @ChkEnd         			; ~~
     move.b  d0,d1
-    andi.w  #$F,d7          ; get palette index
-    andi.w  #$70,d1         ; get repeat count for palette index
-    or.w    d1,d7           ; combine the two
-    andi.w  #$F,d0          ; get the length of the code in bits
+    andi.w  #$F,d7          			; get palette index
+    andi.w  #$70,d1         			; get repeat count for palette index
+    or.w    d1,d7           			; combine the two
+    andi.w  #$F,d0          			; get the length of the code in bits
     move.b  d0,d1
     lsl.w   #8,d1
-    or.w    d1,d7           ; combine with palette index and repeat count to form code table entry
+    or.w    d1,d7           			; combine with palette index and repeat count to form code table entry
     moveq   #8,d1
-    sub.w   d0,d1           ; is the code 8 bits long?
-    bne.s   @ItemShortCode      ; if not, a bit of extra processing is needed
-    move.b  (a0)+,d0        ; get code
-    add.w   d0,d0           ; each code gets a word-sized entry in the table
-    move.w  d7,(a1,d0.w)        ; store the entry for the code
-    bra.s   @ItemLoop       ; repeat
+    sub.w   d0,d1           			; is the code 8 bits long?
+    bne.s   @ItemShortCode      		; if not, a bit of extra processing is needed
+    move.b  (a0)+,d0        			; get code
+    add.w   d0,d0           			; each code gets a word-sized entry in the table
+    move.w  d7,(a1,d0.w)        		; store the entry for the code
+    bra.s   @ItemLoop       			; repeat
 ; ---------------------------------------------------------------------------
 
 @ItemShortCode:
-    move.b  (a0)+,d0        ; get code
-    lsl.w   d1,d0           ; shift so that high bit is in bit position 7
-    add.w   d0,d0           ; get index into code table
+    move.b  (a0)+,d0        			; get code
+    lsl.w   d1,d0           			; shift so that high bit is in bit position 7
+    add.w   d0,d0           			; get index into code table
     moveq   #1,d5
     lsl.w   d1,d5
-    subq.w  #1,d5           ; d5 = 2^d1 - 1
-    lea (a1,d0.w),a6        ; ~~
+    subq.w  #1,d5           			; d5 = 2^d1 - 1
+    lea (a1,d0.w),a6        			; ~~
 
 @ItemShortCodeLoop:
-    move.w  d7,(a6)+        ; ~~ store entry
-    dbf d5,@ItemShortCodeLoop   ; repeat for required number of entries
+    move.w  d7,(a6)+        			; ~~ store entry
+    dbf d5,@ItemShortCodeLoop   		; repeat for required number of entries
     bra.s   @ItemLoop
 ; ---------------------------------------------------------------------------
 
@@ -905,31 +900,6 @@ loc_139A:
 
 loc_13A2:
 	movem.l (sp)+,a1-a2
-	rts
-; ---------------------------------------------------------------------------
-; ---------------------------------------------------------------
-; uncompressed art to VRAM loader
-; ---------------------------------------------------------------
-; INPUT:
-;       a0      - Source Offset
-;   d0  - length in tiles
-; ---------------------------------------------------------------
-LoadUncArt:
-	move    #$2700,sr   ; disable interrupts
-	lea VdpData.l,a6    ; get VDP data port
- 
-LoadArt_Loop:
-	move.l  (a0)+,(a6)  ; transfer 4 bytes
-	move.l  (a0)+,(a6)  ; transfer 4 more bytes
-	move.l  (a0)+,(a6)  ; and so on and so forth
-	move.l  (a0)+,(a6)  ;
-	move.l  (a0)+,(a6)  ;
-	move.l  (a0)+,(a6)  ;
-	move.l  (a0)+,(a6)  ; in total transfer 32 bytes
-	move.l  (a0)+,(a6)  ; which is 1 full tile
- 
-	dbf d0, LoadArt_Loop; loop until d0 = 0
-	move    #$2300,sr   ; enable interrupts
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -1083,14 +1053,32 @@ loc_14F4:
 	dbf d1,loc_14F4
 	rts
 ; ---------------------------------------------------------------------------
-EnigmaDec:
-	include "compression/Enigma.asm"
+; ---------------------------------------------------------------
+; uncompressed art to VRAM loader - AuroraFields
+;
+; INPUT:
+;   a0 - Source Offset
+;   d0 - length in tiles
+; ---------------------------------------------------------------
+LoadUncArt:
+	disable_ints   			; disable interrupts
+	lea (VdpData).l,a6    	; get VDP data port
+ 
+LoadArt_Loop:
+	rept 8
+	move.l  (a0)+,(a6) 	 	; transfer 1 full tile (32 bytes)
+ 	endr
+	dbf 	d0,LoadArt_Loop	; loop until d0 = 0
+	enable_ints			   	; enable interrupts
+	rts
 ; ---------------------------------------------------------------------------
-KosinskiPlusDec:
-	include "compression/KosinskiPlus.asm"
+EnigmaDec:			include "compression/Enigma.asm"
 ; ---------------------------------------------------------------------------
-SaxmanDec:
-	include "compression/Saxman.asm"
+KosinskiPlusDec:	include "compression/KosinskiPlus.asm"
+; ---------------------------------------------------------------------------
+SaxmanDec:			include "compression/Saxman.asm"
+; ---------------------------------------------------------------------------
+TwizzlerDec:		include "compression/Twizzler.asm"
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
@@ -1274,7 +1262,7 @@ FCI_NoGreen:
 
 FCI_NoRed:
 	move.w  d3,(a0)+                ; MJ: save colour
-	rts                     ; MJ: return
+	rts                     		; MJ: return
 ; ---------------------------------------------------------------------------
 
 Pal_FadeFrom:
@@ -1324,7 +1312,7 @@ FCO_NoGreen:
 
 FCO_NoRed:
 	move.w  d5,(a0)+                ; MJ: save new colour
-	rts                     ; MJ: return
+	rts                     		; MJ: return
 ; ---------------------------------------------------------------------------
 
 sub_1A3A:
@@ -1380,7 +1368,7 @@ loc_1AD4:
 	rts
 ; ---------------------------------------------------------------------------
 
-PaletteLoadTable:dc.l palSegaBG
+PaletteLoadTable:dc.l palSega
 	dc.w $FB00, $1F
 	dc.l palTitle
 	dc.w $FB00, $1F
@@ -1402,22 +1390,20 @@ PaletteLoadTable:dc.l palSegaBG
 	dc.w $FB20, $17
 	dc.l palSpecial
 	dc.w $FB00, $1F
-	dc.l palGHZNight
+	dc.l palSplash
 	dc.w $FB00, $1F
 		even
-palSegaBG:  incbin "screens/sega/Main.pal"
+palSega:  	incbin "screens/sega/Main.pal"
 	even
 palTitle:   incbin "screens/title/Main.pal"
 	even
-palLevelSel:    incbin "screens/title/Level Select.pal"
+palLevelSel:incbin "screens/title/Level Select.pal"
 	even
 palSonic:   incbin "levels/shared/Sonic/Sonic.pal"
 	even
 palGHZ:     incbin "levels/GHZ/Main.pal"
 	even
 palLZ:      incbin "levels/LZ/Main.pal"
-	even
-palGHZNight:    incbin "Splash/SEGAPAL.bin"
 	even
 palMZ:      incbin "levels/MZ/Main.pal"
 	even
@@ -1428,6 +1414,8 @@ palSYZ:     incbin "levels/SYZ/Main.pal"
 palSBZ:     incbin "levels/SBZ/Main.pal"
 	even
 palSpecial: incbin "screens/special stage/Main.pal"
+	even
+palSplash:  incbin "Splash/SPLASHPAL.bin"
 	even
 ; ---------------------------------------------------------------------------
 
@@ -1528,13 +1516,13 @@ sSega:
 	command mus_FadeOut
 	bsr.w   ClearPLC
 	bsr.w   Pal_FadeFrom
+	clr.b   (word_FFF662).w
 
 	clrRAM  Chunks
 	clrRAM  Layout
 	clrRAM  Blocks
 	clrRAM  ObjectsList
 
-	clr.b   (word_FFF662).w
 	lea (VdpCtrl).l,a6
 	move.w  #$8004,(a6)
 	move.w  #$8230,(a6)
@@ -1570,7 +1558,7 @@ loc_2528:
 	bsr.w   sub_1A3A
 	tst.w   (GlobalTimer).w
 	beq.s   loc_2544
-	andi.b  #$80,(padPress1).w
+	andi.b  #J_S,(padPress1).w
 	beq.s   loc_2528
 
 loc_2544:
@@ -2146,7 +2134,7 @@ loc_2C92:
 	bsr.w   ColIndexLoad
 	move.b  #1,(ObjectsList).w
 	move.b  #$21,(byte_FFD040).w
-	btst    #6,(padHeld1).w
+	btst    #JbA,(padHeld1).w
 	beq.s   loc_2D54
 	move.b  #1,(EditModeFlag).w
 
@@ -2261,7 +2249,7 @@ loc_2EC8:
 ; ---------------------------------------------------------------------------
 
 sub_3048:
-	btst    #0,(padHeld1).w
+	btst    #JbU,(padHeld1).w
 	beq.s   loc_305E
 	addq.w  #1,(unk_FFF71C).w
 	tst.b   (word_FFF624+1).w
@@ -2269,7 +2257,7 @@ sub_3048:
 	subq.b  #1,(word_FFF624+1).w
 
 loc_305E:
-	btst    #1,(padHeld1).w
+	btst    #JbD,(padHeld1).w
 	beq.s   locret_3076
 	subq.w  #1,(unk_FFF71C).w
 	cmpi.b  #$DF,(word_FFF624+1).w
@@ -2614,9 +2602,9 @@ loc_47D4:
 		move.w	#$9001,(a6)
 		bsr.w	ClearPLC
 		move.l  #$70000002,($C00004).l
-	lea ArtTitleCards,a0
-	move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
-	jsr LoadUncArt
+		lea ArtTitleCards,a0
+		move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
+		jsr LoadUncArt
 		jsr		sub_3048
 		move	#$2300,sr
 		moveq	#$11,d0
@@ -8282,7 +8270,7 @@ loc_7F3C:
 loc_7F4C:
 	move.b  #$4A,(byte_FFD1C0).w
 	moveq   #$13,d0
-	bsr.w   plcAdd
+	jsr   	plcAdd
 	bra.w   ObjectDelete
 ; ---------------------------------------------------------------------------
 	include "levels/shared/Rings/Sprite.ani"
@@ -9246,7 +9234,7 @@ sub_8B22:
 ; ---------------------------------------------------------------------------
 
 loc_8B36:
-	bsr.w   ObjectLoad
+	bsr.s   ObjectLoad
 	bne.s   locret_8B70
 	move.w  (a0)+,xpos(a1)
 	move.w  (a0)+,d0
@@ -11479,7 +11467,7 @@ loc_A6AC:
 
 loc_A6B8:
 	move.b  (padPressPlayer).w,d0
-	andi.b  #$70,d0
+	andi.b  #J_B|J_C|J_A,d0
 	bne.s   loc_A6D6
 	tst.b   frame(a0)
 	bne.s   loc_A6DC
@@ -16103,7 +16091,7 @@ loc_E872:
 	andi.w  #$7FF,(CameraY).w
 	tst.w   (EditModeFlag).w
 	beq.s   loc_E892
-	btst    #4,(padPressPlayer).w
+	btst    #JbB,(padPressPlayer).w
 	beq.s   loc_E892
 	move.w  #1,(DebugRoutine).w
 
@@ -16226,12 +16214,12 @@ ObjSonic_Move:
 	move.w  (PlayerDecel).w,d4
 	tst.w   lock(a0)
 	bne.w   ObjSonic_LookUp
-	btst    #2,(padHeldPlayer).w
+	btst    #JbL,(padHeldPlayer).w
 	beq.s   ObjSonic_NoLeft
 	bsr.w   ObjSonic_MoveLeft
 
 ObjSonic_NoLeft:
-	btst    #3,(padHeldPlayer).w
+	btst    #JbR,(padHeldPlayer).w
 	beq.s   ObjSonic_NoRight
 	bsr.w   ObjSonic_MoveRight
 
@@ -16292,19 +16280,19 @@ loc_EA98:
 ; ---------------------------------------------------------------------------
 
 ObjSonic_LookUp:
-	btst    #0,(padHeldPlayer).w
+	btst    #JbU,(padHeldPlayer).w
 	beq.s   ObjSonic_Duck
 	move.b  #7,ani(a0)
-		move.w	(CameraY).w,d0	; get camera top coordinate
-		sub.w	(unk_FFF72C).w,d0	; subtract zone's top bound from it
-		add.w	(unk_FFF73E).w,d0	; add default offset
-		cmpi.w	#$C8,d0			; is offset <= $C8?
-		ble.s	@skip			; if so, branch
-		move.w	#$C8,d0			; set offset to $C8
+	move.w	(CameraY).w,d0	; get camera top coordinate
+	sub.w	(unk_FFF72C).w,d0	; subtract zone's top bound from it
+	add.w	(unk_FFF73E).w,d0	; add default offset
+	cmpi.w	#$C8,d0			; is offset <= $C8?
+	ble.s	@skip			; if so, branch
+	move.w	#$C8,d0			; set offset to $C8
 		
-	@skip:
-		cmp.w	(unk_FFF73E).w,d0
-		ble.s	loc_EAEA
+@skip:
+	cmp.w	(unk_FFF73E).w,d0
+	ble.s	loc_EAEA
 	addq.w  #2,(unk_FFF73E).w
 	bra.s   loc_EAEA
 ; ---------------------------------------------------------------------------
@@ -16313,19 +16301,19 @@ ObjSonic_Duck:
 	btst    #1,(padHeldPlayer).w
 	beq.s   ObjSonic_ResetScroll
 	move.b  #8,ani(a0)
-		move.w	(CameraY).w,d0	; get camera top coordinate
-		sub.w	(unk_FFF72E).w,d0	; subtract zone's bottom bound from it (creating a negative number)
-		add.w	(unk_FFF73E).w,d0	; add default offset
-		cmpi.w	#8,d0			; is offset < 8?
-		blt.s	@set			; if so, branch
-		bgt.s	@skip			; if greater than 8, branch
+	move.w	(CameraY).w,d0	; get camera top coordinate
+	sub.w	(unk_FFF72E).w,d0	; subtract zone's bottom bound from it (creating a negative number)
+	add.w	(unk_FFF73E).w,d0	; add default offset
+	cmpi.w	#8,d0			; is offset < 8?
+	blt.s	@set			; if so, branch
+	bgt.s	@skip			; if greater than 8, branch
 		
-	@set:
-		move.w	#8,d0	; set offset to 8
+@set:
+	move.w	#8,d0	; set offset to 8
 		
-	@skip:
-		cmp.w	(unk_FFF73E).w,d0
-		bge.s	loc_EAEA
+@skip:
+	cmp.w	(unk_FFF73E).w,d0
+	bge.s	loc_EAEA
 	subq.w  #2,(unk_FFF73E).w
 	bra.s   loc_EAEA
 ; ---------------------------------------------------------------------------
@@ -16519,12 +16507,12 @@ ObjSonic_RollSpeed:
 	asr.w   #2,d4
 	tst.w   lock(a0)
 	bne.s   loc_EC92
-	btst    #2,(padHeldPlayer).w
+	btst    #JbL,(padHeldPlayer).w
 	beq.s   loc_EC86
 	bsr.w   ObjSonic_RollLeft
 
 loc_EC86:
-	btst    #3,(padHeldPlayer).w
+	btst    #JbR,(padHeldPlayer).w
 	beq.s   loc_EC92
 	bsr.w   ObjSonic_RollRight
 
@@ -16614,7 +16602,7 @@ ObjSonic_ChgJumpDirection:
 	move.w  (PlayerAccel).w,d5
 	asl.w   #1,d5
 	move.w  xvel(a0),d0
-	btst    #2,(padHeld1).w
+	btst    #JbL,(padHeld1).w
 	beq.s   loc_ED6E
 	bset    #0,status(a0)
 	sub.w   d5,d0
@@ -16628,7 +16616,7 @@ ObjSonic_ChgJumpDirection:
 	move.w  d1,d0
 
 loc_ED6E:
-	btst    #3,(padHeld1).w
+	btst    #JbR,(padHeld1).w
 	beq.s   ObjSonic_JumpMove
 	bclr    #0,status(a0)
 	add.w   d5,d0
@@ -16738,7 +16726,7 @@ loc_EE54:
 	move.b  (padHeldPlayer).w,d0
 	andi.b  #$C,d0
 	bne.s   locret_EE6C
-	btst    #1,(padHeldPlayer).w
+	btst    #JbD,(padHeldPlayer).w
 	bne.s   ObjSonic_CheckRoll
 
 locret_EE6C:
@@ -16768,7 +16756,7 @@ locret_EEAA:
 
 ObjSonic_Jump:
 	move.b  (padPressPlayer).w,d0
-	andi.b  #$70,d0
+	andi.b  #J_B|J_C|J_A,d0
 	beq.w   locret_EF46
 	moveq   #0,d0
 	move.b  angle(a0),d0
@@ -16816,7 +16804,7 @@ ObjSonic_JumpHeight:
 	cmpi.w  #$FC00,yvel(a0)
 	bge.s   locret_EF76
 	move.b  (padHeldPlayer).w,d0
-	andi.b  #$70,d0
+	andi.b  #J_B|J_C|J_A,d0
 	bne.s   locret_EF76
 	move.w  #$FC00,yvel(a0)
 
@@ -16844,8 +16832,8 @@ ObjSonic_SpinDash:
 	cmpi.b  #8,ani(a0)
 	bne.s   locret_1AC8C
 	move.b  (padHeldPlayer).w,d0
-	andi.b  #$70,d0
-	beq.w   locret_1AC8C
+	andi.b  #J_B|J_C|J_A,d0
+	beq.s   locret_1AC8C
 	move.b  #2,ani(a0)
 	sfx     sfx_Spindash
 	addq.l  #4,sp
@@ -16923,7 +16911,7 @@ loc_1AD30:              ; If still charging the dash...
 
 loc_1AD48:
 	move.b  (padPressPlayer).w,d0
-	andi.b  #$70,d0 ; 'p'
+	andi.b  #J_B|J_C|J_A,d0 ; 'p'
 	beq.w   loc_1AD78
 	sfx     sfx_Spindash
 	addi.w  #$200,spindashtimer(a0)
@@ -17330,7 +17318,7 @@ loc_F380:
 	move.b  #$3C,$3A(a0)
 ; ---------------------------------------------------------------------------
 	move.b  (padPressPlayer).w,d0
-	andi.b  #$70,d0
+	andi.b  #J_B|J_C|J_A,d0
 	beq.s   locret_F3AE
 	andi.b  #$40,d0
 	bne.s   loc_F3B0
@@ -19547,17 +19535,17 @@ loc_10D48:
 	bsr.w   sub_110DE
 	jsr ObjectMove
 	bsr.w   sub_10ECE
-	btst    #6,(padHeld1).w
+	btst    #JbA,(padHeld1).w
 	beq.s   loc_10D66
 	subq.w  #1,(SpecSpeed).w
 
 loc_10D66:
-	btst    #4,(padHeld1).w
+	btst    #JbB,(padHeld1).w
 	beq.s   loc_10D72
 	addq.w  #1,(SpecSpeed).w
 
 loc_10D72:
-	btst    #7,(padPress1).w
+	btst    #JbS,(padPress1).w
 	beq.s   loc_10D80
 	clr.w   (SpecSpeed).w
 
@@ -19569,18 +19557,18 @@ loc_10D80:
 ; ---------------------------------------------------------------------------
 
 sub_10D94:
-	btst    #2,(padHeldPlayer).w
+	btst    #JbL,(padHeldPlayer).w
 	beq.s   loc_10DA0
 	bsr.w   sub_10E2C
 
 loc_10DA0:
-	btst    #3,(padHeldPlayer).w
+	btst    #JbR,(padHeldPlayer).w
 	beq.s   loc_10DAC
 	bsr.w   sub_10E5C
 
 loc_10DAC:
 	move.b  (padHeldPlayer).w,d0
-	andi.b  #$C,d0
+	andi.b  #J_L|J_R,d0
 	bne.s   loc_10DDC
 	move.w  inertia(a0),d0
 	beq.s   loc_10DDC
@@ -20971,14 +20959,14 @@ loc_11F12:
 	asr.l   #4,d1
 	move.l  ypos(a0),d2
 	move.l  xpos(a0),d3
-	btst    #0,d4
+	btst    #JbU,d4
 	beq.s   loc_11F32
 	sub.l   d1,d2
 	bcc.s   loc_11F32
 	moveq   #0,d2
 
 loc_11F32:
-	btst    #1,d4
+	btst    #JbD,d4
 	beq.s   loc_11F48
 	add.l   d1,d2
 	cmpi.l  #$7FF0000,d2
@@ -20986,21 +20974,21 @@ loc_11F32:
 	move.l  #$7FF0000,d2
 
 loc_11F48:
-	btst    #2,d4
+	btst    #JbL,d4
 	beq.s   loc_11F54
 	sub.l   d1,d3
 	bcc.s   loc_11F54
 	moveq   #0,d3
 
 loc_11F54:
-	btst    #3,d4
+	btst    #JbR,d4
 	beq.s   loc_11F5C
 	add.l   d1,d3
 
 loc_11F5C:
 	move.l  d2,ypos(a0)
 	move.l  d3,xpos(a0)
-	btst    #6,(padPressPlayer).w
+	btst    #JbA,(padPressPlayer).w
 	beq.s   loc_11F80
 	addq.b  #1,(byte_FFFE06).w
 	cmp.b   (byte_FFFE06).w,d6
@@ -21012,7 +21000,7 @@ loc_11F7C:
 ; ---------------------------------------------------------------------------
 
 loc_11F80:
-	btst    #5,(padPressPlayer).w
+	btst    #JbC,(padPressPlayer).w
 	beq.s   loc_11FA4
 	jsr ObjectLoad
 	bne.s   loc_11FA4
@@ -21023,7 +21011,7 @@ loc_11F80:
 ; ---------------------------------------------------------------------------
 
 loc_11FA4:
-	btst    #4,(padPressPlayer).w
+	btst    #JbB,(padPressPlayer).w
 	beq.s   locret_11FCC
 	moveq   #0,d0
 	move.w  d0,(DebugRoutine).w
@@ -21501,9 +21489,6 @@ plcSBZAnimals:  dc.w (((plcEnd-plcSBZAnimals-2)/6)-1)
 	dc.l ArtAnimalFlicky
 	dc.w $B240
 plcEnd:
-	
-TwizzlerDec:
-	include "compression/Twizzler.asm"
 
 ArtCred:    incbin "screens/title/CreditsText/Sprite.nem"
 	even
@@ -21511,9 +21496,9 @@ ArtSega:    incbin "screens/sega/Main.twim"
 	even
 MapSega:    incbin "unknown/18A56.eni"
 	even
-ArtSplash:  incbin "Splash/SEGAARTNEM.bin"
+ArtSplash:  incbin "Splash/SPLASHART.bin"
 	even
-MapSplash:  incbin "Splash/SEGAMAPSE.bin"
+MapSplash:  incbin "Splash/SPLASHMAP.bin"
 	even
 byte_18A62: incbin "unknown/18A62.unc"
 	even

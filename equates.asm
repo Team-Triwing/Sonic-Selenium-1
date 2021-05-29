@@ -1,30 +1,30 @@
-VDPREG_MODE1:     equ $8000  ; Mode register #1
-VDPREG_MODE2:     equ $8100  ; Mode register #2
-VDPREG_MODE3:     equ $8B00  ; Mode register #3
-VDPREG_MODE4:     equ $8C00  ; Mode register #4
+VDPREG_MODE1:     equ $8000  		; Mode register #1
+VDPREG_MODE2:     equ $8100  		; Mode register #2
+VDPREG_MODE3:     equ $8B00  		; Mode register #3
+VDPREG_MODE4:     equ $8C00  		; Mode register #4
 
-VDPREG_PLANEA:    equ $8200  ; Plane A table address
-VDPREG_PLANEB:    equ $8400  ; Plane B table address
-VDPREG_SPRITE:    equ $8500  ; Sprite table address
-VDPREG_WINDOW:    equ $8300  ; Window table address
-VDPREG_HSCROLL:   equ $8D00  ; HScroll table address
+VDPREG_PLANEA:    equ $8200  		; Plane A table address
+VDPREG_PLANEB:    equ $8400  		; Plane B table address
+VDPREG_SPRITE:    equ $8500  		; Sprite table address
+VDPREG_WINDOW:    equ $8300  		; Window table address
+VDPREG_HSCROLL:   equ $8D00  		; HScroll table address
 
-VDPREG_SIZE:      equ $9000  ; Plane A and B size
-VDPREG_WINX:      equ $9100  ; Window X split position
-VDPREG_WINY:      equ $9200  ; Window Y split position
-VDPREG_INCR:      equ $8F00  ; Autoincrement
-VDPREG_BGCOL:     equ $8700  ; Background color
-VDPREG_HRATE:     equ $8A00  ; HBlank interrupt rate
+VDPREG_SIZE:      equ $9000  		; Plane A and B size
+VDPREG_WINX:      equ $9100  		; Window X split position
+VDPREG_WINY:      equ $9200  		; Window Y split position
+VDPREG_INCR:      equ $8F00  		; Autoincrement
+VDPREG_BGCOL:     equ $8700  		; Background color
+VDPREG_HRATE:     equ $8A00  		; HBlank interrupt rate
 
-VDPREG_DMALEN_L:  equ $9300  ; DMA length (low)
-VDPREG_DMALEN_H:  equ $9400  ; DMA length (high)
-VDPREG_DMASRC_L:  equ $9500  ; DMA source (low)
-VDPREG_DMASRC_M:  equ $9600  ; DMA source (mid)
-VDPREG_DMASRC_H:  equ $9700  ; DMA source (high)
+VDPREG_DMALEN_L:  equ $9300  		; DMA length (low)
+VDPREG_DMALEN_H:  equ $9400  		; DMA length (high)
+VDPREG_DMASRC_L:  equ $9500  		; DMA source (low)
+VDPREG_DMASRC_M:  equ $9600  		; DMA source (mid)
+VDPREG_DMASRC_H:  equ $9700  		; DMA source (high)
 
-VdpCtrl:    equ $C00004  ; VDP control port
-VdpData:    equ $C00000  ; VDP data port
-HvCounter:  equ $C00008  ; H/V counter
+VdpCtrl:    equ $C00004  		; VDP control port
+VdpData:    equ $C00000  		; VDP data port
+HvCounter:  equ $C00008  		; H/V counter
 
 GFXMODE_256x224:      equ %00000000
 GFXMODE_320x224:      equ %10000001
@@ -44,11 +44,11 @@ CRAM_DMA_CMD:   equ $C0000080
 VSRAM_DMA_CMD:  equ $40000090
 
 ; VRAM data
-vram_fg:	equ $C000	; foreground namespace
-vram_bg:	equ $E000	; background namespace
-vram_sonic:	equ $F000	; Sonic graphics
-vram_sprites:	equ $F800	; sprite table
-vram_hscroll:	equ $FC00	; horizontal scroll table
+vram_fg:	equ $C000		; foreground namespace
+vram_bg:	equ $E000		; background namespace
+vram_sonic:	equ $F000		; Sonic graphics
+vram_sprites:	equ $F800		; sprite table
+vram_hscroll:	equ $FC00		; horizontal scroll table
 
 ; Colors
 cBlack:		equ $000		; black
@@ -57,78 +57,78 @@ cBlue:		equ $E00		; blue
 cGreen:		equ $0E0		; green
 cRed:		equ $00E		; red
 cYellow:	equ cGreen+cRed		; yellow
-cAqua:		equ cGreen+cBlue	; aqua
+cAqua:		equ cGreen+cBlue 	; aqua
 cMagenta:	equ cBlue+cRed		; magenta
 
 ; -------------------------------------------------------------------------
 ; I/O
 ; -------------------------------------------------------------------------
 
-HW_VERSION	EQU	$A10001			; Hardware version
-IO_A_DATA	EQU	$A10003			; I/O port A data port
-IO_B_DATA	EQU	$A10005			; I/O port B data port
-IO_C_DATA	EQU	$A10007			; I/O port C data port
-IO_A_CTRL	EQU	$A10009			; I/O port A control port
-IO_B_CTRL	EQU	$A1000B			; I/O port B control port
-IO_C_CTRL	EQU	$A1000D			; I/O port C control port
-CART_MODE	EQU	$A11000			; Cart mode (D-RAM/ROM)
-SRAM_ENABLE	EQU	$A130F1			; SRAM enable port
-TMSS_SEGA	EQU	$A14000			; TMSS "SEGA" register
-TMSS_MODE	EQU	$A14100			; TMSS bus mode
+HW_VERSION	EQU	$A10001		; Hardware version
+IO_A_DATA	EQU	$A10003		; I/O port A data port
+IO_B_DATA	EQU	$A10005		; I/O port B data port
+IO_C_DATA	EQU	$A10007		; I/O port C data port
+IO_A_CTRL	EQU	$A10009		; I/O port A control port
+IO_B_CTRL	EQU	$A1000B		; I/O port B control port
+IO_C_CTRL	EQU	$A1000D		; I/O port C control port
+CART_MODE	EQU	$A11000		; Cart mode (D-RAM/ROM)
+SRAM_ENABLE	EQU	$A130F1		; SRAM enable port
+TMSS_SEGA	EQU	$A14000		; TMSS "SEGA" register
+TMSS_MODE	EQU	$A14100		; TMSS bus mode
 
 ; -------------------------------------------------------------------------
 ; VDP
 ; -------------------------------------------------------------------------
 
 VDP_DATA	EQU	VdpData		; VDP data port
-VDP_CTRL	EQU	VdpCtrl			; VDP control port
-VDP_HV		EQU	HvCounter		; VDP H/V counter
-VDP_DEBUG	EQU	$C0001C			; VDP debug
+VDP_CTRL	EQU	VdpCtrl		; VDP control port
+VDP_HV		EQU	HvCounter	; VDP H/V counter
+VDP_DEBUG	EQU	$C0001C		; VDP debug
 
 ; -------------------------------------------------------------------------
 ; RAM
 ; -------------------------------------------------------------------------
 
-RAM_START	EQU	$FF0000			; RAM start
-RAM_END		EQU	$1000000		; RAM end
+RAM_START	EQU	$FF0000		; RAM start
+RAM_END		EQU	$1000000	; RAM end
 
 ; -------------------------------------------------------------------------
 ; Controller I/O
 ; -------------------------------------------------------------------------
 
 	rsreset
-JbU		rs.b	1			; Bit up
-JbD		rs.b	1			; Bit down
-JbL		rs.b	1			; Bit left
-JbR		rs.b	1			; Bit right
-JbB		rs.b	1			; Bit B
-JbC		rs.b	1			; Bit C
-JbA		rs.b	1			; Bit A
-JbS		rs.b	1			; Bit start
-JbZ		rs.b	1			; Bit Z
-JbY		rs.b	1			; Bit Y
-JbX		rs.b	1			; Bit X
-JbM		rs.b	1			; Bit mode
+JbU		rs.b	1	; Bit up
+JbD		rs.b	1	; Bit down
+JbL		rs.b	1	; Bit left
+JbR		rs.b	1	; Bit right
+JbB		rs.b	1	; Bit B
+JbC		rs.b	1	; Bit C
+JbA		rs.b	1	; Bit A
+JbS		rs.b	1	; Bit start
+JbZ		rs.b	1	; Bit Z
+JbY		rs.b	1	; Bit Y
+JbX		rs.b	1	; Bit X
+JbM		rs.b	1	; Bit mode
 
-J_U	EQU	(1<<JbU)		; Up
-J_D	EQU	(1<<JbD)		; Down
-J_L	EQU	(1<<JbL)		; Left
-J_R	EQU	(1<<JbR)		; Right
-J_B	EQU	(1<<JbB)		; B
-J_C	EQU	(1<<JbC)		; C
-J_A	EQU	(1<<JbA)		; A
-J_S	EQU	(1<<JbS)		; Start
-J_Z	EQU	(1<<JbZ)		; Z
-J_Y	EQU	(1<<JbY)		; Y
-J_X	EQU	(1<<JbX)		; X
-J_M	EQU	(1<<JbM)		; Mode
+J_U	EQU	(1<<JbU)	; Up
+J_D	EQU	(1<<JbD)	; Down
+J_L	EQU	(1<<JbL)	; Left
+J_R	EQU	(1<<JbR)	; Right
+J_B	EQU	(1<<JbB)	; B
+J_C	EQU	(1<<JbC)	; C
+J_A	EQU	(1<<JbA)	; A
+J_S	EQU	(1<<JbS)	; Start
+J_Z	EQU	(1<<JbZ)	; Z
+J_Y	EQU	(1<<JbY)	; Y
+J_X	EQU	(1<<JbX)	; X
+J_M	EQU	(1<<JbM)	; Mode
 
-IObTH	EQU	6			; TH pin bit
-IObTR	EQU	5			; TR pin bit
-IObTL	EQU	4			; TL pin bit
-IO_TH	EQU	1<<IObTH		; TH pin
-IO_TR	EQU	1<<IObTR		; TR pin
-IO_TL	EQU	1<<IObTL		; TL pin
+IObTH	EQU	6		; TH pin bit
+IObTR	EQU	5		; TR pin bit
+IObTL	EQU	4		; TL pin bit
+IO_TH	EQU	1<<IObTH	; TH pin
+IO_TR	EQU	1<<IObTR	; TR pin
+IO_TL	EQU	1<<IObTL	; TL pin
 
 ; enum object, width 64 bytes
 	rsreset
@@ -163,29 +163,29 @@ angle		rs.w 1
 arg		rs.b 1
 		rs.b 1
 		rs.b 6
-invulnerable	rs.w 1	; sonic specific (!)
+invulnerable	rs.w 1		; sonic specific (!)
 invincible	rs.w 1		; sonic specific (!)
 speedshoes	rs.w 1		; sonic specific (!)
 sensorfront	rs.b 1		; sonic specific (!)
 sensorback	rs.b 1		; sonic specific (!)
 convex		rs.b 1		; sonic specific (!)
-spindashflag	rs.b 1	; sonic specific (!)
-spindashtimer	rs.w 1	; sonic specific (!)
+spindashflag	rs.b 1		; sonic specific (!)
+spindashtimer	rs.w 1		; sonic specific (!)
 jumping		rs.b 1		; sonic specific (!)
 platform	rs.b 1		; sonic specific (!)
 lock		rs.b 1		; sonic specific (!)
-			rs.b 1
+		rs.b 1
 size		rs.b 1
 
 ; ---------------------------------------------------------------------------
 
 ; sonic 2 naming convention
-x_pos	equ	xpos
-y_pos	equ	ypos
-x_sub	equ	xpix
-y_sub	equ	ypix
-x_vel	equ	xvel
-y_vel	equ	yvel
+x_pos		equ	xpos
+y_pos		equ	ypos
+x_sub		equ	xpix
+y_sub		equ	ypix
+x_vel		equ	xvel
+y_vel		equ	yvel
 x_radius	equ	xrad
 y_radius	equ	yrad
 routine	equ	act
@@ -198,7 +198,7 @@ anim_frame_duration	equ	anilast
 collision_flags	equ	col
 collision_property	equ	colprop
 anim_frame	equ	anipos
-anim	equ	ani
+anim		equ	ani
 art_tile	equ	tile
 render_flags	equ	render
 mappings	equ	map
@@ -207,7 +207,7 @@ invulnerable_time	equ	invulnerable
 invincibility_time	equ	invincible
 speedshoes_time	equ	speedshoes
 next_tilt	equ	sensorfront
-tilt	equ	sensorback
+tilt		equ	sensorback
 spindash_flag	equ	spindashflag
 spindash_counter	equ	spindashtimer
 interact	equ	platform
@@ -581,6 +581,7 @@ SprTableBuff:	rs.b $300
 SprTableBuff_End:rs.b 0
 Palette:	rs.b $80
 PaletteTarget:	rs.b $80
+Palette_End:	rs.b 0
 byte_FFFC00:	rs.b $100
 Stack		rs.b $100					; stack data!
 Stack_End: 	rs.b 0
