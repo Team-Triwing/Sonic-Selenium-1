@@ -95,29 +95,32 @@ SFXlast =	__sfx
 
 __samp =	$80
 SampleList:
-	sample $0000, Stop, Stop		; 80 - Stop sample (DO NOT EDIT)
-	sample $0100, Kick, Stop		; 81 - Kick
-	sample $0100, Snare, Stop		; 82 - Snare
-	sample $0100, Timpani, Stop, HiTimpani	; 83 - Hi Timpani
-	sample $00E6, Timpani, Stop, MidTimpani	; 84 - Timpani
-	sample $00C2, Timpani, Stop, LowTimpani	; 85 - Low Timpani
-	sample $00B6, Timpani, Stop, FloorTimpani; 86 - Floor Timpani
-	sample $0300, HiTom, Stop		; 87 - Hi Tom
-	sample $0300, MidTom, Stop		; 88 - Mid Tom
-	sample $0300, LowTom, Stop		; 89 - Low Tom
-	sample $0300, FloorTom, Stop	; 8A - Floor Tom
-	sample $0100, Sega, Stop		; 8B - SEGA screen
-	sample $0100, SonicClear, Stop	; 8C - Sonic (act results)
-	sample $0100, SonicHurt, Stop	; 8D - Sonic (when he gets hurt)
-	sample $0100, SonicDeath, Stop	; 8E - Sonic (when he dies)
-	sample $0100, SonicLife, Stop		; 8F - Sonic (extra life)
-	sample $0100, MajPad, Stop	; 90 - Minor chord Pad
-	sample $0100, MinPad, Stop	; 91 - Major chord Pad
-	sample $0100, Sus2Pad, Stop	; 92 - Sus2 chord Pad
-	sample $0100, Sus4Pad, Stop	; 93 - Sus4 chord Pad
-	sample $0100, Perfect5thPad, Stop	; 94 - Perfect 5th chord Pad
-	sample $0100, CrystalRhodes, Stop	; 95 - Crystal Rhodes
-	sample $0100, Lava, Lava	; 96 - Lava (Loop))
+	sample $0000, Stop, Stop					; 80 - Stop sample (DO NOT EDIT)
+	sample $0100, Kick, Stop					; 81 - Kick
+	sample $0100, Snare, Stop					; 82 - Snare
+	sample $0100, Timpani, Stop, HiTimpani		; 83 - Hi Timpani
+	sample $00E6, Timpani, Stop, MidTimpani		; 84 - Timpani
+	sample $00C2, Timpani, Stop, LowTimpani		; 85 - Low Timpani
+	sample $00B6, Timpani, Stop, FloorTimpani	; 86 - Floor Timpani
+	sample $0300, HiTom, Stop					; 87 - Hi Tom
+	sample $0300, MidTom, Stop					; 88 - Mid Tom
+	sample $0300, LowTom, Stop					; 89 - Low Tom
+	sample $0300, FloorTom, Stop				; 8A - Floor Tom
+	sample $0100, Sega, Stop					; 8B - SEGA screen
+	sample $0100, SonicClear, Stop				; 8C - Sonic (act results)
+	sample $0100, SonicHurt, Stop				; 8D - Sonic (when he gets hurt)
+	sample $0100, SonicDeath, Stop				; 8E - Sonic (when he dies)
+	sample $0100, SonicLife, Stop				; 8F - Sonic (extra life)
+	sample $0100, MajPad, Stop					; 90 - Minor chord Pad
+	sample $0100, MinPad, Stop					; 91 - Major chord Pad
+	sample $0100, Sus2Pad, Stop					; 92 - Sus2 chord Pad
+	sample $0100, Sus4Pad, Stop					; 93 - Sus4 chord Pad
+	sample $0100, Perfect5thPad, Stop			; 94 - Perfect 5th chord Pad
+	sample $0100, CrystalRhodes, Stop			; 95 - Crystal Rhodes
+	sample $0100, Lava, Lava					; 96 - Lava (Loop)
+	sample $0100, Guitar1, Stop					; 97 - Guitar
+	sample $0100, Guitar2, Stop					; 98 - Guitar
+	sample $0100, Guitar3, Stop					; 99 - Guitar
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -249,10 +252,8 @@ SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
 	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega
-	even
 	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad
-	even
-	incSWF	Perfect5thPad, CrystalRhodes, Lava, SonicLife
+	incSWF	Perfect5thPad, CrystalRhodes, Lava, SonicLife, Guitar1, Guitar2, Guitar3
 	even
 	opt ae+				; enable automatic evens
 	list				; continue source listing

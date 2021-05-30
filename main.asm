@@ -1719,6 +1719,7 @@ loc_26E4:
 	beq.w   loc_27AA
 	bsr.w   Pal_FadeFrom
 	bsr.w   ClearScreen
+	command mus_FadeOut
 	move.l  d0,(dword_FFF616).w
 	lea (VdpData).l,a6
 	move.l  #$50000003,4(a6)
