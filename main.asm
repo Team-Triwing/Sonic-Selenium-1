@@ -8162,14 +8162,16 @@ loc_7DD2:
 	move.w  #$100,prio(a1)
 	move.b  #$47,col(a1)
 	move.b  #8,xpix(a1)
-	move.b  #$FF,(RingLossTimer).w
 	move.l  (a3)+,xvel(a1) ; move the data contained in the array to the x/y velocity and increment the address in a3
 	dbf d5,loc_7DA0
 
 loc_7E2C:
-	move.w  #0,(Rings).w
+	clr.w  	(Rings).w
 	move.b  #$80,(ExtraLifeFlags).w
-	move.b  #0,(byte_FFFE1B).w
+	clr.b  	(byte_FFFE1B).w
+	moveq	#-1,d0					; Move #-1 to d0
+	move.b	d0,$1F(a0)				; Move d0 to new timer
+	move.b	d0,(RingLossTimer).w	; Move d0 to old timer (for animated purposes)
 	sfx     sfx_RingLoss
 
 loc_7E48:
@@ -8191,13 +8193,17 @@ loc_7E48:
 	neg.w   yvel(a0)
 
 loc_7E82:
-	tst.b   (RingLossTimer).w
-	beq.s   loc_7EBC
+	subq.b	#1,$1F(a0)			; Subtract 1
+	beq.w	ObjectDelete		; If 0, delete
 	move.w  (unk_FFF72E).w,d0
 	addi.w  #224,d0
 	cmp.w   ypos(a0),d0
 	bcs.s   loc_7EBC
-	bra.w   ObjectDisplay
+	btst	#0,$1F(a0) 			; Test the first bit of the timer, so rings flash every other frame.
+	beq.w	ObjectDisplay      	; If the bit is 0, the ring will appear.
+	cmpi.b	#80,$1F(a0) 		; Rings will flash during last 80 steps of their life.
+	bhi.w	ObjectDisplay      	; If the timer is higher than 80, obviously the rings will STAY visible.
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_7E9A:
