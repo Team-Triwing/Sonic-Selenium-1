@@ -1,6 +1,6 @@
 @echo off
 "AMPS\Includer.exe" ASM68K AMPS AMPS\.Data
-"tools/asm68k.exe" /o ae-,w- /e RecordableDemo=1 /e safe=1 /q /p main.asm, out_demo.gen, , out.lst>out.log
+"tools/asm68k.exe" /o ae-,w- /e RecordableDemo=1 /e safe=0 /q /p main.asm, out_demo.gen, , out.lst>out.log
 type out.log
 if not exist out_demo.gen pause & exit
 "AMPS\Dual PCM Compress.exe" AMPS\.z80 AMPS\.z80.dat out_demo.gen _dlls\saxcmp.exe
