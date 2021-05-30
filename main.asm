@@ -330,7 +330,7 @@ loc_BBA:
 	bsr.w   padRead
 	writeCRAM       Palette,$80,0
 	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$380,vram_hscroll
+	writeVRAM       ScrollTable,$400,vram_hscroll
 	jsr (ProcessDMAQueue).l
 
 loc_C7A:
@@ -338,15 +338,8 @@ loc_C7A:
 	jsr ZoneAnimTiles
 	jsr UpdateHUD
 	bsr.w   loc_1454
-	moveq   #0,d0
-	move.b  (VintECounter).w,d0
-	move.b  (byte_FFF629).w,d1
-	cmp.b   d0,d1
-	bcc.s   loc_CA8
-	move.b  d0,(byte_FFF629).w
 
 loc_CA8:
-	clr.b   (VintECounter).w
 	tst.w   (GlobalTimer).w
 	beq.s   locret_CBA
 	subq.w  #1,(GlobalTimer).w
@@ -359,7 +352,7 @@ loc_CBC:
 	bsr.w   padRead
 	writeCRAM       Palette,$80,0
 	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$380,vram_hscroll
+	writeVRAM       ScrollTable,$400,vram_hscroll
 	bsr.w   sSpecialPalCyc
 	jsr (ProcessDMAQueue).l
 
@@ -376,7 +369,7 @@ sub_D88:
 	bsr.w   padRead
 	writeCRAM       Palette,$80,0
 	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$380,vram_hscroll
+	writeVRAM       ScrollTable,$400,vram_hscroll
 	jsr (ProcessDMAQueue).l
 
 loc_E3A:
@@ -391,7 +384,6 @@ sub_E58:
 	bsr.s   sub_E78
 	jsr   	RunObjects
 	jsr   	ProcessMaps
-	addq.b  #1,(VintECounter).w
 	move.b  #$E,(VintRoutine).w
 	rts
 ; ---------------------------------------------------------------------------
@@ -405,7 +397,7 @@ sub_E78:
 	bsr.w   padRead
 	writeCRAM       Palette,$80,0
 	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$380,vram_hscroll
+	writeVRAM       ScrollTable,$400,vram_hscroll
 	rts
 ; ---------------------------------------------------------------------------
 

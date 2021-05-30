@@ -308,7 +308,7 @@ word_FFF620:	rs.w 1
 word_FFF622:	rs.w 1
 word_FFF624:	rs.w 1
 word_FFF626:	rs.w 1
-VintECounter:	rs.b 1		; only used if the Vint is $0E (not used)
+		rs.b 1
 byte_FFF629:	rs.b 1
 VintRoutine:	rs.b 1
 		rs.b 1
