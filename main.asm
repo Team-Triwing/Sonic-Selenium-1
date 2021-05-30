@@ -54,12 +54,12 @@ StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
 	dc.b '                                                '; International name (placeholder for romfix)
 	dc.b 'GM XXXXXXXX-XX'               ; Serial code (placeholder for romfix)
 
-Checksum:   dc.w 0                          ; Checksum
+Checksum:   dc.w 0                      ; Checksum
 	dc.b 'J               '             ; I/O support (3-button joypad)
 
 		dc.l StartOfROM
-RomEndLoc:dc.l	EndOfROM-1             		; ROM region
-	dc.l RAM_START, RAM_END-1           ; RAM region
+RomEndLoc:dc.l	EndOfROM-1             	; ROM region
+	dc.l RAM_START, RAM_END           	; RAM region
     if RecordableDemo=1
 	dc.b "RA",$E8,$20
 	dc.l $200000
@@ -214,12 +214,12 @@ CS_Finish:
 	bne.s 	CheckSumError 		; if not, branch
 
 loc_36A:
-	clrRAM  Chunks,DemoNum
+	clrRAM  RAM_START,RAM_END
 	bsr.w   vdpInit
 	jsr LoadDualPCM
 	bsr.w   padInit
-	command mus_Stop
 	clr.b   (GameMode).w
+	command mus_FadeOut
 
 ScreensLoop:
 	move.b  (HW_VERSION).l,d0

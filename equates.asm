@@ -90,7 +90,7 @@ VDP_DEBUG	EQU	$C0001C		; VDP debug
 ; -------------------------------------------------------------------------
 
 RAM_START	EQU	$FF0000		; RAM start
-RAM_END		EQU	$1000000	; RAM end
+RAM_END		EQU	$FFFFFFFF	; RAM end
 
 ; -------------------------------------------------------------------------
 ; Controller I/O
@@ -278,7 +278,9 @@ byte_FFD600:	rs.b $40
 		rs.b $40
 LevelObjectsList:rs.b $1800
 ObjectsList_End:rs.b 0
-SoundMemory:	rs.b $600	; used for the sound driver
+SoundMemory:	rs.b $500	; used for the sound driver
+SoundMemory_End:rs.b 0
+		rs.b $100
 GameMode:	rs.b 1		; used for the screen modes
 		rs.b 1
 padHeldPlayer:	rs.b 1
@@ -637,7 +639,7 @@ DemoMode:	rs.w 1
 DemoNum:	rs.w 1
 ConsoleRegion:	rs.b 1
 EditModeFlag:	rs.w 1
-ChecksumStr:	rs.l 1
 TwizHuffRet:	rs.b $48
+RAM_END2:	rs.b 0
 ; end of 'RAM'
 			even
