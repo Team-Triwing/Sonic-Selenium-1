@@ -615,7 +615,7 @@ byte_FFFE2C:	rs.b 1
 byte_FFFE2D:	rs.b 1
 byte_FFFE2E:	rs.b 1
 byte_FFFE2F:	rs.b 1
-EmeraldArray:		rs.l 2
+EmeraldArray:	rs.l 2
 unk_FFFE50:	rs.l 1
 word_FFFE54:	rs.w 1
 word_FFFE56:	rs.w 1
@@ -631,7 +631,7 @@ UnkFrame:	rs.b 1		; this is also in the final game and Sonic 2 where it's also u
 RingLossTimer:	rs.b 1
 RingLossFrame:	rs.b 1
 RingLossAccumulator:rs.w 1
-EmeraldAmount:		rs.b 1
+EmeraldAmount:	rs.b 1
 Chunk0Colls:	rs.b 1
 word_FFFFE0:	rs.w 1
 word_FFFFE8:	rs.w 1
