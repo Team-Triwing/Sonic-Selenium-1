@@ -1,6 +1,7 @@
 ; ---------------------------------------------------------------------------
 ; Sprite mappings - "SONIC TEAM	PRESENTS" and credits
 ; ---------------------------------------------------------------------------
+Map_obj8A:
 		dc.w byte_172F8-Map_obj8A, byte_1733F-Map_obj8A
 		dc.w byte_17390-Map_obj8A, byte_173C3-Map_obj8A
 		dc.w byte_1743C-Map_obj8A, byte_174A1-Map_obj8A

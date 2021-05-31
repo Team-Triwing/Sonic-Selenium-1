@@ -371,6 +371,14 @@ saVol		macro volume
 	dc.b $ED, \volume
     endm
 
+saVolFM		macro volume
+	saVol 	volume
+	endm
+
+saVolPSG	macro volume
+	saVol 	volume*8
+	endm
+
 ; EExx - Set channel volume to xx (VOLUME - VOL_CN_ABS)
 ssVol		macro volume
 	dc.b $EE, \volume

@@ -4,50 +4,50 @@
 ; make it easier to debug built ROMS! If you would like easier
 ; assistance from Natsumi, please keep this section intact!
 ; ---------------------------------------------------------------------------
-	dc.b "AMPS-v2.1"		; ident str
+	;dc.b "AMPS-v2.1"		; ident str
 
-	if safe
-		dc.b "s"		; safe mode enabled
+	;if safe
+	;	dc.b "s"		; safe mode enabled
 
-	else
-		dc.b " "		; safe mode disabled
-	endif
+	;else
+	;	dc.b " "		; safe mode disabled
+	;endif
 
-	if FEATURE_FM6
-		dc.b "F6"		; FM6 enabled
-	endif
+	;if FEATURE_FM6
+	;	dc.b "F6"		; FM6 enabled
+	;endif
 
-	if FEATURE_SFX_MASTERVOL
-		dc.b "SM"		; sfx ignore master volume
-	endif
+	;if FEATURE_SFX_MASTERVOL
+	;	dc.b "SM"		; sfx ignore master volume
+	;endif
 
-	if FEATURE_UNDERWATER
-		dc.b "UW"		; underwater mode enabled
-	endif
+	;if FEATURE_UNDERWATER
+	;	dc.b "UW"		; underwater mode enabled
+	;endif
 
-	if FEATURE_MODULATION
-		dc.b "MO"		; modulation enabled
-	endif
+	;if FEATURE_MODULATION
+	;	dc.b "MO"		; modulation enabled
+	;endif
 
-	if FEATURE_DACFMVOLENV
-		dc.b "VE"		; FM & DAC volume envelope enabled
-	endif
+	;if FEATURE_DACFMVOLENV
+	;	dc.b "VE"		; FM & DAC volume envelope enabled
+	;endif
 
-	if FEATURE_MODENV
-		dc.b "ME"		; modulation envelope enabled
-	endif
+	;if FEATURE_MODENV
+	;	dc.b "ME"		; modulation envelope enabled
+	;endif
 
-	if FEATURE_PORTAMENTO
-		dc.b "PM"		; portamento enabled
-	endif
+	;if FEATURE_PORTAMENTO
+	;	dc.b "PM"		; portamento enabled
+	;endif
 
-	if FEATURE_BACKUP
-		dc.b "BA"		; backup enabled
-	endif
+	;if FEATURE_BACKUP
+	;	dc.b "BA"		; backup enabled
+	;endif
 
-	if FEATURE_SOUNDTEST
-		dc.b "ST"		; soundtest enabled
-	endif
+	;if FEATURE_SOUNDTEST
+	;	dc.b "ST"		; soundtest enabled
+	;endif
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Define music and SFX
@@ -77,7 +77,7 @@ SoundIndex:
 	ptrSFX	0, Register, Bonus, Shield, Dash, BossHit
 	ptrSFX	0, Signpost, Lamppost, BigRing, Bumper, Spring
 	ptrSFX	0, Collapse, Smash, BuzzExplode, Explode
-	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble
+	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble, Select
 	ptrSFX	0, Door, Stomp, EnterSS, Goal, ActionBlock, Diamonds, Continue, Spindash
 
 ; SFX with special features
@@ -121,6 +121,8 @@ SampleList:
 	sample $0100, Guitar1, Stop					; 97 - Guitar
 	sample $0100, Guitar2, Stop					; 98 - Guitar
 	sample $0100, Guitar3, Stop					; 99 - Guitar
+	sample $0100, CrashCymbal, Stop				; 9A - Crash Cymbal
+	sample $0100, DGSel, Stop					; 9B - "Select" sound from DGamer
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -251,8 +253,8 @@ SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega
-	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad
+	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega, CrashCymbal
+	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad, DGSel
 	incSWF	Perfect5thPad, CrystalRhodes, Lava, SonicLife, Guitar1, Guitar2, Guitar3
 	even
 	opt ae+				; enable automatic evens

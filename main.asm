@@ -60,15 +60,9 @@ Checksum:   dc.w 0                      ; Checksum
 		dc.l StartOfROM
 RomEndLoc:dc.l	EndOfROM-1             	; ROM region
 	dc.l RAM_START, RAM_END           	; RAM region
-    if RecordableDemo=1
-	dc.b "RA",$E8,$20
-	dc.l $200000
-	dc.l $203FFF
-    else
 	dc.b "RA",$A0,$20
 	dc.l $200000
 	dc.l $200000
-    endif
 Notes:  dc.b 'I already know nobody is going to like this hack.   '
 			;'                                                    '
 	dc.b %1111          ; Region codes
@@ -1508,7 +1502,7 @@ sSega:
 	command mus_FadeOut
 	bsr.w   ClearPLC
 	bsr.w   Pal_FadeFrom
-	clr.b   (word_FFF662).w
+	clr.b   (DontIntMus).w
 
 	clrRAM  Chunks
 	clrRAM  Layout
@@ -1616,7 +1610,7 @@ sTitle:
 	command mus_Stop
 	bsr.w   ClearPLC
 	bsr.w   Pal_FadeFrom
-	clr.b   (word_FFF662).w
+	clr.b   (DontIntMus).w
 	command mus_Reset
 	lea (VdpCtrl).l,a6
 	move.w  #$8004,(a6)
@@ -1709,9 +1703,9 @@ loc_26E4:
 	beq.w   loc_26AE
 	btst    #JbA,(padHeld1).w
 	beq.w   loc_27AA
+	command mus_FadeOut
 	bsr.w   Pal_FadeFrom
 	bsr.w   ClearScreen
-	command mus_FadeOut
 	move.l  d0,(dword_FFF616).w
 	lea (VdpData).l,a6
 	move.l  #$50000003,4(a6)
@@ -1731,30 +1725,30 @@ loc_2732:
 	bsr.w   sub_292C
 	moveq   #2,d0
 	bsr.w   palLoadFade
-	bsr.w   Pal_FadeTo
 	music   mus_Options
+	bsr.w   Pal_FadeTo
 
-loc_273C:
+LevelSelect:
 	move.b  #2,(VintRoutine).w
 	vsync
 	bsr.w   sub_28A6
 	bsr.w   ProcessPLC
 	tst.l   (plcList).w
-	bne.s   loc_273C
+	bne.s   LevelSelect
 	move.w  (LevSelOption).w,d0
 	cmpi.w  #$13,d0
 	bne.s   LevSelLevCheckStart
-	cmpi.b  #J_S,(padPress1).w ; is Start pressed?
-	beq.s   LevSelStartPress    ; if true, branch
-	cmpi.b  #J_C,(padPress1).w ; is C pressed?
-	beq.s   LevSelBCPress   ; if not, branch
-	cmpi.b  #J_B,(padPress1).w ; is B pressed?
-	beq.s   LevSelBCPress   ; if not, branch
-	bra.s   loc_273C
+	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
+	beq.s   LevSelStartPress    	; if true, branch
+	cmpi.b  #J_C,(padPress1).w 		; is C pressed?
+	beq.s   LevSelBCPress   		; if not, branch
+	cmpi.b  #J_B,(padPress1).w 		; is B pressed?
+	beq.s   LevSelBCPress   		; if not, branch
+	bra.s   LevelSelect
 ; ===========================================================================
-LevSelLevCheckStart:                ; XREF: LevelSelect
-	andi.b  #J_S,(padPress1).w ; is Start pressed?
-	beq.s   loc_273C    ; if not, branch
+LevSelLevCheckStart:
+	andi.b  #J_S,(padPress1).w 		; is Start pressed?
+	beq.s   LevelSelect    			; if not, branch
 	bra.s   loc_2780
 	
 LevSelBCPress:
@@ -1762,17 +1756,19 @@ LevSelBCPress:
 
 loc_277A:
 	move.b d0,mQueue+1.w
-	bra.s   loc_273C
+	bra.s   LevelSelect
 	
 LevSelStartPress:               ; XREF: LevelSelect
+	sfx 	sfx_Select
 	clr.b   (GameMode).w
-	jmp ScreensLoop ; go to sega screen
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_2780:
+	sfx 	sfx_Select
 	add.w   d0,d0
 	move.w  LevSelOrder(pc,d0.w),d0
-	bmi.s   loc_273C
+	bmi.s   LevelSelect
 	cmpi.w  #$700,d0
 	bne.s   loc_2796
 	move.b  #$10,(GameMode).w
@@ -1789,11 +1785,7 @@ loc_27A6:
 	move.w  d0,(curzone).w
 
 loc_27AA:
-    if RecordableDemo=1
-	move.b  #$8,(GameMode).w
-    else
 	move.b  #$C,(GameMode).w
-    endif
 	move.b  #3,(Lives).w
 	moveq   #0,d0
 	move.w  d0,(Rings).w
@@ -1969,9 +1961,9 @@ loc_2996:
 	move.w  (LevSelSound).w,d0
 	move.b  d0,d2
 	lsr.b   #4,d0
-	bsr.w   sub_29B8
+	bsr.s   sub_29B8
 	move.b  d2,d0
-	bsr.w   sub_29B8
+	bsr.s   sub_29B8
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -2039,9 +2031,9 @@ MusicList:  dc.b mus_GHZ, mus_LZ, mus_MZ, mus_SLZ, mus_SYZ, mus_SBZ
 ; ---------------------------------------------------------------------------
 
 sLevel:
-	tst.b   (word_FFF662).w
+	tst.b   (DontIntMus).w
 	bne.s   .notset
-	clr.b   (word_FFF662).w
+	clr.b   (DontIntMus).w
 	music   mus_FadeOut
 	bsr.w   ClearPLC
 .notset
@@ -2073,10 +2065,10 @@ loc_2C0A:
 	move.w  #$8AAF,(word_FFF624).w
 	move.w  #$8004,(a6)
 	move.w  #$8720,(a6)
-	btst    #6,(ConsoleRegion).w    ; is this a PAL machine?
-	beq.s   .cont           ; if not, continue
-	move.w  #$8100|%01111100,(a6)
-.cont
+	;btst    #6,(ConsoleRegion).w    ; is this a PAL machine?
+	;beq.s   .cont           ; if not, continue
+	;move.w  #$8100|%01111100,(a6)
+;.cont
 	clrRAM  ObjectsList
 
 	lea (CameraX).w,a1
@@ -2096,7 +2088,7 @@ loc_2C6C:
 
 	moveq   #3,d0
 	bsr.w   PalLoadNormal
-	tst.b   (word_FFF662).w ; DW: has the RAM been set?
+	tst.b   (DontIntMus).w ; DW: has the RAM been set?
 	bne.s   MusicLoop ; DW: if yes, branch and skip the music loading code below
 	moveq   #0,d0
 	move.b  (curzone).w,d0
@@ -2106,7 +2098,7 @@ loc_2C6C:
 	move.b  d0,mQueue+1.w
 MusicLoop:
 	command mus_ShoesOff   ; run the music at normal speed
-	clr.b   (word_FFF662).w
+	clr.b   (DontIntMus).w
 	move.b  #$34,(byte_FFD080).w
 
 loc_2C92:
@@ -2161,14 +2153,6 @@ loc_2D54:
 	move.b  (curzone).w,d0
 	lsl.w   #2,d0
 	movea.l (a1,d0.w),a1
-    if RecordableDemo=0
-	move.b  render(a1),(unk_FFF792).w
-	subq.b  #1,(unk_FFF792).w
-	bcc.s   Level_Demo_NullPress
-	move.b  3(a1),(unk_FFF792).w
-	addq.w  #2,(unk_FFF790).w
-Level_Demo_NullPress:
-    endif
 	move.w  #$708,(GlobalTimer).w
 	move.b  #8,(VintRoutine).w
 	vsync
@@ -2265,65 +2249,6 @@ locret_3076:
 ; ---------------------------------------------------------------------------
 
 DemoPlayback:
-    if RecordableDemo=0
-	tst.w   (DemoMode).w
-	bne.s   loc_30B8
-	rts
-    endif
-; ---------------------------------------------------------------------------
-
-    if RecordableDemo=1
-DemoRecord:
-	cmpi.b  #8,(GameMode).w     ; mainly to prevent issues
-	bcs.w   locret_30FE         ; with non-level inputs
-	lea ($200400).l,a1
-	move.w  (unk_FFF790).w,d0
-	adda.w  d0,a1
-	move.b  (padHeld1).w,d0
-	cmp.b   (a1),d0
-	bne.s   loc_30A2
-	addq.b  #1,render(a1)
-	cmpi.b  #$FF,render(a1)
-	beq.s   loc_30A2
-	rts
-; ---------------------------------------------------------------------------
-
-loc_30A2:
-	move.b  d0,2(a1)
-	move.b  #0,3(a1)
-	addq.w  #2,(unk_FFF790).w
-	andi.w  #$3FF,(unk_FFF790).w
-	rts
-    endif
-; ---------------------------------------------------------------------------
-
-loc_30B8:
-	tst.b   (padHeld1).w
-	bpl.s   loc_30C4
-	move.b  #4,(GameMode).w
-
-loc_30C4:
-	lea (off_3100).l,a1
-	moveq   #0,d0
-	move.b  (curzone).w,d0
-	lsl.w   #2,d0
-	movea.l (a1,d0.w),a1
-	move.w  (unk_FFF790).w,d0
-	adda.w  d0,a1
-	move.b  (a1),d0
-	lea (padHeld1).w,a0
-	move.b  d0,d1
-	move.b  -2(a0),d2
-	eor.b   d2,d0
-	move.b  d1,(a0)+
-	and.b   d1,d0
-	move.b  d0,(a0)+
-	subq.b  #1,(unk_FFF792).w
-	bcc.s   locret_30FE
-	move.b  3(a1),(unk_FFF792).w
-	addq.w  #2,(unk_FFF790).w
-
-locret_30FE:
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8698,7 +8623,7 @@ loc_857A:
 AllObjects: dc.l ObjSonic, Obj_SSResults, Obj_SSResCE, Obj04, Obj05, Ojb06, Obj07
 	dc.l ObjectFall, ObjSonicSpecial, ObjectFall, ObjectFall
 	dc.l ObjectFall, ObjSignpost, ObjTitleSonic, OibjTitleText
-	dc.l ObjAniTest, ObjBridge, ObjSceneryLamp, ObjLavaMaker
+	dc.l ObjCredits, ObjBridge, ObjSceneryLamp, ObjLavaMaker
 	dc.l ObjLavaball, ObjSwingPtfm, ObjectFall, ObjSpikeLogs
 	dc.l ObjPlatform, ObjRollingBall, ObjCollapsePtfm, Obj1B
 	dc.l ObjScenery, ObjUnkSwitch, ObjBallhog, ObjCrabmeat
@@ -18044,7 +17969,7 @@ loc_FDBA:
 	move.b  d0,mQueue+2.w
 	tst.b   (unk_FFF7AA).w    ; is boss mode on?
 	bne.s   loc_FDC0    ; if yes, branch 
-	st.b  	(word_FFF662).w
+	st.b  	(DontIntMus).w
 
 loc_FDC0:
 	moveq   #-1,d0
@@ -19999,23 +19924,23 @@ locret_111C0:
 	rts
 ; ---------------------------------------------------------------------------
 
-ObjAniTest:
+ObjCredits:
 	moveq   #0,d0
 	move.b  act(a0),d0
-	move.w  Obj8A_Index(pc,d0.w),d1
-	jmp     Obj8A_Index(pc,d1.w)
+	move.w  ObjCredits_Index(pc,d0.w),d1
+	jmp     ObjCredits_Index(pc,d1.w)
 ; ===========================================================================
-Obj8A_Index:    dc.w Obj8A_Main-Obj8A_Index
-	dc.w Obj8A_Display-Obj8A_Index
+ObjCredits_Index:    dc.w ObjCredits_Main-ObjCredits_Index
+	dc.w ObjCredits_Display-ObjCredits_Index
 ; ===========================================================================
 
-Obj8A_Main:             ; XREF: Obj8A_Index
+ObjCredits_Main:             ; XREF: ObjCredits_Index
 	addq.b  #2,act(a0)
 	move.w  #$120,xpos(a0)
 	move.w  #$F0,xpix(a0)
-	move.l  #Map_obj8A,map(a0)
+	move.l  #Map_Credits,map(a0)
 	move.w  #$5A0,tile(a0)
-	move.w  (word_FFF660).w,d0  ; load  credits index number
+	move.w  (CreditsIndex).w,d0  ; load  credits index number
 	move.b  d0,frame(a0)            ; display appropriate sprite
 	move.b  #0,render(a0)
 	move.b  #16,xpix(a0)
@@ -20026,14 +19951,14 @@ Obj8A_Main:             ; XREF: Obj8A_Index
 	move.b  #$A,frame(a0)           ; display "SONIC TEAM PRESENTS"
 ; ===========================================================================
 
-Obj8A_Display:              ; XREF: Obj8A_Index
+ObjCredits_Display:              ; XREF: ObjCredits_Index
 	jmp     ObjectDisplay
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Sprite mappings - "SONIC TEAM PRESENTS" and credits
 ; ---------------------------------------------------------------------------
-Map_obj8A:
-	include "screens\title\CreditsText\Sprite.map"
+Map_Credits:
+	include "screens\credits\CreditsText\Sprite.map"
 	even
 ; ---------------------------------------------------------------------------
 
@@ -20208,14 +20133,9 @@ locret_11482:
 ; ---------------------------------------------------------------------------
 
 LoadAnimTiles:
+	rept 8
 	move.l  (a1)+,(a6)
-	move.l  (a1)+,(a6)
-	move.l  (a1)+,(a6)
-	move.l  (a1)+,(a6)
-	move.l  (a1)+,(a6)
-	move.l  (a1)+,(a6)
-	move.l  (a1)+,(a6)
-	move.l  (a1)+,(a6)
+	endr
 	dbf d1,LoadAnimTiles
 	rts
 ; ---------------------------------------------------------------------------
@@ -20651,6 +20571,7 @@ loc_118D0:
 ; ---------------------------------------------------------------------------
 
 dword_118DC:    dc.l 100000
+				dc.l 10000
 dword_118E4:    dc.l 1000
 dword_118E8:    dc.l 100
 dword_118EC:    dc.l 10
@@ -21450,10 +21371,6 @@ plcSpecialStage:dc.w (((plcGHZAnimals-plcSpecialStage-2)/6)-1)
 	dc.w $7E00
 	dc.l byte_65432
 	dc.w $8E00
-	dc.l ArtSpecialSkull
-	dc.w $9E00
-	dc.l ArtSpecialU
-	dc.w $AE00
 
 plcGHZAnimals:  dc.w (((plcLZAnimals-plcGHZAnimals-2)/6)-1)
 	dc.l ArtAnimalPocky
@@ -21492,7 +21409,7 @@ plcSBZAnimals:  dc.w (((plcEnd-plcSBZAnimals-2)/6)-1)
 	dc.w $B240
 plcEnd:
 
-ArtCred:    incbin "screens/title/CreditsText/Sprite.nem"
+ArtCred:    incbin "screens/credits/CreditsText/Sprite.nem"
 	even
 ArtSega:    incbin "screens/sega/Main.twim"
 	even
@@ -21704,28 +21621,12 @@ ArtSpecialGoal: incbin "screens/special stage/Art Goal.nem"
 	even
 ArtSpecialR:    incbin "screens/special stage/Art R Block.nem"
 	even
-ArtSpecialSkull:;incbin "screens/special stage/Art Skull.nem"
-	;even
-ArtSpecialU:    ;incbin "screens/special stage/Art U Block.nem"
-	;even
 ArtSpecial1up:  incbin "screens/special stage/Art 1up.nem"
 	even
 ArtSpecialStars:incbin "screens/special stage/Art Stars.nem"
 	even
 byte_65432: incbin "screens/special stage/ss red white.nem"
 	even
-ArtSpecialZone1:;incbin "screens/special stage/Art Zone 1.nem"
-	;even
-ArtSpecialZone2:;incbin "screens/special stage/Art Zone 2.nem"
-	;even
-ArtSpecialZone3:;incbin "screens/special stage/Art Zone 3.nem"
-	;even
-ArtSpecialZone4:;incbin "screens/special stage/Art Zone 4.nem"
-	;even
-ArtSpecialZone5:;incbin "screens/special stage/Art Zone 5.nem"
-	;even
-ArtSpecialZone6:;incbin "screens/special stage/Art Zone 6.nem"
-	;even
 ArtSpecialUpDown:incbin "screens/special stage/Art Up Down.nem"
 	even
 ArtSpecialEmerald:incbin "screens/special stage/Art Emerald.nem"
@@ -21851,7 +21752,7 @@ LayoutGHZ3BG:   incbin "levels/GHZ/Background 3.unc"
 	even
 LayoutLZ1FG:    incbin "levels/LZ/Foreground 1.unc"
 	even
-LayoutLZBG: incbin "levels/LZ/Background.unc"
+LayoutLZBG: 	incbin "levels/LZ/Background.unc"
 	even
 LayoutLZ2FG:    incbin "levels/LZ/Foreground 2.unc"
 	even
@@ -21928,17 +21829,17 @@ ObjListGHZ2:    incbin "levels/GHZ/Objects 2.unc"
 	even
 ObjListGHZ3:    incbin "levels/GHZ/Objects 3.unc"
 	even
-ObjListLZ1: incbin "levels/LZ/Objects 1.unc"
+ObjListLZ1: 	incbin "levels/LZ/Objects 1.unc"
 	even
-ObjListLZ2: incbin "levels/LZ/Objects 2.unc"
+ObjListLZ2: 	incbin "levels/LZ/Objects 2.unc"
 	even
-ObjListLZ3: incbin "levels/LZ/Objects 3.unc"
+ObjListLZ3: 	incbin "levels/LZ/Objects 3.unc"
 	even
-ObjListMZ1: incbin "levels/MZ/Objects 1.unc"
+ObjListMZ1: 	incbin "levels/MZ/Objects 1.unc"
 	even
-ObjListMZ2: incbin "levels/MZ/Objects 2.unc"
+ObjListMZ2: 	incbin "levels/MZ/Objects 2.unc"
 	even
-ObjListMZ3: incbin "levels/MZ/Objects 3.unc"
+ObjListMZ3: 	incbin "levels/MZ/Objects 3.unc"
 	even
 ObjListSLZ1:    incbin "levels/SLZ/Objects 1.unc"
 	even
@@ -21961,20 +21862,13 @@ ObjListSBZ3:    incbin "levels/SBZ/Objects 3.unc"
 
 ObjListNull:    dc.w $FFFF, 0, 0
 
-demoin_GHZ: incbin "demoinputs/GHZ.dat"
-	even
-demoin_LZ:  incbin "demoinputs/LZ.dat"
-	even
-demoin_MZ:  incbin "demoinputs/MZ.dat"
-	even
-demoin_SLZ: incbin "demoinputs/SLZ.dat"
-	even
-demoin_SYZ: incbin "demoinputs/SLZ.dat" ; will record an actual demo for SYZ later
-	even
-demoin_SBZ: incbin "demoinputs/SBZ.dat"
-	even
-demoin_SS:  incbin "demoinputs/SS.dat"
-	even
+demoin_GHZ:
+demoin_LZ:
+demoin_MZ:
+demoin_SLZ:
+demoin_SYZ:
+demoin_SBZ:
+demoin_SS:
 	
 ; end of 'ROM'
 	include "AMPS/code/smps2asm.asm"

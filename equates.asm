@@ -355,8 +355,8 @@ word_FFF64C:	rs.w 1
 		rs.b 1
 		rs.b 1
 		rs.b 1
-word_FFF660:	rs.w 1		; unused, but cleared at the SEGA screen
-word_FFF662:	rs.w 1
+CreditsIndex:	rs.w 1
+DontIntMus:	rs.w 1
 		rs.b 1
 		rs.b 1
 word_FFF666:	rs.w 1
