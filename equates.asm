@@ -642,4 +642,4 @@ EditModeFlag:	rs.w 1
 TwizHuffRet:	rs.b $48
 RAM_END2:	rs.b 0
 ; end of 'RAM'
-			even
+		even
