@@ -4,7 +4,7 @@
 type out.log
 if not exist out.gen pause & exit
 "AMPS\Dual PCM Compress.exe" AMPS\.z80 AMPS\.z80.dat out.gen _dlls\saxcmp.exe
-error\convsym out.lst out.gen -input asm68k_lst -inopt "/localSign=. /localJoin=. /ignoreMacroDefs+ /ignoreMacroExp- /addMacrosAsOpcodes+" -a
+error\convsym out.lst out.gen -input asm68k_lst -inopt "/localSign=. /localJoin=. /ignoreMacroDefs+ /ignoreMacroExp- /addMacrosAsOpcodes+ /processLocals+" -a
 "tools\romfix.exe" -t "Sonic Selenium" -d -r 00 -s 050104RM -z out.gen
 del out.log
 pause
