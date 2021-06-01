@@ -1197,10 +1197,10 @@ loc_1972:
 	bsr.w   ProcessPLC
 	move.b  #$12,(VintRoutine).w
 	vsync
-	bchg    #$00,d6                 ; MJ: change delay counter
+	bchg    #0,d6                 	; MJ: change delay counter
 	beq.s   loc_1972                ; MJ: if null, delay a frame
 	bsr.s   Pal_FadeIn
-	subq.b  #$02,d4                 ; MJ: decrease colour check
+	subq.b  #2,d4                 	; MJ: decrease colour check
 	bne.s   loc_1972                ; MJ: if it has not reached null, branch
 	move.b  #$12,(VintRoutine).w
 	vsync
@@ -1227,12 +1227,12 @@ Pal_AddColor:
 	move.b  (a1),d5                 ; MJ: load blue
 	move.w  (a1)+,d1                ; MJ: load green and red
 	move.b  d1,d2                   ; MJ: load red
-	lsr.b   #$04,d1                 ; MJ: get only green
-	andi.b  #$0E,d2                 ; MJ: get only red
+	lsr.b   #4,d1                 	; MJ: get only green
+	andi.b  #$E,d2                 	; MJ: get only red
 	move.w  (a0),d3                 ; MJ: load current colour in buffer
 	cmp.b   d5,d4                   ; MJ: is it time for blue to fade?
 	bhi.s   FCI_NoBlue              ; MJ: if not, branch
-	addi.w  #$0200,d3               ; MJ: increase blue
+	addi.w  #$200,d3     	        ; MJ: increase blue
 
 FCI_NoBlue:
 	cmp.b   d1,d4                   ; MJ: is it time for green to fade?
@@ -1242,7 +1242,7 @@ FCI_NoBlue:
 FCI_NoGreen:
 	cmp.b   d2,d4                   ; MJ: is it time for red to fade?
 	bhi.s   FCI_NoRed               ; MJ: if not, branch
-	addq.b  #$02,d3                 ; MJ: increase red
+	addq.b  #2,d3                 	; MJ: increase red
 
 FCI_NoRed:
 	move.w  d3,(a0)+                ; MJ: save colour
@@ -1280,19 +1280,19 @@ sub_1A0A:
 	move.w  d5,d1                   ; MJ: copy to d1
 	move.b  d1,d2                   ; MJ: load green and red
 	move.b  d1,d3                   ; MJ: load red
-	andi.w  #$0E00,d1               ; MJ: get only blue
+	andi.w  #$E00,d1               	; MJ: get only blue
 	beq.s   FCO_NoBlue              ; MJ: if blue is finished, branch
-	subi.w  #$0200,d5               ; MJ: decrease blue
+	subi.w  #$200,d5               	; MJ: decrease blue
 
 FCO_NoBlue:
-	andi.w  #$00E0,d2               ; MJ: get only green (needs to be word)
+	andi.w  #$E0,d2               	; MJ: get only green (needs to be word)
 	beq.s   FCO_NoGreen             ; MJ: if green is finished, branch
 	subi.b  #$20,d5                 ; MJ: decrease green
 
 FCO_NoGreen:
-	andi.b  #$0E,d3                 ; MJ: get only red
+	andi.b  #$E,d3                 	; MJ: get only red
 	beq.s   FCO_NoRed               ; MJ: if red is finished, branch
-	subq.b  #$02,d5                 ; MJ: decrease red
+	subq.b  #2,d5                 	; MJ: decrease red
 
 FCO_NoRed:
 	move.w  d5,(a0)+                ; MJ: save new colour
@@ -1698,9 +1698,7 @@ loc_26E4:
 	tst.w   (GlobalTimer).w
 	beq.w   loc_27F8
 	andi.b  #J_S,(padPress1).w
-	beq.w   loc_26AE
-	btst    #JbA,(padHeld1).w
-	beq.w   loc_27AA
+	beq.s   loc_26AE
 	command mus_FadeOut
 	bsr.w   Pal_FadeFrom
 	bsr.w   ClearScreen
