@@ -123,6 +123,7 @@ SampleList:
 	sample $0100, Guitar3, Stop					; 99 - Guitar
 	sample $0100, CrashCymbal, Stop				; 9A - Crash Cymbal
 	sample $0100, DGSel, Stop					; 9B - "Select" sound from DGamer
+	sample $0100, Congrats, Stop				; 9C - "Congratulations!" sound
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -256,6 +257,7 @@ SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega, CrashCymbal
 	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad, DGSel
 	incSWF	Perfect5thPad, CrystalRhodes, Lava, SonicLife, Guitar1, Guitar2, Guitar3
+	incSWF 	Congrats
 	even
 	opt ae+				; enable automatic evens
 	list				; continue source listing

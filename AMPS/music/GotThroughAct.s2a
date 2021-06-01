@@ -2,7 +2,7 @@ GotThrough_Header:
 	sHeaderInit
 	sHeaderTempo	$82, $03
 	sHeaderCh	$05, $02
-	sHeaderDAC	GotThrough_DAC1, $00, dSonicClear
+	sHeaderDAC	GotThrough_DAC1, $00, dCongrats
 	sHeaderDAC	GotThrough_DAC2
 	sHeaderFM	GotThrough_FM1, $F4, $0A
 	sHeaderFM	GotThrough_FM2, $DC, $0A
