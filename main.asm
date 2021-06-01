@@ -184,11 +184,11 @@ DoChecksum:
 	move.l 	(RomEndLoc).w,d7 	; load size
 	sub.l 	a0,d7 				; minus start address
 	move.b 	d7,d5 				; copy end nybble
-	andi.w 	#$000F,d5 			; get only the remaining nybble
-	lsr.l 	#$04,d7 			; divide the size by 20
+	andi.w 	#$F,d5 				; get only the remaining nybble
+	lsr.l 	#4,d7 				; divide the size by 20
 	move.w 	d7,d6 				; load lower word size
 	swap 	d7 					; get upper word size
-	moveq 	#$00,d0 			; clear d0
+	moveq 	#0,d0 				; clear d0
 
 CS_MainBlock:
 	rept 8
@@ -196,7 +196,7 @@ CS_MainBlock:
 	endr
 	dbf 	d6,CS_MainBlock 	; repeat until all main block sections are done
 	dbf 	d7,CS_MainBlock 	; ''
-	subq.w 	#$01,d5 			; decrease remaining nybble for dbf
+	subq.w 	#1,d5 				; decrease remaining nybble for dbf
 	bpl.s 	CS_Finish 			; if there is no remaining nybble, branch
 
 CS_Remains:
