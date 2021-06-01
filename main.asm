@@ -1550,8 +1550,8 @@ loc_2544:
 ; ---------------------------------------------------------------------------
 ; ============================================================================================
 ; Splash Screen example
-; This version is for splash screens that load AFTER the Splash screen
-; For A version that replaces the Splash screen, read the guide this code came from!
+; This version is for splash screens that load AFTER the SEGA screen
+; For a version that replaces the SEGA screen, read the guide this code came from!
 ; 2014, Hitaxas
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
@@ -1565,6 +1565,7 @@ SplashScreen:
 	clrRAM  Blocks
 	clrRAM  ObjectsList
 
+	; initalize VDP
 	lea (VdpCtrl).l,a6
 	move.w  #$8004,(a6)
 	move.w  #$8230,(a6)
@@ -1579,7 +1580,7 @@ SplashScreen:
 	move.w  #$140,d0             		; prepare pattern index value to patch to mappings
 	bsr.w   EniDec     		       		; decompress and dump
 	copyTilemap (Chunks)&$FFFFFF,$C000,$27,$1E         		; flush mappings to VRAM
-	move.l  #$68000000,($FFC00004).l    ; set vdp loc
+	move.l  #$68000000,($C00004).l    	; set vdp loc
 	lea     ArtSplash.l,a0           	; load background art
 	jsr     NemesisDec              	; run NemDec to decompress art for display
 	move.b  #$B,d0
@@ -1699,7 +1700,7 @@ loc_26E4:
 	beq.w   loc_27F8
 	andi.b  #J_S,(padPress1).w
 	beq.s   loc_26AE
-	command mus_FadeOut
+	sfx     sfx_Woosh
 	bsr.w   Pal_FadeFrom
 	bsr.w   ClearScreen
 	move.l  d0,(dword_FFF616).w
@@ -1736,10 +1737,10 @@ LevelSelect:
 	bne.s   LevSelLevCheckStart
 	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
 	beq.s   LevSelStartPress    	; if true, branch
-	cmpi.b  #J_C,(padPress1).w 		; is C pressed?
-	beq.s   LevSelBCPress   		; if not, branch
-	cmpi.b  #J_B,(padPress1).w 		; is B pressed?
-	beq.s   LevSelBCPress   		; if not, branch
+	btst  	#JbC,(padPress1).w 		; is C pressed?
+	bne.s   LevSelBCPress   		; if not, branch
+	btst  	#JbB,(padPress1).w 		; is B pressed?
+	bne.s   LevSelBCPress   		; if not, branch
 	bra.s   LevelSelect
 ; ===========================================================================
 LevSelLevCheckStart:
@@ -1819,7 +1820,7 @@ loc_27FE:
 
 loc_282C:
 	tst.w   (GlobalTimer).w
-	bne.w   loc_27FE
+	bne.s   loc_27FE
 	command mus_FadeOut
 	move.w  (DemoNum).w,d0
 	andi.w  #7,d0
@@ -1852,31 +1853,31 @@ DemoLevels: dc.w 0, $100, $200, $300, $400, $500, $600
 
 sub_28A6:
 	move.b  (padPress1).w,d1
-	andi.b  #3,d1
+	andi.b  #J_U|J_D,d1
 	bne.s   loc_28B6
 	subq.b  #1,(word_FFF666).w
 	bpl.s   loc_28F0
 
 loc_28B6:
-	move.b  #$B,(word_FFF666).w
+	move.b  #8,(word_FFF666).w
 	move.b  (padHeld1).w,d1
-	andi.b  #3,d1
+	andi.b  #J_U|J_D,d1
 	beq.s   loc_28F0
 	move.w  (LevSelOption).w,d0
-	btst    #0,d1
+	btst    #JbU,d1
 	beq.s   loc_28D6
-	sfx     sfx_Switch
+	sfx     sfx_Pop
 	subq.w  #1,d0
-	bcc.s   loc_28D6
+	bge.s   loc_28D6
 	moveq   #$13,d0
 
 loc_28D6:
-	btst    #1,d1
+	btst    #JbD,d1
 	beq.s   loc_28E6
-	sfx     sfx_Switch
+	sfx     sfx_Pop
 	addq.w  #1,d0
 	cmpi.w  #$14,d0
-	bcs.s   loc_28E6
+	blt.s   loc_28E6
 	moveq   #0,d0
 
 loc_28E6:
@@ -1895,19 +1896,19 @@ loc_28F0:
 	bne.s   LevSel_A    ; if not, branch
 	btst    #JbL,d1
 	beq.s   loc_2912
-	sfx     sfx_Switch
+	sfx     sfx_Pop
 	subq.w  #1,d0
 	
 LevSel_A:
 	btst    #JbA,d1       ; is A button pressed?
 	beq.s   loc_2912    ; if not, branch
-	sfx     sfx_Switch
+	sfx     sfx_Pop
 	addi.w  #16,d0      ; add $10 to sound test
 
 loc_2912:
 	btst    #JbR,d1
 	beq.s   loc_2922
-	sfx     sfx_Switch
+	sfx     sfx_Pop
 	addq.w  #1,d0
 
 loc_2922:
@@ -2065,7 +2066,6 @@ loc_2C0A:
 	;move.w  #$8100|%01111100,(a6)
 ;.cont
 	clrRAM  ObjectsList
-
 	lea (CameraX).w,a1
 	moveq   #0,d0
 	move.w  #$3F,d1
@@ -2073,6 +2073,7 @@ loc_2C0A:
 loc_2C5C:
 	move.l  d0,(a1)+
 	dbf d1,loc_2C5C
+
 	lea ((oscValues+2)).w,a1
 	moveq   #0,d0
 	move.w  #$27,d1
@@ -2415,8 +2416,8 @@ loc_3534:
 	moveq   #$14,d0
 	bsr.w   sub_14E2
 	bsr.w   ssLoadBG
-	clrRAM  ObjectsList
 
+	clrRAM  ObjectsList
 	lea (CameraX).w,a1
 	moveq   #0,d0
 	move.w  #$3F,d1
@@ -2424,6 +2425,7 @@ loc_3534:
 loc_3564:
 	move.l  d0,(a1)+
 	dbf d1,loc_3564
+
 	lea ((oscValues+2)).w,a1
 	moveq   #0,d0
 	move.w  #$27,d1
@@ -2484,81 +2486,76 @@ loc_3620:
 loc_3656:
 	cmpi.b  #$10,(GameMode).w
 	beq.s   loc_3620
-		tst.w	(DemoMode).w	; is demo mode on?
-		bne.w	loc_3662	; if yes, branch
-		move.b	#$C,(GameMode).w ; set	screen mode to $0C (level)
+	tst.w	(DemoMode).w	; is demo mode on?
+	bne.w	loc_3662	; if yes, branch
+	move.b	#$C,(GameMode).w ; set	screen mode to $0C (level)
 
 SS_End:
-		move.w	#60,(GlobalTimer).w ; set	delay time to 1	second
-		move.w	#$3F,(word_FFF626).w
-		clr.w	(unk_FFF794).w
+	move.w	#60,(GlobalTimer).w ; set	delay time to 1	second
+	move.w	#$3F,(word_FFF626).w
+	clr.w	(unk_FFF794).w
 
 SS_EndLoop:
-		move.b	#$16,(VintRoutine).w
-		vsync
-		bsr.w	DemoPlayback
-		move.w	(padHeldPlayer).w,(padPressPlayer).w
-		jsr	LoadObjects
-		jsr	ProcessMaps
-		jsr	sub_10B70
-		bsr.w	ssLoadBG
-		subq.w	#1,(unk_FFF794).w
-		bpl.s	loc_47D4
-		move.w	#2,(unk_FFF794).w
-		bsr.w	Pal_FadeTo
+	move.b	#$16,(VintRoutine).w
+	vsync
+	bsr.w	DemoPlayback
+	move.w	(padHeldPlayer).w,(padPressPlayer).w
+	jsr	LoadObjects
+	jsr	ProcessMaps
+	jsr	sub_10B70
+	bsr.w	ssLoadBG
+	subq.w	#1,(unk_FFF794).w
+	bpl.s	loc_47D4
+	move.w	#2,(unk_FFF794).w
+	bsr.w	Pal_FadeTo
 
 loc_47D4:
-		tst.w	(GlobalTimer).w
-		bne.s	SS_EndLoop
+	tst.w	(GlobalTimer).w
+	bne.s	SS_EndLoop
 
-		move	#$2700,sr
-		lea	(VdpCtrl).l,a6
-		move.w	#$8230,(a6)
-		move.w	#$8407,(a6)
-		move.w	#$9001,(a6)
-		bsr.w	ClearPLC
-		move.l  #$70000002,($C00004).l
-		lea ArtTitleCards,a0
-		move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
-		jsr LoadUncArt
-		jsr		sub_3048
-		move	#$2300,sr
-		moveq	#$11,d0
-		bsr.w	palLoadFade	; load results screen pallet
-		moveq	#0,d0
-		bsr.w	PLCadd
-		moveq	#$1B,d0
-		bsr.w	PLCreplace		; load results screen patterns
-		st.b	(byte_FFFE1F).w ; update score	counter
-		st.b    (byte_FFFE58).w ; update ring bonus counter
-		move.w	(Rings).w,d0
-		mulu.w	#10,d0		; multiply rings by 10
-		move.w	d0,(word_FFFE54).w ; set rings bonus
-		music	mus_GotThroughAct
-		lea	(ObjectsList).w,a1
-		moveq	#0,d0
-		move.w	#$7FF,d1
+	move	#$2700,sr
+	lea	(VdpCtrl).l,a6
+	move.w	#$8230,(a6)
+	move.w	#$8407,(a6)
+	move.w	#$9001,(a6)
+	bsr.w	ClearPLC
+	move.l  #$70000002,($C00004).l
+	lea ArtTitleCards,a0
+	move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
+	jsr LoadUncArt
+	jsr		sub_3048
+	move	#$2300,sr
+	moveq	#$11,d0
+	bsr.w	palLoadFade	; load results screen pallet
+	moveq	#0,d0
+	bsr.w	PLCadd
+	moveq	#$1B,d0
+	bsr.w	PLCreplace		; load results screen patterns
+	st.b	(byte_FFFE1F).w ; update score	counter
+	st.b    (byte_FFFE58).w ; update ring bonus counter
+	move.w	(Rings).w,d0
+	mulu.w	#10,d0		; multiply rings by 10
+	move.w	d0,(word_FFFE54).w ; set rings bonus
+	music	mus_GotThroughAct
 
-SS_EndClrObjRam:
-		move.l	d0,(a1)+
-		dbf	d1,SS_EndClrObjRam ; clear object RAM
+	clrRAM  ObjectsList
 
-		move.b	#$7E,(ObjectsList).w ; load results screen object
+	move.b	#$7E,(ObjectsList).w ; load results screen object
 
 SS_NormalExit:
-		bsr.w	PauseGame
-		move.b	#$C,(VintRoutine).w
-		vsync
-		jsr	LoadObjects
-		jsr	ProcessMaps
-		bsr.w	PLCadd
-		tst.w	(LevelRestart).w
-		beq.s	SS_NormalExit
-		tst.l	(plcList).w
-		bne.s	SS_NormalExit
-		sfx		sfx_Goal
-		bsr.w	Pal_FadeTo
-		rts	
+	bsr.w	PauseGame
+	move.b	#$C,(VintRoutine).w
+	vsync
+	jsr	LoadObjects
+	jsr	ProcessMaps
+	bsr.w	PLCadd
+	tst.w	(LevelRestart).w
+	beq.s	SS_NormalExit
+	tst.l	(plcList).w
+	bne.s	SS_NormalExit
+	sfx		sfx_Goal
+	bsr.w	Pal_FadeTo
+	rts	
 ; ---------------------------------------------------------------------------
 
 loc_3662:

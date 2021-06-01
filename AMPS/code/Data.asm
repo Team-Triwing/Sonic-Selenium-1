@@ -77,7 +77,7 @@ SoundIndex:
 	ptrSFX	0, Register, Bonus, Shield, Dash, BossHit
 	ptrSFX	0, Signpost, Lamppost, BigRing, Bumper, Spring
 	ptrSFX	0, Collapse, Smash, BuzzExplode, Explode
-	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble, Select
+	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble
 	ptrSFX	0, Door, Stomp, EnterSS, Goal, ActionBlock, Diamonds, Continue, Spindash
 
 ; SFX with special features
@@ -85,6 +85,8 @@ SoundIndex:
 
 ; unused SFX
 	ptrSFX	0, UnkA2, UnkAB, UnkB8, Buzzer
+
+	ptrSFX 	0, Select, Pop, Woosh
 
 SFXcount =	__sfx-SFXoff		; number of intalled sound effects
 SFXlast =	__sfx
@@ -123,7 +125,9 @@ SampleList:
 	sample $0100, Guitar3, Stop					; 99 - Guitar
 	sample $0100, CrashCymbal, Stop				; 9A - Crash Cymbal
 	sample $0100, DGSel, Stop					; 9B - "Select" sound from DGamer
-	sample $0100, Congrats, Stop				; 9C - "Congratulations!" sound
+	sample $0100, DGPop, Stop					; 9C - "Pop" sound from DGamer
+	sample $0100, DGWoosh, Stop					; 9D - "Whoosh" sound from DGamer
+	sample $0100, Congrats, Stop				; 9E - "Congratulations!" sound from MASATOG 2008 (DS)
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -255,9 +259,9 @@ SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
 	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega, CrashCymbal
-	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad, DGSel
+	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad
 	incSWF	Perfect5thPad, CrystalRhodes, Lava, SonicLife, Guitar1, Guitar2, Guitar3
-	incSWF 	Congrats
+	incSWF 	Congrats, DGSel, DGPop, DGWoosh
 	even
 	opt ae+				; enable automatic evens
 	list				; continue source listing
