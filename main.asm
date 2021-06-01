@@ -1560,11 +1560,6 @@ SplashScreen:
 	bsr.w   Pal_FadeFrom          		; fade palettes out
 	bsr.w   ClearScreen           		; clear the plane mappings
 
-	clrRAM  Chunks
-	clrRAM  Layout
-	clrRAM  Blocks
-	clrRAM  ObjectsList
-
 	; initalize VDP
 	lea (VdpCtrl).l,a6
 	move.w  #$8004,(a6)
