@@ -336,7 +336,7 @@ loc_BBA:
 	writeCRAM       Palette,$80,0
 	writeVRAM       SprTableBuff,$280,vram_sprites
 	writeVRAM       ScrollTable,$400,vram_hscroll
-	jsr (ProcessDMAQueue).l
+	pea (ProcessDMAQueue).l
 
 loc_C7A:
 	bsr.w   mapLevelLoad
@@ -359,7 +359,7 @@ loc_CBC:
 	writeVRAM       SprTableBuff,$280,vram_sprites
 	writeVRAM       ScrollTable,$400,vram_hscroll
 	bsr.w   sSpecialPalCyc
-	jsr (ProcessDMAQueue).l
+	pea (ProcessDMAQueue).l
 
 loc_D7A:
 	tst.w   (GlobalTimer).w
@@ -375,7 +375,7 @@ sub_D88:
 	writeCRAM       Palette,$80,0
 	writeVRAM       SprTableBuff,$280,vram_sprites
 	writeVRAM       ScrollTable,$400,vram_hscroll
-	jsr (ProcessDMAQueue).l
+	pea (ProcessDMAQueue).l
 
 loc_E3A:
 	bsr.w   mapLevelLoad
@@ -435,20 +435,24 @@ padRead:
 ; ---------------------------------------------------------------------------
 
 sub_FDC:
-	move.b  #0,(a1)
-	move.b  (a1),d0
-	lsl.b   #2,d0
-	andi.b  #$C0,d0
-	move.b  #$40,(a1)
-	move.b  (a1),d1
-	andi.b  #$3F,d1
-	or.b    d1,d0
-	not.b   d0
-	move.b  (a0),d1
-	eor.b   d0,d1
-	move.b  d0,(a0)+
-	and.b   d0,d1
-	move.b  d1,(a0)+
+	move.b	#0,(a1)
+	nop
+	nop
+	move.b	(a1),d0
+	lsl.b	#2,d0
+	andi.b	#$C0,d0
+	move.b	#$40,(a1)
+	nop
+	nop
+	move.b	(a1),d1
+	andi.b	#$3F,d1
+	or.b	d1,d0
+	not.b	d0
+	move.b	(a0),d1
+	eor.b	d0,d1
+	move.b	d0,(a0)+
+	and.b	d0,d1
+	move.b	d1,(a0)+
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -489,7 +493,8 @@ loc_1070:
 	rts
 ; ---------------------------------------------------------------------------
 
-vdpInitRegs:    dc.w $8004, $8134, $8230, $8328, $8407
+vdpInitRegs:
+	dc.w $8004, $8134, $8230, $8328, $8407
 	dc.w $857C, $8600, $8700, $8800, $8900
 	dc.w $8A00, $8B00, $8C81, $8D3F, $8E00
 	dc.w $8F02, $9001, $9100, $9200
