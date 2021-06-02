@@ -722,7 +722,7 @@ QueueDMATransfer:
 ; -------------------------------------------------------------------------
 
 ProcessDMA:
-ProcessDMAQueue
+ProcessDMAQueue:
 	lea	VDP_CTRL,a5
 	movea.w	r_DMA_Slot.w,a1
 	jmp	.jump_table-r_DMA_Queue(a1)
