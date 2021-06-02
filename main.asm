@@ -1240,6 +1240,7 @@ loc_14F4:
 	dbf d1,loc_14F4
 	rts
 ; ---------------------------------------------------------------------------
+
 ; ---------------------------------------------------------------
 ; uncompressed art to VRAM loader - AuroraFields
 ;
@@ -1249,23 +1250,23 @@ loc_14F4:
 ; ---------------------------------------------------------------
 LoadUncArt:
 	disable_ints   			; disable interrupts
-	lea (VdpData).l,a6    	; get VDP data port
+	lea (VdpData).l,a6    		; get VDP data port
  
 LoadArt_Loop:
 	rept 8
 	move.l  (a0)+,(a6) 	 	; transfer 1 full tile (32 bytes)
 	endr
-	dbf 	d0,LoadArt_Loop	; loop until d0 = 0
-	enable_ints			   	; enable interrupts
+	dbf 	d0,LoadArt_Loop		; loop until d0 = 0
+	enable_ints		   	; enable interrupts
 	rts
 ; ---------------------------------------------------------------------------
-EnigmaDec:			include "compression/Enigma.asm"
+EnigmaDec:	include "compression/Enigma.asm"
 ; ---------------------------------------------------------------------------
-KosinskiPlusDec:	include "compression/KosinskiPlus.asm"
+KosinskiPlusDec:include "compression/KosinskiPlus.asm"
 ; ---------------------------------------------------------------------------
-SaxmanDec:			include "compression/Saxman.asm"
+SaxmanDec:	include "compression/Saxman.asm"
 ; ---------------------------------------------------------------------------
-TwizzlerDec:		include "compression/Twizzler.asm"
+TwizzlerDec:	include "compression/Twizzler.asm"
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
