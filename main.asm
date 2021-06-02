@@ -48,26 +48,24 @@ StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
 	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
 	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
 	dc.l ErrorTrap, ErrorTrap
-	dc.b 'SEGA Genesis    '             ; Console name
-	dc.b 'RPNTMLD         '             ; Copyright/release date (placeholder for romfix)
-	dc.b '                                                '; Domestic name (placeholder for romfix)
-	dc.b '                                                '; International name (placeholder for romfix)
-	dc.b 'GM XXXXXXXX-XX'               ; Serial code (placeholder for romfix)
-
-Checksum:   dc.w 0                      ; Checksum
-	dc.b 'J               '             ; I/O support (3-button joypad)
-
-		dc.l StartOfROM
-RomEndLoc:dc.l	EndOfROM-1             	; ROM region
-	dc.l RAM_START, RAM_END           	; RAM region
+	dc.b 'SEGA Genesis    '             			; Console name
+	dc.b 'RPNTMLD         '             			; Copyright/release date (placeholder for romfix)
+	dc.b '                                                '	; Domestic name (placeholder for romfix)
+	dc.b '                                                '	; International name (placeholder for romfix)
+	dc.b 'GM XXXXXXXX-XX'               			; Serial code (placeholder for romfix)
+Checksum:dc.w 0                      				; Checksum
+	dc.b 'J               '             			; I/O support (3-button joypad)
+	dc.l StartOfROM
+RomEndLoc:dc.l	EndOfROM-1             				; ROM region
+	dc.l RAM_START, RAM_END           			; RAM region
 	dc.b "RA",$A0,$20
 	dc.l $200000
 	dc.l $200000
 Notes:  dc.b 'I already know nobody is going to like this hack.   '
-			;'                                                    '
+	    ;'                                                    '
 	dc.b %1111          ; Region codes
 	dc.b 'Why even play? '
-			;'               '
+	    ;'               '
 EndOfHeader:
 ; ---------------------------------------------------------------------------
 
@@ -154,25 +152,25 @@ initz80 z80prog 0
 	di
 	im  1
 	ld  hl,YM_Buffer1           		; we need to clear from YM_Buffer1
-	ld  de,(YM_BufferEnd-YM_Buffer1)/8  ; to end of Z80 RAM, setting it to 0FFh
+	ld  de,(YM_BufferEnd-YM_Buffer1)/8  	; to end of Z80 RAM, setting it to 0FFh
 
 .loop
-	ld  a,0FFh              			; load 0FFh to a
+	ld  a,0FFh             			; load 0FFh to a
 	rept 8
-		ld  (hl),a         		 		; save a to address
-		inc hl          				; go to next address
+		ld  (hl),a          		; save a to address
+		inc hl          		; go to next address
 	endr
 
-	zdec    de              			; decrease loop counter
-	ld  a,d             				; load d to a
-	zor e               				; check if both d and e are 0
-	jrnz .loop          				; if no, clear more memoty
+	zdec    de             			; decrease loop counter
+	ld  a,d             			; load d to a
+	zor e               			; check if both d and e are 0
+	jrnz .loop          			; if no, clear more memoty
 .pc     jr  .pc             			; trap CPU execution
-		z80prog
+	z80prog
 	even
 endinit
 
-	dc.b $9F, $BF, $DF, $FF             ; PSG volumes (1, 2, 3 and 4)
+	dc.b $9F, $BF, $DF, $FF             	; PSG volumes (1, 2, 3 and 4)
 ; ---------------------------------------------------------------------------
 
 MainProgram:
@@ -208,8 +206,7 @@ CS_Finish:
 	cmp.w 	(Checksum).w,d4 	; does the checksum match?
 	bne.s 	CheckSumError 		; if not, branch
 
-loc_36A:
-	clrRAM  RAM_START,RAM_END
+loc_36A:clrRAM  RAM_START,RAM_END
 	jsr InitDMAQueue
 	bsr.w   vdpInit
 	jsr LoadDualPCM
@@ -266,7 +263,7 @@ ChecksumErr_ConsProg:
 ConsoleHandler:
 	jsr 	padRead(pc)
 	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
-	beq.w   loc_36A    	; if true, branch
+	beq.w   loc_36A    			; if true, branch
 	bra.s 	ConsoleHandler
 ; ---------------------------------------------------------------------------
 ArtText:    incbin "unsorted/debugtext.unc"
