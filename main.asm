@@ -216,9 +216,9 @@ loc_36A:
 	command mus_FadeOut
 
 ScreensLoop:
-	move.b  (HW_VERSION).l,d7
-	andi.b  #$C0,d7
-	move.b  d7,(ConsoleRegion).w
+	move.b  (HW_VERSION).l,d0
+	andi.b  #$C0,d0
+	move.b  d0,(ConsoleRegion).w
 	move.b  (GameMode).w,d0
 	andi.w  #$7C,d0
 	movea.l ScreensArray(pc,d0.w),a0
@@ -263,7 +263,7 @@ ChecksumErr_ConsProg:
 	rts
 
 ConsoleHandler:
-	bsr.w   padRead
+	jsr 	padRead(pc)
 	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
 	beq.w   loc_36A    	; if true, branch
 	bra.s 	ConsoleHandler
