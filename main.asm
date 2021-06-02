@@ -183,25 +183,25 @@ MainProgram:
 DoChecksum:
 	movea.w #EndOfHeader,a0 	; prepare start address
 	move.l 	(RomEndLoc).w,d7 	; load size
-	sub.l 	a0,d7 				; minus start address
-	move.b 	d7,d5 				; copy end nybble
-	andi.w 	#$F,d5 				; get only the remaining nybble
-	lsr.l 	#4,d7 				; divide the size by 20
-	move.w 	d7,d6 				; load lower word size
-	swap 	d7 					; get upper word size
-	moveq 	#0,d4 				; clear d4
+	sub.l 	a0,d7 			; minus start address
+	move.b 	d7,d5 			; copy end nybble
+	andi.w 	#$F,d5 			; get only the remaining nybble
+	lsr.l 	#4,d7 			; divide the size by 20
+	move.w 	d7,d6 			; load lower word size
+	swap 	d7 			; get upper word size
+	moveq 	#0,d4 			; clear d4
 
 CS_MainBlock:
 	rept 8
-	add.w 	(a0)+,d4 			; modular checksum (8 words)
+	add.w 	(a0)+,d4 		; modular checksum (8 words)
 	endr
 	dbf 	d6,CS_MainBlock 	; repeat until all main block sections are done
 	dbf 	d7,CS_MainBlock 	; ''
-	subq.w 	#1,d5 				; decrease remaining nybble for dbf
-	bpl.s 	CS_Finish 			; if there is no remaining nybble, branch
+	subq.w 	#1,d5 			; decrease remaining nybble for dbf
+	bpl.s 	CS_Finish 		; if there is no remaining nybble, branch
 
 CS_Remains:
-	add.w 	(a0)+,d4 			; add remaining words
+	add.w 	(a0)+,d4 		; add remaining words
 	dbf 	d5,CS_Remains 		; repeat until the remaining words are done
 
 CS_Finish:
@@ -210,6 +210,7 @@ CS_Finish:
 
 loc_36A:
 	clrRAM  RAM_START,RAM_END
+	jsr InitDMAQueue
 	bsr.w   vdpInit
 	jsr LoadDualPCM
 	clr.b   (GameMode).w
@@ -499,101 +500,287 @@ vdpInitRegs:
 	dc.w $8A00, $8B00, $8C81, $8D3F, $8E00
 	dc.w $8F02, $9001, $9100, $9200
 	
-; ---------------------------------------------------------------------------
-; Subroutine for queueing VDP commands (seems to only queue transfers to VRAM),
-; to be issued the next time ProcessDMAQueue is called.
-; Can be called a maximum of 18 times before the buffer needs to be cleared
-; by issuing the commands (this subroutine DOES check for overflow)
-; ---------------------------------------------------------------------------
-; In case you wish to use this queue system outside of the spin dash, this is the
-; registers in which it expects data in:
-; d1.l: Address to data (In 68k address space)
-; d2.w: Destination in VRAM
-; d3.w: Length of data
-; ---------------------------------------------------------------------------
+; -------------------------------------------------------------------------
+; Add a DMA transfer command to the DMA queue
+; -------------------------------------------------------------------------
+; PARAMETERS:
+;	d1.l	- Source in 68000 memory
+;	d2.w	- Destination in VRAM
+;	d3.w	- Transfer length in words
+; -------------------------------------------------------------------------
 
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+; This option makes the function work as a drop-in replacement of the original
+; functions. If you modify all callers to supply a position in words instead of
+; bytes (i.e., divide source address by 2) you can set this to 0 to gain 10(1/0)
+AssumeSourceAddressInBytes	EQU	0
 
-; sub_144E: DMA_68KtoVRAM: QueueCopyToVRAM: QueueVDPCommand: Add_To_DMA_Queue:
+; This option (which is disabled by default) makes the DMA queue assume that the
+; source address is given to the function in a way that makes them safe to use
+; with RAM sources. You need to edit all callers to ensure this.
+; Enabling this option turns off UseRAMSourceSafeDMA, and saves 14(2/0).
+AssumeSourceAddressIsRAMSafe	EQU	1
+
+; This option (which is enabled by default) makes source addresses in RAM safe
+; at the cost of 14(2/0). If you modify all callers so as to clear the top byte
+; of source addresses (i.e., by ANDing them with $FFFFFF).
+UseRAMSourceSafeDMA		EQU	0&(AssumeSourceAddressIsRAMSafe=0)
+
+; This option breaks DMA transfers that crosses a 128kB block into two. It is disabled by default because you can simply align the art in ROM
+; and avoid the issue altogether. It is here so that you have a high-performance routine to do the job in situations where you can't align it in ROM.
+Use128kbSafeDMA			EQU	0
+
+; Option to mask interrupts while updating the DMA queue. This fixes many race conditions in the DMA funcion, but it costs 46(6/1) cycles. The
+; better way to handle these race conditions would be to make unsafe callers (such as S3&K's KosM decoder) prevent these by masking off interrupts
+; before calling and then restore interrupts after.
+UseVIntSafeDMA			EQU	0
+
+; Like vdpComm, but starting from an address contained in a register
+
+vdpCommReg macro &
+	reg, type, rwd, clr
+
+	lsl.l	#2,\reg				; Move high bits into (word-swapped) position, accidentally moving everything else
+    if ((v\type\&v\rwd\)&3)<>0
+	addq.w	#(v\type\&v\rwd\)&3,\reg	; Add upper access type bits
+    endif
+	ror.w	#2,\reg				; Put upper access type bits into place, also moving all other bits into their correct (word-swapped) places
+	swap	\reg				; Put all bits in proper places
+    if \clr<>0
+	andi.w	#3,\reg				; Strip whatever junk was in upper word of reg
+    endif
+    if ((v\type\&v\rwd\)&$FC)=$20
+	tas.b	\reg				; Add in the DMA flag -- tas fails on memory, but works on registers
+    elseif ((v\type\&v\rwd\)&$FC)<>0
+	ori.w	#((v\type\&v\rwd\)&$FC)<<2,\reg	; Add in missing access type bits
+    endif
+
+	endm
+
+; -------------------------------------------------------------------------
+
+	rsreset
+DMAEntry.Reg94		rs.b	1
+DMAEntry.Size		rs.b	0
+DMAEntry.SizeH		rs.b	1
+DMAEntry.Reg93		rs.b	1
+DMAEntry.Source		rs.b	0
+DMAEntry.SizeL		rs.b	1
+DMAEntry.Reg97		rs.b	1
+DMAEntry.SrcH		rs.b	1
+DMAEntry.Reg96		rs.b	1
+DMAEntry.SrcM		rs.b	1
+DMAEntry.Reg95		rs.b	1
+DMAEntry.SrcL		rs.b	1
+DMAEntry.Command	rs.l	1
+DMAEntry.len		rs.b	0
+
+; -------------------------------------------------------------------------
+
+QueueSlotCount	EQU	(r_DMA_Slot-r_DMA_Queue)/DMAEntry.len
+
+; -------------------------------------------------------------------------
+
+loadDMA macro &
+	src, length, dest
+
+	if ((\src)&1)<>0
+		inform 2,"DMA queued from odd source $\$src\!"
+	endif
+	if ((\length)&1)<>0
+		inform 2,"DMA an odd number of bytes $\length\!"
+	endif
+	if (\length)=0
+		inform 2,"DMA transferring 0 bytes (becomes a 128kB transfer). If you really mean it, pass 128kB instead."
+	endif
+	if (((\src)+(\length)-1)>>17)<>((\src)>>17)
+		inform 2,"DMA crosses a 128kB boundary. You should either split the DMA manually or align the source adequately."
+	endif
+	if UseVIntSafeDMA=1
+		move.w	sr,-(sp)		; Save current interrupt mask
+		di				; Mask off interrupts
+	endif
+	movea.w	r_DMA_Slot.w,a1
+	cmpa.w	#r_DMA_Slot,a1
+	beq.s	.Done\@				; Return if there's no more room in the queue
+
+						; Write top byte of size/2
+	move.b	#((((\length)>>1)&$7FFF)>>8)&$FF,DMAEntry.SizeH(a1)
+						; Set d0 to bottom byte of size/2 and the low 3 bytes of source/2
+	move.l	#(((((\length)>>1)&$7FFF)&$FF)<<24)|(((\src)>>1)&$7FFFFF),d0
+	movep.l	d0,DMAEntry.SizeL(a1)		; Write it all to the queue
+	lea	DMAEntry.Command(a1),a1		; Seek to correct RAM address to store VDP DMA command
+	vdpCmd	move.l,\dest,VRAM,DMA,(a1)+	; Write VDP DMA command for destination address
+	move.w	a1,r_DMA_Slot.w			; Write next queue slot
+
+.Done\@:
+	if UseVIntSafeDMA=1
+		move.w	(sp)+,sr		; Restore interrupts to previous state
+	endif
+
+	endm
+
+; -------------------------------------------------------------------------
+
+resetDMA macros
+
+	move.w	#r_DMA_Queue,r_DMA_Slot.w
+
+; -------------------------------------------------------------------------
+
+QueueDMA:
 QueueDMATransfer:
-	movea.l (SonicArtBuf+$FC).w,a1
-	cmpa.w  #$C8FC,a1
-	beq.s   QueueDMATransfer_Done ; return if there's no more room in the buffer
+	if UseVIntSafeDMA=1
+		move.w	sr,-(sp)		; Save current interrupt mask
+		di				; Mask off interrupts
+	endif
+	movea.w	r_DMA_Slot.w,a1
+	cmpa.w	#r_DMA_Slot,a1
+	beq.s	.Done				; Return if there's no more room in the queue
 
-	; piece together some VDP commands and store them for later...
-	move.w  #$9300,d0 ; command to specify DMA transfer length & $00FF
-	move.b  d3,d0
-	move.w  d0,(a1)+ ; store command
+	if AssumeSourceAddressInBytes<>0
+		lsr.l	#1,d1			; Source address is in words for the VDP registers
+	endif
+	if UseRAMSourceSafeDMA<>0
+		bclr.l	#23,d1			; Make sure bit 23 is clear (68k->VDP DMA flag)
+	endif
+	movep.l	d1,DMAEntry.Source(a1)		; Write source address; the useless top byte will be overwritten later
+	moveq	#0,d0				; We need a zero on d0
 
-	move.w  #$9400,d0 ; command to specify DMA transfer length & $FF00
-	lsr.w   #8,d3
-	move.b  d3,d0
-	move.w  d0,(a1)+ ; store command
+	if Use128kbSafeDMA<>0
+		; Detect if transfer crosses 128KB boundary
+		; Using sub+sub instead of move+add handles the following edge cases:
+		; (1) d3.w == 0 => 128kB transfer
+		;   (a) d1.w == 0 => no carry, don't split the DMA
+		;   (b) d1.w != 0 => carry, need to split the DMA
+		; (2) d3.w != 0
+		;   (a) if there is carry on d1.w + d3.w
+		;     (* ) if d1.w + d3.w == 0 => transfer comes entirely from current 128kB block, don't split the DMA
+		;     (**) if d1.w + d3.w != 0 => need to split the DMA
+		;   (b) if there is no carry on d1.w + d3.w => don't split the DMA
+		; The reason this works is that carry on d1.w + d3.w means that
+		; d1.w + d3.w >= $10000, whereas carry on (-d3.w) - (d1.w) means that
+		; d1.w + d3.w > $10000.
+		sub.w	d3,d0			; Using sub instead of move and add allows checking edge cases
+		sub.w	d1,d0			; Does the transfer cross over to the next 128kB block?
+		bcs.s	.doubletransfer		; Branch if yes
+	endif
+	; It does not cross a 128kB boundary. So just finish writing it.
+	movep.w	d3,DMAEntry.Size(a1)		; Write DMA length, overwriting useless top byte of source address
 
-	move.w  #$9500,d0 ; command to specify source address & $0001FE
-	lsr.l   #1,d1
-	move.b  d1,d0
-	move.w  d0,(a1)+ ; store command
+.finishxfer:
+	; Command to specify destination address and begin DMA
+	move.w	d2,d0				; Use the fact that top word of d0 is zero to avoid clearing on vdpCommReg
+	vdpCommReg d0,VRAM,DMA,0		; Convert destination address to VDP DMA command
+	lea	DMAEntry.Command(a1),a1		; Seek to correct RAM address to store VDP DMA command
+	move.l	d0,(a1)+			; Write VDP DMA command for destination address
+	move.w	a1,r_DMA_Slot.w			; Write next queue slot
 
-	move.w  #$9600,d0 ; command to specify source address & $01FE00
-	lsr.l   #8,d1
-	move.b  d1,d0
-	move.w  d0,(a1)+ ; store command
-
-	move.w  #$9700,d0 ; command to specify source address & $FE0000
-	lsr.l   #8,d1
-	move.b  d1,d0
-	move.w  d0,(a1)+ ; store command
-
-	andi.l  #$FFFF,d2 ; command to specify destination address and begin DMA
-	lsl.l   #2,d2
-	lsr.w   #2,d2
-	swap    d2
-	ori.l   #$40000080,d2 ; set bits to specify VRAM transfer
-	move.l  d2,(a1)+ ; store command
-
-	move.l  a1,(SonicArtBuf+$FC).w ; set the next free slot address
-	cmpa.w  #$C8FC,a1
-	beq.s   QueueDMATransfer_Done ; return if there's no more room in the buffer
-	move.w  #0,(a1) ; put a stop token at the end of the used part of the buffer
-; return_14AA:
-QueueDMATransfer_Done:
+.Done:
+	if UseVIntSafeDMA=1
+		move.w	(sp)+,sr		; Restore interrupts to previous state
+	endif
 	rts
-; End of function QueueDMATransfer
 
+	if Use128kbSafeDMA=1
+.doubletransfer:
+	; We need to split the DMA into two parts, since it crosses a 128kB block
+	add.w	d3,d0				; Set d0 to the number of words until end of current 128kB block
+	movep.w	d0,DMAEntry.Size(a1)		; Write DMA length of first part, overwriting useless top byte of source addres
 
-; ---------------------------------------------------------------------------
-; Subroutine for issuing all VDP commands that were queued
-; (by earlier calls to QueueDMATransfer)
-; Resets the queue when it's done
-; ---------------------------------------------------------------------------
+	cmpa.w	#r_DMA_Slot-DMAEntry.len,a1	; Does the queue have enough space for both parts?
+	beq.s	.finishxfer			; Branch if not
 
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+	; Get second transfer's source, destination, and length
+	sub.w	d0,d3				; Set d3 to the number of words remaining
+	add.l	d0,d1				; Offset the source address of the second part by the length of the first part
+	add.w	d0,d0				; Convert to number of bytes
+	add.w	d2,d0				; Set d0 to the VRAM destination of the second part
 
-; sub_14AC: CopyToVRAM: IssueVDPCommands: Process_DMA: Process_DMA_Queue:
-ProcessDMAQueue:
-	lea (VdpCtrl).l,a5
-	lea (SonicArtBuf).w,a1
-; loc_14B6:
-ProcessDMAQueue_Loop:
-	move.w  (a1)+,d0
-	beq.s   ProcessDMAQueue_Done ; branch if we reached a stop token
-	; issue a set of VDP commands...
-	move.w  d0,(a5)     ; transfer length
-	move.w  (a1)+,(a5)  ; transfer length
-	move.w  (a1)+,(a5)  ; source address
-	move.w  (a1)+,(a5)  ; source address
-	move.w  (a1)+,(a5)  ; source address
-	move.w  (a1)+,(a5)  ; destination
-	move.w  (a1)+,(a5)  ; destination
-	cmpa.w  #$C8FC,a1
-	bne.s   ProcessDMAQueue_Loop ; loop if we haven't reached the end of the buffer
-; loc_14CE:
-ProcessDMAQueue_Done:
-	clr.w  	(SonicArtBuf).w
-	move.l  #SonicArtBuf,(SonicArtBuf+$FC).w
+	; If we know top word of d2 is clear, the following vdpCommReg can be set to not
+	; clear it. There is, unfortunately, no faster way to clear it than this.
+	vdpCommReg d2,VRAM,DMA,1		; Convert destination address of first part to VDP DMA command
+	move.l	d2,DMAEntry.Command(a1)		; Write VDP DMA command for destination address of first part
+
+	; Do second transfer
+						; Write source address of second part; useless top byte will be overwritten later
+	movep.l	d1,DMAEntry.len+DMAEntry.Source(a1)
+						; Write DMA length of second part, overwriting useless top byte of source address
+	movep.w	d3,DMAEntry.len+DMAEntry.Size(a1)
+
+	; Command to specify destination address and begin DMA
+	vdpCommReg d0,VRAM,DMA,0		; Convert destination address to VDP DMA command; we know top half of d0 is zero
+						; Seek to correct RAM address to store VDP DMA command of second part
+	lea	DMAEntry.len+DMAEntry.Command(a1),a1
+	move.l	d0,(a1)+			; Write VDP DMA command for destination address of second part
+
+	move.w	a1,r_DMA_Slot.w			; Write next queue slot
+	if UseVIntSafeDMA=1
+		move.w	(sp)+,sr		; Restore interrupts to previous state
+	endif
 	rts
-; End of function ProcessDMAQueue
+	endif
+
+; -------------------------------------------------------------------------
+; Process all the DMA commands queued
+; -------------------------------------------------------------------------
+
+ProcessDMA:
+ProcessDMAQueue
+	lea	VDP_CTRL,a5
+	movea.w	r_DMA_Slot.w,a1
+	jmp	.jump_table-r_DMA_Queue(a1)
+
+; -------------------------------------------------------------------------
+
+.jump_table:
+	rts
+	rept 6
+		rts											; Just in case
+	endr
+
+; -------------------------------------------------------------------------
+
+c = 1
+	rept QueueSlotCount
+		lea	VDP_CTRL,a5
+		lea	r_DMA_Queue.w,a1
+		if c<>QueueSlotCount
+			bra.w	.jump0-(c*8)
+		endif
+c = c+1
+	endr
+
+; -------------------------------------------------------------------------
+
+	rept QueueSlotCount
+		move.l	(a1)+,(a5)									; Transfer length
+		move.l	(a1)+,(a5)									; Source address high
+		move.l	(a1)+,(a5)									; Source address low + destination high
+		move.w	(a1)+,(a5)									; Destination low, trigger DMA
+	endr
+
+.jump0:
+	resetDMA
+	rts
+
+; -------------------------------------------------------------------------
+; Initialize the DMA queue
+; -------------------------------------------------------------------------
+
+InitDMA:
+InitDMAQueue:
+	lea	r_DMA_Queue.w,a0
+	move.b	#$94,d0
+	move.l	#$93979695,d1
+c = 0
+	rept QueueSlotCount
+		move.b	d0,c+DMAEntry.Reg94(a0)
+		movep.l	d1,c+DMAEntry.Reg93(a0)
+c = c+DMAEntry.len
+	endr
+
+	resetDMA
+	rts
 ; ---------------------------------------------------------------------------
 
 ClearScreen:
@@ -2462,8 +2649,7 @@ loc_3574:
 	move.w  #$8004,(a6)
 	move.w  #$8AAF,(word_FFF624).w
 	move.w  #$9011,(a6)
-	clr.w   (SonicArtBuf).w
-	move.l  #SonicArtBuf,(SonicArtBuf+$FC).w
+	resetDMA
 	bsr.w   sSpecialPalCyc
 	clr.w   (SpecAngle).w
 	move.w  #$40/2,(SpecSpeed).w
@@ -17557,6 +17743,7 @@ ObjSonic_DynReadEntry:
 	andi.w  #$FFF,d1
 	lsl.l   #5,d1
 	add.l   d6,d1
+	lsr.l 	#1,d1
 	move.w  d4,d2
 	add.w   d3,d4
 	add.w   d3,d4

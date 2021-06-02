@@ -240,7 +240,8 @@ NemBuffer_End:	rs.b 0
 DisplayLists:	rs.b $400
 Blocks:		rs.b $1800	; level blocks
 Blocks_End:	rs.b 0
-SonicArtBuf:	rs.b $300
+SonicArtBuf:	rs.b $2FD
+SonicArtBuf_End:rs.w 1
 SonicPosTable:	rs.b $100
 ScrollTable:	rs.b $400
 ScrollTable_End:rs.b 0
@@ -643,3 +644,6 @@ TwizHuffRet:	rs.b $48
 RAM_END2:	rs.b 0
 ; end of 'RAM'
 		even
+
+r_DMA_Queue equ SonicArtBuf
+r_DMA_Slot	equ	SonicArtBuf_End
