@@ -63,7 +63,7 @@ __mus =		MusOff
 MusicIndex:
 	ptrMusic GHZ, $07, LZ, $72, MZ, $73, SLZ, $26, SYZ, $15, SBZ, $08, FZ, $18
 	ptrMusic Boss, $12, SS, $00, Invincibility, $FF, Title, $00, GotThroughAct, $00, ExtraLife, $05
-	ptrMusic GameOver, $00, Continue, $00, Options, $00, SEGA, $00, Splash, $00
+	ptrMusic GameOver, $00, Continue, $00, Options, $00, Splash, $00, SEGA, $00
 
 MusCount =	__mus-MusOff		; number of installed music tracks
 SFXoff =	__mus			; first SFX ID
@@ -104,30 +104,24 @@ SampleList:
 	sample $00E6, Timpani, Stop, MidTimpani		; 84 - Timpani
 	sample $00C2, Timpani, Stop, LowTimpani		; 85 - Low Timpani
 	sample $00B6, Timpani, Stop, FloorTimpani	; 86 - Floor Timpani
-	sample $0300, HiTom, Stop					; 87 - Hi Tom
-	sample $0300, MidTom, Stop					; 88 - Mid Tom
-	sample $0300, LowTom, Stop					; 89 - Low Tom
-	sample $0300, FloorTom, Stop				; 8A - Floor Tom
+	sample $0100, Tom, Stop, HiTom				; 87 - Hi Tom
+	sample $00E6, Tom, Stop, MidTom				; 88 - Mid Tom
+	sample $00C2, Tom, Stop, LowTom				; 89 - Low Tom
+	sample $00B6, Tom, Stop, FloorTom			; 8A - Floor Tom
 	sample $0100, Sega, Stop					; 8B - SEGA screen
 	sample $0100, SonicClear, Stop				; 8C - Sonic (act results)
 	sample $0100, SonicHurt, Stop				; 8D - Sonic (when he gets hurt)
 	sample $0100, SonicDeath, Stop				; 8E - Sonic (when he dies)
 	sample $0100, SonicLife, Stop				; 8F - Sonic (extra life)
-	sample $0100, MajPad, Stop					; 90 - Minor chord Pad
-	sample $0100, MinPad, Stop					; 91 - Major chord Pad
-	sample $0100, Sus2Pad, Stop					; 92 - Sus2 chord Pad
-	sample $0100, Sus4Pad, Stop					; 93 - Sus4 chord Pad
-	sample $0100, Perfect5thPad, Stop			; 94 - Perfect 5th chord Pad
-	sample $0100, CrystalRhodes, Stop			; 95 - Crystal Rhodes
-	sample $0100, Lava, Lava					; 96 - Lava (Loop)
-	sample $0100, Guitar1, Stop					; 97 - Guitar
-	sample $0100, Guitar2, Stop					; 98 - Guitar
-	sample $0100, Guitar3, Stop					; 99 - Guitar
-	sample $0100, CrashCymbal, Stop				; 9A - Crash Cymbal
-	sample $0100, DGSel, Stop					; 9B - "Select" sound from DGamer
-	sample $0100, DGPop, Stop					; 9C - "Pop" sound from DGamer
-	sample $0100, DGWoosh, Stop					; 9D - "Whoosh" sound from DGamer
-	sample $0100, Congrats, Stop				; 9E - "Congratulations!" sound from MASATOG 2008 (DS)
+	sample $0100, Lava, Lava					; 90 - Lava (loop)
+	sample $0100, Guitar1, Stop					; 91 - Power guitar chord 1
+	sample $0100, Guitar2, Stop					; 92 - Power guitar chord 2
+	sample $0100, Guitar3, Stop					; 93 - Power guitar chord 3
+	sample $0100, CrashCymbal, Stop				; 94 - Crash Cymbal
+	sample $0100, DGSel, Stop					; 95 - "Select" (DGamer)
+	sample $0100, DGPop, Stop					; 96 - "Pop" (DGamer)
+	sample $0100, DGWoosh, Stop					; 97 - "Whoosh" (DGamer)
+	sample $0100, Congrats, Stop				; 98 - "Congratulations!" (MASATOG 2008 (DS))
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -258,9 +252,9 @@ SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, Sega, CrashCymbal
-	incSWF	HiTom, MidTom, LowTom, FloorTom, MajPad, MinPad, Sus2Pad, Sus4Pad
-	incSWF	Perfect5thPad, CrystalRhodes, Lava, SonicLife, Guitar1, Guitar2, Guitar3
+	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, SonicLife
+	incSWF	Tom, Lava, Sega, CrashCymbal
+	incSWF	Guitar1, Guitar2, Guitar3
 	incSWF 	Congrats, DGSel, DGPop, DGWoosh
 	even
 	opt ae+				; enable automatic evens

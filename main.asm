@@ -75,7 +75,7 @@ GameInit:
 	tst.l   ($A10008).l
 
 loc_20C:
-	bne.w   loc_306
+	bne.w   MainProgram
 	tst.w   ($A1000C).l
 	bne.s   loc_20C
 	lea InitValues(pc),a5
@@ -138,7 +138,7 @@ loc_28E:
 	move.w  d0,(a2)
 	movem.l (a6),d0-a6
 	disable_ints
-	bra.s   loc_306
+	bra.s   MainProgram
 ; ---------------------------------------------------------------------------
 
 InitValues: dc.l VDPREG_MODE1, $3FFF, $100
@@ -153,21 +153,21 @@ InitValues: dc.l VDPREG_MODE1, $3FFF, $100
 initz80 z80prog 0
 	di
 	im  1
-	ld  hl,YM_Buffer1           ; we need to clear from YM_Buffer1
+	ld  hl,YM_Buffer1           		; we need to clear from YM_Buffer1
 	ld  de,(YM_BufferEnd-YM_Buffer1)/8  ; to end of Z80 RAM, setting it to 0FFh
 
 .loop
-	ld  a,0FFh              ; load 0FFh to a
+	ld  a,0FFh              			; load 0FFh to a
 	rept 8
-		ld  (hl),a          ; save a to address
-		inc hl          ; go to next address
+		ld  (hl),a         		 		; save a to address
+		inc hl          				; go to next address
 	endr
 
-	zdec    de              ; decrease loop counter
-	ld  a,d             ; load d to a
-	zor e               ; check if both d and e are 0
-	jrnz .loop          ; if no, clear more memoty
-.pc     jr  .pc             ; trap CPU execution
+	zdec    de              			; decrease loop counter
+	ld  a,d             				; load d to a
+	zor e               				; check if both d and e are 0
+	jrnz .loop          				; if no, clear more memoty
+.pc     jr  .pc             			; trap CPU execution
 		z80prog
 	even
 endinit
@@ -175,9 +175,10 @@ endinit
 	dc.b $9F, $BF, $DF, $FF             ; PSG volumes (1, 2, 3 and 4)
 ; ---------------------------------------------------------------------------
 
-loc_306:
+MainProgram:
 	waitDMA
 	btst    #6,(IO_C_CTRL).l
+	bsr.w   padInit
 
 DoChecksum:
 	movea.w #EndOfHeader,a0 	; prepare start address
@@ -188,11 +189,11 @@ DoChecksum:
 	lsr.l 	#4,d7 				; divide the size by 20
 	move.w 	d7,d6 				; load lower word size
 	swap 	d7 					; get upper word size
-	moveq 	#0,d0 				; clear d0
+	moveq 	#0,d4 				; clear d4
 
 CS_MainBlock:
 	rept 8
-	add.w 	(a0)+,d0 			; modular checksum (8 words)
+	add.w 	(a0)+,d4 			; modular checksum (8 words)
 	endr
 	dbf 	d6,CS_MainBlock 	; repeat until all main block sections are done
 	dbf 	d7,CS_MainBlock 	; ''
@@ -200,25 +201,24 @@ CS_MainBlock:
 	bpl.s 	CS_Finish 			; if there is no remaining nybble, branch
 
 CS_Remains:
-	add.w 	(a0)+,d0 			; add remaining words
+	add.w 	(a0)+,d4 			; add remaining words
 	dbf 	d5,CS_Remains 		; repeat until the remaining words are done
 
 CS_Finish:
-	cmp.w 	(Checksum).w,d0 	; does the checksum match?
+	cmp.w 	(Checksum).w,d4 	; does the checksum match?
 	bne.s 	CheckSumError 		; if not, branch
 
 loc_36A:
 	clrRAM  RAM_START,RAM_END
 	bsr.w   vdpInit
 	jsr LoadDualPCM
-	bsr.w   padInit
 	clr.b   (GameMode).w
 	command mus_FadeOut
 
 ScreensLoop:
-	move.b  (HW_VERSION).l,d0
-	andi.b  #$C0,d0
-	move.b  d0,(ConsoleRegion).w
+	move.b  (HW_VERSION).l,d7
+	andi.b  #$C0,d7
+	move.b  d7,(ConsoleRegion).w
 	move.b  (GameMode).w,d0
 	andi.w  #$7C,d0
 	movea.l ScreensArray(pc,d0.w),a0
@@ -239,20 +239,34 @@ ScreensArray:
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
-	sfx 	sfx_Select
-	move.w  Checksum,d7
+	music 	mus_Stop
 	Console.Run     ChecksumErr_ConsProg
 	even
 
 ChecksumErr_ConsProg:
-	Console.SetXY   #2,#11
-	Console.WriteLine   "I'm very sorry for this inconvience"
-	Console.WriteLine   "   but the checksum is %<pal1>incorrect!"
+	Console.SetXY   #7,#8
+	Console.WriteLine   "The checksum is %<pal1>incorrect!"
 	Console.BreakLine
-	Console.SetXY   #7,#16
-	Console.WriteLine   "%<pal0>Calculated Checksum: %<pal3>$%<.w d0>"
+	Console.WriteLine   "%<pal0>Calculated Checksum: %<pal3>$%<.w d4>"
+	move.w  Checksum,d7
 	Console.WriteLine   "  %<pal0>Checksum in ROM: %<pal3>$%<.w d7>"
+	Console.BreakLine
+	Console.WriteLine   " %<pal0>Any error report sent"
+	Console.WriteLine   "might be %<pal1>harder %<pal0>to catch"
+	Console.WriteLine   "  with a %<pal1>bad %<pal0>checksum."
+	Console.WriteLine   "%<pal0>so redownloading the ROM"
+	Console.WriteLine   " is %<pal2>highly recommended."
+	Console.BreakLine
+	Console.WriteLine   "%<pal0>You can try and continue"
+	Console.WriteLine   "    by pressing %<pal3>START"
+	Console.WriteLine   "%<pal0>but it's %<pal1>not %<pal0>recommended."
 	rts
+
+ConsoleHandler:
+	bsr.w   padRead
+	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
+	beq.w   loc_36A    	; if true, branch
+	bra.s 	ConsoleHandler
 ; ---------------------------------------------------------------------------
 ArtText:    incbin "unsorted/debugtext.unc"
 	even

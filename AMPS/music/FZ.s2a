@@ -2,7 +2,7 @@ Final_Header:
 	sHeaderInit
 	sHeaderTempo	$02, $06
 	sHeaderCh	$05, $00
-	sHeaderDAC	Final_DAC1, -12, dCrystalRhodes
+	sHeaderDAC	Final_DAC1
 	sHeaderDAC	Final_DAC2
 	sHeaderFM	Final_FM1, $00, $12
 	sHeaderFM	Final_FM2, $F4, $0D
@@ -178,11 +178,7 @@ Final_Loop3:
 	sJump		Final_Loop1
 
 Final_DAC1:
-	sModePitchDAC
-	sVoice		dCrystalRhodes
-	dc.b nE6, $03, nRst, nE5, nRst, nE5, nRst, nE6
-	dc.b nE6, $03, nRst, $18	
-	sJump		Final_Jump1
+	sStop
 
 Final_DAC2:
 	dc.b dHiTimpani, $06, dLowTimpani, dLowTimpani, dHiTimpani, $03, dHiTimpani, $09
