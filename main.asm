@@ -176,7 +176,6 @@ endinit
 MainProgram:
 	waitDMA
 	btst    #6,(IO_C_CTRL).l
-	bsr.w   padInit
 
 DoChecksum:
 	movea.w #EndOfHeader,a0 	; prepare start address
@@ -209,6 +208,7 @@ CS_Finish:
 loc_36A:clrRAM  RAM_START,RAM_END
 	jsr InitDMAQueue
 	bsr.w   vdpInit
+	bsr.w   padInit
 	jsr LoadDualPCM
 	clr.b   (GameMode).w
 	command mus_FadeOut
@@ -238,6 +238,7 @@ ScreensArray:
 
 ChecksumError:
 	music 	mus_Stop
+	bsr.w   padInit
 	Console.Run     ChecksumErr_ConsProg
 	even
 
@@ -261,7 +262,7 @@ ChecksumErr_ConsProg:
 	rts
 
 ConsoleHandler:
-	jsr 	padRead(pc)
+	bsr.w 	padRead
 	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
 	beq.w   loc_36A    			; if true, branch
 	bra.s 	ConsoleHandler
@@ -331,9 +332,9 @@ sub_BB0:
 
 loc_BBA:
 	bsr.w   padRead
-	writeCRAM       Palette,$80,0
-	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$400,vram_hscroll
+	dma68k  Palette,0,$80,CRAM
+	dma68k  SprTableBuff,vram_sprites,$280,VRAM
+	dma68k  ScrollTable,vram_hscroll,$400,VRAM
 	pea (ProcessDMAQueue).l
 
 loc_C7A:
@@ -353,9 +354,9 @@ locret_CBA:
 
 loc_CBC:
 	bsr.w   padRead
-	writeCRAM       Palette,$80,0
-	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$400,vram_hscroll
+	dma68k  Palette,0,$80,CRAM
+	dma68k  SprTableBuff,vram_sprites,$280,VRAM
+	dma68k  ScrollTable,vram_hscroll,$400,VRAM
 	bsr.w   sSpecialPalCyc
 	pea (ProcessDMAQueue).l
 
@@ -370,9 +371,9 @@ locret_D86:
 
 sub_D88:
 	bsr.w   padRead
-	writeCRAM       Palette,$80,0
-	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$400,vram_hscroll
+	dma68k  Palette,0,$80,CRAM
+	dma68k  SprTableBuff,vram_sprites,$280,VRAM
+	dma68k  ScrollTable,vram_hscroll,$400,VRAM
 	pea (ProcessDMAQueue).l
 
 loc_E3A:
@@ -399,18 +400,16 @@ sub_E70:
 sub_BAA:
 sub_E78:
 	bsr.w   padRead
-	writeCRAM       Palette,$80,0
-	writeVRAM       SprTableBuff,$280,vram_sprites
-	writeVRAM       ScrollTable,$400,vram_hscroll
+	dma68k  Palette,0,$80,CRAM
+	dma68k  SprTableBuff,vram_sprites,$280,VRAM
+	dma68k  ScrollTable,vram_hscroll,$400,VRAM
 	rts
 ; ---------------------------------------------------------------------------
 
 hint:
 	tst.b   (HintFlag).w
 	beq.s   locret_F3A
-	move.l  a5,-(sp)
-	lea (VdpCtrl).l,a5
-	dma68k  Palette,0,$80,CRAM,a5
+	dma68k  Palette,0,$80,CRAM
 	clr.b   (HintFlag).w
 
 locret_F3A:
@@ -477,15 +476,7 @@ loc_103E:
 	move.l  d1,-(sp)
 	lea (VdpCtrl).l,a5
 	move.w  #$8F01,(a5)
-	move.l  #$94FF93FF,(a5)
-	move.w  #$9780,(a5)
-	move.l  #VRAM_ADDR_CMD,(a5)
-	move.w  #0,(VdpData).l
-
-loc_1070:
-	move.w  (a5),d1
-	btst    #1,d1
-	bne.s   loc_1070
+	dmaFill	0,0,$FFFF,a5
 	move.w  #$8F02,(a5)
 	move.l  (sp)+,d1
 	rts
@@ -783,27 +774,8 @@ c = c+DMAEntry.len
 ClearScreen:
 	lea (VdpCtrl).l,a5
 	move.w  #$8F01,(a5)
-	move.l  #$940F93FF,(a5)
-	move.w  #$9780,(a5)
-	move.l  #$40000083,(a5)
-	move.w  #0,(VdpData).l
-
-loc_10C8:
-	move.w  (a5),d1
-	btst    #1,d1
-	bne.s   loc_10C8
-	move.w  #$8F02,(a5)
-	lea (VdpCtrl).l,a5
-	move.w  #$8F01,(a5)
-	move.l  #$940F93FF,(a5)
-	move.w  #$9780,(a5)
-	move.l  #$60000083,(a5)
-	move.w  #0,(VdpData).l
-
-loc_10F6:
-	move.w  (a5),d1
-	btst    #1,d1
-	bne.s   loc_10F6
+	dmaFill	0,vram_fg,$FFF,a5
+	dmaFill	0,vram_bg,$FFF,a5
 	move.w  #$8F02,(a5)
 	clr.l   (dword_FFF616).w
 	clr.l   (dword_FFF61A).w

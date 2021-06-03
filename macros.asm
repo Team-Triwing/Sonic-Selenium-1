@@ -137,50 +137,6 @@ locVRAM:	macro loc,controlport
 		endm
 
 ; ---------------------------------------------------------------------------
-; DMA copy data from 68K (ROM/RAM) to the VRAM
-; input: source, length, destination
-; ---------------------------------------------------------------------------
-
-writeVRAM:	macro
-		lea	(VdpCtrl).l,a5
-		move.l	#$94000000+(((\2>>1)&$FF00)<<8)+$9300+((\2>>1)&$FF),(a5)
-		move.l	#$96000000+(((\1>>1)&$FF00)<<8)+$9500+((\1>>1)&$FF),(a5)
-		move.w	#$9700+((((\1>>1)&$FF0000)>>16)&$7F),(a5)
-		move.w	#$4000+(\3&$3FFF),(a5)
-		move.w	#$80+((\3&$C000)>>14),(word_FFF644).w
-		move.w	(word_FFF644).w,(a5)
-		endm
-
-; ---------------------------------------------------------------------------
-; DMA copy data from 68K (ROM/RAM) to the CRAM
-; input: source, length, destination
-; ---------------------------------------------------------------------------
-
-writeCRAM:	macro
-		lea	(VdpCtrl).l,a5
-		move.l	#$94000000+(((\2>>1)&$FF00)<<8)+$9300+((\2>>1)&$FF),(a5)
-		move.l	#$96000000+(((\1>>1)&$FF00)<<8)+$9500+((\1>>1)&$FF),(a5)
-		move.w	#$9700+((((\1>>1)&$FF0000)>>16)&$7F),(a5)
-		move.w	#$C000+(\3&$3FFF),(a5)
-		move.w	#$80+((\3&$C000)>>14),(word_FFF644).w
-		move.w	(word_FFF644).w,(a5)
-		endm
-
-; ---------------------------------------------------------------------------
-; DMA fill VRAM with a value
-; input: value, length, destination
-; ---------------------------------------------------------------------------
-
-fillVRAM:	macro value,length,loc
-		lea	(VdpCtrl).l,a5
-		move.w	#$8F01,(a5)
-		move.l	#$94000000+((length&$FF00)<<8)+$9300+(length&$FF),(a5)
-		move.w	#$9780,(a5)
-		move.l	#$40000080+((loc&$3FFF)<<16)+((loc&$C000)>>14),(a5)
-		move.w	#value,(VdpData).l
-		endm
-
-; ---------------------------------------------------------------------------
 ; Copy a tilemap from 68K (ROM/RAM) to the VRAM without using DMA
 ; input: source, destination, width [cells], height [cells]
 ; ---------------------------------------------------------------------------
