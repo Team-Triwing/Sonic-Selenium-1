@@ -77,7 +77,7 @@ SoundIndex:
 	ptrSFX	0, Register, Bonus, Shield, Dash, BossHit
 	ptrSFX	0, Signpost, Lamppost, BigRing, Bumper, Spring
 	ptrSFX	0, Collapse, Smash, BuzzExplode, Explode
-	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble
+	ptrSFX	0, Electricity, Flame, LavaBall, SpikeMove, Rumble, AirDing
 	ptrSFX	0, Door, Stomp, EnterSS, Goal, ActionBlock, Diamonds, Continue, Spindash
 
 ; SFX with special features

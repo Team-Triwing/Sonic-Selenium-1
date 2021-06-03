@@ -136,7 +136,7 @@ Console &
 		jsr		ErrorHandler.__extern__console_only
 		jsr		\1
 		if narg<=1		; HACK
-			jmp	ConsoleHandler
+			pea	ConsoleHandler(pc)
 		endif
 
 	elseif strcmp("\0","setxy")
