@@ -306,9 +306,8 @@ off_B6A:    dc.w nullsub_3-off_B6A, loc_B7E-off_B6A, sub_B90-off_B6A, sub_BAA-of
 
 loc_B7E:
 	bsr.w   sub_E78
-	tst.w   (GlobalTimer).w
-	beq.s   locret_B8E
 	subq.w  #1,(GlobalTimer).w
+	bpl.w   locret_B8E
 
 locret_B8E:
 	rts
@@ -318,9 +317,8 @@ sub_B90:
 	bsr.w   sub_E78
 	bsr.w   sub_43B6
 	bsr.w   sub_1438
-	tst.w   (GlobalTimer).w
-	beq.s   locret_BA8
 	subq.w  #1,(GlobalTimer).w
+	bpl.w   locret_BA8
 
 locret_BA8:
 	rts
@@ -342,11 +340,8 @@ loc_C7A:
 	jsr ZoneAnimTiles
 	jsr UpdateHUD
 	bsr.w   loc_1454
-
-loc_CA8:
-	tst.w   (GlobalTimer).w
-	beq.s   locret_CBA
 	subq.w  #1,(GlobalTimer).w
+	bpl.w   locret_CBA
 
 locret_CBA:
 	rts
@@ -361,9 +356,8 @@ loc_CBC:
 	pea (ProcessDMAQueue).l
 
 loc_D7A:
-	tst.w   (GlobalTimer).w
-	beq.s   locret_D86
 	subq.w  #1,(GlobalTimer).w
+	bpl.w   locret_D86
 
 locret_D86:
 	rts
@@ -380,8 +374,7 @@ loc_E3A:
 	bsr.w   mapLevelLoad
 	jsr ZoneAnimTiles
 	jsr UpdateHUD
-	bsr.w   sub_1438
-	rts
+	bra.w   sub_1438
 ; ---------------------------------------------------------------------------
 
 sub_E58:
@@ -864,7 +857,7 @@ NemesisDec:
 NemDec_Main:
 	lea NemBuffer,a1        			; load Nemesis decompression buffer
 	move.w  (a0)+,d2        			; get number of patterns
-	bpl.s   @0         	 				; are we in Mode 0?
+	bpl.s   @0         	 			; are we in Mode 0?
 	lea $A(a3),a3       				; if not, use Mode 1
 @0 	lsl.w   #3,d2
 	movea.w d2,a5
@@ -889,11 +882,11 @@ NemDec2:
 	subq.w  #8,d7           			; get shift value
 	move.w  d5,d1
 	lsr.w   d7,d1           			; shift so that high bit of the code is in bit position 7
-	cmpi.b  #%11111100,d1       		; are the high 6 bits set?
-	bcc.s   NemDec_InlineData   		; if they are, it signifies inline data
+	cmpi.b  #%11111100,d1       			; are the high 6 bits set?
+	bcc.s   NemDec_InlineData   			; if they are, it signifies inline data
 	andi.w  #$FF,d1
 	add.w   d1,d1
-	sub.b   (a1,d1.w),d6        		; ~~ subtract from shift value so that the next code is read next time around
+	sub.b   (a1,d1.w),d6        			; ~~ subtract from shift value so that the next code is read next time around
 	cmpi.w  #9,d6           			; does a new byte need to be read?
 	bcc.s   @0          				; if not, branch
 	addq.w  #8,d6
@@ -910,7 +903,7 @@ NemDec_GetRepeatCount:
 NemDec_WritePixel:
 	lsl.l   #4,d4           			; shift up by a nybble
 	or.b    d1,d4           			; write pixel
-	dbf d3,NemDec_WritePixelLoop		; ~~
+	dbf d3,NemDec_WritePixelLoop			; ~~
 	jmp (a3)            				; otherwise, write the row to its destination
 ; ---------------------------------------------------------------------------
 
@@ -990,7 +983,7 @@ NemDec4:
 	move.b  (a0)+,d0        			; read first byte
 
 @ChkEnd:cmpi.b  #$FF,d0         			; has the end of the code table description been reached?
-	bne.s   @NewPalIndex        		; if not, branch
+	bne.s   @NewPalIndex        			; if not, branch
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -1010,10 +1003,10 @@ NemDec4:
 	or.w    d1,d7           			; combine with palette index and repeat count to form code table entry
 	moveq   #8,d1
 	sub.w   d0,d1           			; is the code 8 bits long?
-	bne.s   @ItemShortCode      		; if not, a bit of extra processing is needed
+	bne.s   @ItemShortCode      			; if not, a bit of extra processing is needed
 	move.b  (a0)+,d0        			; get code
 	add.w   d0,d0           			; each code gets a word-sized entry in the table
-	move.w  d7,(a1,d0.w)        		; store the entry for the code
+	move.w  d7,(a1,d0.w)        			; store the entry for the code
 	bra.s   @ItemLoop       			; repeat
 ; ---------------------------------------------------------------------------
 
@@ -1028,7 +1021,7 @@ NemDec4:
 
 @ItemShortCodeLoop:
 	move.w  d7,(a6)+        			; ~~ store entry
-	dbf d5,@ItemShortCodeLoop   		; repeat for required number of entries
+	dbf d5,@ItemShortCodeLoop   			; repeat for required number of entries
 	bra.s   @ItemLoop
 ; ---------------------------------------------------------------------------
 
@@ -1704,7 +1697,11 @@ sSega:
 	moveq   #0,d0
 	bsr.w   PalLoadFade
 	move.w  #$28,(PalCycOffset).w
-	move.w  #$B4,(GlobalTimer).w
+	move.w  #3*60,(GlobalTimer).w
+	btst    #6,(ConsoleRegion).w
+	beq.s   loc_2527
+	move.w  #3*50,(GlobalTimer).w
+loc_2527:
 	move.w  (ModeReg2).w,d0
 	ori.b   #$40,d0
 	move.w  d0,(VdpCtrl).l
@@ -1882,13 +1879,6 @@ loc_26E4:
 loc_25D8:
 	move.w  (a5)+,(a6)
 	dbf d1,loc_25D8
-	lea (VdpData).l,a6
-	move.l  #$60000003,(VdpCtrl).l
-	move.w  #$3FF,d1
-
-loc_2732:
-	move.l  d0,(a6)
-	dbf d1,loc_2732
 	bsr.w   sub_292C
 	moveq   #2,d0
 	bsr.w   palLoadFade
@@ -2129,8 +2119,6 @@ loc_2996:
 	lsr.b   #4,d0
 	bsr.s   sub_29B8
 	move.b  d2,d0
-	bsr.s   sub_29B8
-	rts
 ; ---------------------------------------------------------------------------
 
 sub_29B8:
@@ -2254,8 +2242,8 @@ loc_2C6C:
 
 	moveq   #3,d0
 	bsr.w   PalLoadNormal
-	tst.b   (DontIntMus).w ; DW: has the RAM been set?
-	bne.s   MusicLoop ; DW: if yes, branch and skip the music loading code below
+	tst.b   (DontIntMus).w 		; DW: has the RAM been set?
+	bne.s   MusicLoop	 	; DW: if yes, branch and skip the music loading code below
 	moveq   #0,d0
 	move.b  (curzone).w,d0
 	lea (MusicList).l,a1
@@ -2263,7 +2251,7 @@ loc_2C6C:
 	move.b	d0,SavedSong.w
 	move.b  d0,mQueue+1.w
 MusicLoop:
-	command mus_ShoesOff   ; run the music at normal speed
+	command mus_ShoesOff   		; run the music at normal speed
 	clr.b   (DontIntMus).w
 	move.b  #$34,(byte_FFD080).w
 
@@ -4535,8 +4523,8 @@ off_4AA4:   dc.w loc_4AAC-off_4AA4, sub_4ADC-off_4AA4, loc_4B20-off_4AA4, loc_4B
 
 loc_4AAC:
 	move.w  #$1D0,(unk_FFF726).w
-	cmpi.w  #$700,(CameraX).w
-	bcs.s   locret_4ADA
+	cmpi.w  #$27E,(CameraX).w
+	blt.s   locret_4ADA
 	move.w  #$220,(unk_FFF726).w
 	cmpi.w  #$D00,(CameraX).w
 	bcs.s   locret_4ADA
@@ -8805,13 +8793,13 @@ AllObjects: dc.l ObjSonic, Obj_SSResults, Obj_SSResCE, Obj04, Obj05, Ojb06, Obj0
 ObjectFall:
 	move.w	x_vel(a0),d0	; load horizontal speed
 	ext.l	d0
-	asl.l	#8,d0			; convert to 16.16 fixed point
+	asl.l	#8,d0		; convert to 16.16 fixed point
 	add.l	d0,x_pos(a0)	; add to x-position
 
 	move.w	y_vel(a0),d0	; load vertical speed
 	addi.w	#$38,y_vel(a0)	; increase vertical speed (apply gravity)
 	ext.l	d0
-	asl.l	#8,d0			; convert to 16.16 fixed point
+	asl.l	#8,d0		; convert to 16.16 fixed point
 	add.l	d0,y_pos(a0)	; add to y-position
 	rts
 ; ---------------------------------------------------------------------------
@@ -8819,12 +8807,12 @@ ObjectFall:
 ObjectMove:
 	move.w	x_vel(a0),d0	; load horizontal speed
 	ext.l	d0
-	asl.l	#8,d0			; convert to 16.16 fixed point
+	asl.l	#8,d0		; convert to 16.16 fixed point
 	add.l	d0,x_pos(a0)	; add to x-position
 
 	move.w	y_vel(a0),d0	; load vertical speed
 	ext.l	d0
-	asl.l	#8,d0			; convert to 16.16 fixed point
+	asl.l	#8,d0		; convert to 16.16 fixed point
 	add.l	d0,y_pos(a0)	; add to y-position
 	rts
 ; ---------------------------------------------------------------------------
@@ -20517,19 +20505,13 @@ loc_116BA:
 	tst.b   (PauseFlag).w
 	bmi.s   loc_1170E
 	lea (dword_FFFE26).w,a1
-	addq.b  #1,-(a1)
-	cmpi.b  #60,(a1)
-	bcs.s   loc_1170E
-	move.b  #0,(a1)
-	addq.b  #1,-(a1)
-	cmpi.b  #60,(a1)
-	bcs.s   loc_116EE
-	move.b  #0,(a1)
-	addq.b  #1,-(a1)
-	cmpi.b  #9,(a1)
-	bcs.s   loc_116EE
-	move.b  #9,(a1)
+	btst    #6,(ConsoleRegion).w
+	beq.s   HUD_NotPAL
+	bsr.w 	HUDCountPAL
+	bra.s  	loc_116EE
 
+HUD_NotPAL:
+	bsr.w 	HUDCountNTSC
 loc_116EE:
 	move.l  #$5E400003,d0
 	moveq   #0,d1
@@ -20559,6 +20541,36 @@ loc_1171C:
 	bsr.w   sub_11958
 
 locret_11744:
+	rts
+
+HUDCountNTSC:
+	addq.b  #1,-(a1)
+	cmpi.b  #60,(a1)
+	bcs.w   loc_1170E
+	move.b  #0,(a1)
+	addq.b  #1,-(a1)
+	cmpi.b  #60,(a1)
+	bcs.w   loc_116EE
+	move.b  #0,(a1)
+	addq.b  #1,-(a1)
+	cmpi.b  #9,(a1)
+	bcs.w   loc_116EE
+	move.b  #9,(a1)
+	rts
+
+HUDCountPAL:
+	addq.b  #1,-(a1)
+	cmpi.b  #50,(a1)
+	bcs.w   loc_1170E
+	move.b  #0,(a1)
+	addq.b  #1,-(a1)
+	cmpi.b  #50,(a1)
+	bcs.w   loc_116EE
+	move.b  #0,(a1)
+	addq.b  #1,-(a1)
+	cmpi.b  #9,(a1)
+	bcs.w   loc_116EE
+	move.b  #9,(a1)
 	rts
 ; ---------------------------------------------------------------------------
 
