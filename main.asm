@@ -894,7 +894,7 @@ NemDec_Main:
 	move.w  (a0)+,d2        			; get number of patterns
 	bpl.s   @0         	 				; are we in Mode 0?
 	lea $A(a3),a3       				; if not, use Mode 1
-@0  lsl.w   #3,d2
+@0 	lsl.w   #3,d2
 	movea.w d2,a5
 	moveq   #7,d3
 	moveq   #0,d2
@@ -927,7 +927,7 @@ NemDec2:
 	addq.w  #8,d6
 	asl.w   #8,d5
 	move.b  (a0)+,d5        			; read next byte
-@0  move.b  1(a1,d1.w),d1
+@0  	move.b  1(a1,d1.w),d1
 	move.w  d1,d0
 	andi.w  #$F,d1          			; get palette index for pixel
 	andi.w  #$F0,d0
@@ -958,7 +958,7 @@ NemDec_InlineData:
 	addq.w  #8,d6
 	asl.w   #8,d5
 	move.b  (a0)+,d5
-@0  subq.w  #7,d6           			; and 7 bits needed for the inline data itself
+@0  	subq.w  #7,d6           			; and 7 bits needed for the inline data itself
 	move.w  d5,d1
 	lsr.w   d6,d1           			; shift so that low bit of the code is in bit position 0
 	move.w  d1,d0
@@ -1017,8 +1017,7 @@ NemDec_WriteRowToRAM_XOR:
 NemDec4:
 	move.b  (a0)+,d0        			; read first byte
 
-@ChkEnd:
-	cmpi.b  #$FF,d0         			; has the end of the code table description been reached?
+@ChkEnd:cmpi.b  #$FF,d0         			; has the end of the code table description been reached?
 	bne.s   @NewPalIndex        		; if not, branch
 	rts
 ; ---------------------------------------------------------------------------
@@ -1760,9 +1759,9 @@ loc_2544:
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
 SplashScreen:
-	command mus_FadeOut             	; set music ID to "stop music"
-	bsr.w   Pal_FadeFrom          		; fade palettes out
-	bsr.w   ClearScreen           		; clear the plane mappings
+	command mus_FadeOut             		; set music ID to "fade music"
+	bsr.w   Pal_FadeFrom          			; fade palette out
+	bsr.w   ClearScreen           			; clear the plane mappings
 
 	; initalize VDP
 	lea (VdpCtrl).l,a6
@@ -1774,33 +1773,33 @@ SplashScreen:
 	move.w  #$8C00|%10000001,(a6)
 
 	; load art, mappings and the palette
-	lea     ((Chunks)&$FFFFFF).l,a1 	; load dump location
-	lea     MapSplash.l,a0          	; load compressed mappings address
-	move.w  #$140,d0             		; prepare pattern index value to patch to mappings
+	lea     ((Chunks)&$FFFFFF).l,a1 		; load dump location
+	lea     MapSplash.l,a0          		; load compressed mappings address
+	move.w  #$140,d0             			; prepare pattern index value to patch to mappings
 	bsr.w   EniDec     		       		; decompress and dump
-	copyTilemap (Chunks)&$FFFFFF,$C000,$27,$1E         		; flush mappings to VRAM
-	move.l  #$68000000,($C00004).l    	; set vdp loc
-	lea     ArtSplash.l,a0           	; load background art
-	jsr     NemesisDec              	; run NemDec to decompress art for display
+	copyTilemap (Chunks)&$FFFFFF,$C000,$27,$1E 	; flush mappings to VRAM
+	move.l  #$68000000,($C00004).l    		; set vdp loc
+	lea     ArtSplash.l,a0           		; load background art
+	jsr     NemesisDec              		; run NemDec to decompress art for display
 	move.b  #$B,d0
 	bsr.w   PalLoadFade
-	bsr.w 	Pal_FadeTo          		; fade palette in
+	bsr.w 	Pal_FadeTo          			; fade palette in
 	music   mus_Splash
-	move.w  #5*60,(GlobalTimer).w     	; set delay time (5 seconds on a 60hz system)
-	btst    #6,(ConsoleRegion).w    	; is this a PAL machine?
-	beq.s   Splash_MainLoop           	; if not, continue
-	move.w  #5*50,(GlobalTimer).w     	; set delay time (5 seconds on a 50hz system)
+	move.w  #5*60,(GlobalTimer).w     		; set delay time (5 seconds on a 60hz system)
+	btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
+	beq.s   Splash_MainLoop           		; if not, continue
+	move.w  #5*50,(GlobalTimer).w     		; set delay time (5 seconds on a 50hz system)
  
 Splash_MainLoop:
-	move.b  #2,(VintRoutine).w       	; set V-blank routine to run
-	vsync                           	; wait for V-blank (decreases "Demo_Time_left")
-	tst.b   (padPress1).w           	; has player 1 pressed the start button?
-	bmi.s   Splash_GotoTitle         	; if so, branch
-	tst.w   (GlobalTimer).w           	; has the delay time finished?
-	bne.s   Splash_MainLoop          	; if not, branch
+	move.b  #2,(VintRoutine).w       		; set V-blank routine to run
+	vsync                           		; wait for V-blank (decreases "Demo_Time_left")
+	tst.b   (padPress1).w           		; has player 1 pressed the start button?
+	bmi.s   Splash_GotoTitle         		; if so, branch
+	tst.w   (GlobalTimer).w           		; has the delay time finished?
+	bne.s   Splash_MainLoop          		; if not, branch
  
 Splash_GotoTitle:
-	move.b  #4,(GameMode).w      		; set the screen mode to Title Screen
+	move.b  #4,(GameMode).w      			; set the screen mode to Title Screen
 	rts                     			; return
 ; ---------------------------------------------------------------------------
 
@@ -1935,7 +1934,7 @@ LevelSelect:
 	cmpi.w  #$13,d0
 	bne.s   LevSelLevCheckStart
 	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
-	beq.s   LevSelStartPress    	; if true, branch
+	beq.s   LevSelStartPress    		; if true, branch
 	btst  	#JbC,(padPress1).w 		; is C pressed?
 	bne.s   LevSelBCPress   		; if not, branch
 	btst  	#JbB,(padPress1).w 		; is B pressed?
@@ -1954,7 +1953,7 @@ loc_277A:
 	move.b d0,mQueue+1.w
 	bra.s   LevelSelect
 	
-LevSelStartPress:               ; XREF: LevelSelect
+LevSelStartPress:               		; XREF: LevelSelect
 	sfx 	sfx_Select
 	clr.b   (GameMode).w
 	rts
@@ -2091,18 +2090,18 @@ loc_28F0:
 	andi.b  #J_L|J_R|J_A,d1
 	beq.s   locret_292A
 	move.w  (LevSelSound).w,d0
-	btst    #JbA,d1       ; is A pressed?
-	bne.s   LevSel_A    ; if not, branch
+	btst    #JbA,d1       	; is A pressed?
+	bne.s   LevSel_A    	; if not, branch
 	btst    #JbL,d1
 	beq.s   loc_2912
 	sfx     sfx_Pop
 	subq.w  #1,d0
 	
 LevSel_A:
-	btst    #JbA,d1       ; is A button pressed?
-	beq.s   loc_2912    ; if not, branch
+	btst    #JbA,d1       	; is A button pressed?
+	beq.s   loc_2912    	; if not, branch
 	sfx     sfx_Pop
-	addi.w  #16,d0      ; add $10 to sound test
+	addi.w  #16,d0      	; add $10 to sound test
 
 loc_2912:
 	btst    #JbR,d1
@@ -2187,13 +2186,13 @@ loc_29CE:
 ; ---------------------------------------------------------------------------
 
 loc_29DE:
-	cmpi.w  #$40,d0     ; Check for $40 (End of ASCII number area)
-	blt.s   @notText    ; If this is not an ASCII text character, branch
-	subq.w  #3,d0       ; Subtract an extra 3 (Compensate for missing characters in the font)
-@notText:
-	subi.w  #$30,d0     ; Subtract #$33 (Convert to S2 font from ASCII)
-	add.w   d3,d0       ; combine char with VRAM setting
-	move.w  d0,(a6)     ; send to VRAM
+	cmpi.w  #$40,d0     	; Check for 0x40/64 (End of ASCII number area)
+	blt.s   @notText    	; If this is not an ASCII text character, branch
+	subq.w  #3,d0       	; Subtract an extra 3, to compensate for the
+@notText:			; missing characters in the font
+	subi.w  #$30,d0     	; Subtract 0x33/51 (ASCII to S2 font)
+	add.w   d3,d0       	; combine character with VRAM setting
+	move.w  d0,(a6)     	; send to VRAM
 	dbf     d2,loc_29CE
 	rts
 ; ---------------------------------------------------------------------------
@@ -3167,10 +3166,6 @@ StartPosArray:  incbin "levels/GHZ/Start 1.dat"
 	incbin "levels/SBZ/Start 2.dat"
 	incbin "levels/SBZ/Start 3.dat"
 	incbin "levels/SBZ/Start 4.dat"
-	incbin "levels/Ending/Start 1.dat"
-	incbin "levels/Ending/Start 2.dat"
-	incbin "levels/Ending/Start 3.dat"
-	incbin "levels/Ending/Start 4.dat"
 	even
 
 SpecialChunkArray:
@@ -21983,8 +21978,7 @@ LayoutSBZ2FG:   incbin "levels/SBZ/Foreground 2.unc"
 	even
 LayoutSBZ2BG:   incbin "levels/SBZ/Background 2.unc"
 	even
-LayoutEnding1FG:incbin "levels/Ending/Foreground 1.unc"
-	even
+LayoutEnding1FG:
 LayoutEnding1BG:
 
 byte_6E3D6: dc.b 0, 0, 0, 0
@@ -22013,7 +22007,10 @@ ObjectListArray:dc.w ObjListGHZ1-ObjectListArray, ObjListNull-ObjectListArray
 	dc.w ObjListSBZ2-ObjectListArray, ObjListNull-ObjectListArray
 	dc.w ObjListSBZ3-ObjectListArray, ObjListNull-ObjectListArray
 	dc.w ObjListSBZ1-ObjectListArray, ObjListNull-ObjectListArray
-	dc.w $FFFF, 0, 0
+	dc.w ObjListNull-ObjectListArray, ObjListNull-ObjectListArray
+	dc.w ObjListNull-ObjectListArray, ObjListNull-ObjectListArray
+	dc.w ObjListNull-ObjectListArray, ObjListNull-ObjectListArray
+	dc.w ObjListNull-ObjectListArray, ObjListNull-ObjectListArray
 ObjListGHZ1:    incbin "levels/GHZ/Objects 1.unc"
 	even
 ObjListGHZ2:    incbin "levels/GHZ/Objects 2.unc"
