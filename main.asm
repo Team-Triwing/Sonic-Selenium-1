@@ -857,9 +857,9 @@ NemesisDec:
 NemDec_Main:
 	lea NemBuffer,a1        			; load Nemesis decompression buffer
 	move.w  (a0)+,d2        			; get number of patterns
-	bpl.s   @0         	 			; are we in Mode 0?
+	bpl.s   .0         	 			; are we in Mode 0?
 	lea $A(a3),a3       				; if not, use Mode 1
-@0 	lsl.w   #3,d2
+.0 	lsl.w   #3,d2
 	movea.w d2,a5
 	moveq   #7,d3
 	moveq   #0,d2
@@ -888,11 +888,11 @@ NemDec2:
 	add.w   d1,d1
 	sub.b   (a1,d1.w),d6        			; ~~ subtract from shift value so that the next code is read next time around
 	cmpi.w  #9,d6           			; does a new byte need to be read?
-	bcc.s   @0          				; if not, branch
+	bcc.s   .0          				; if not, branch
 	addq.w  #8,d6
 	asl.w   #8,d5
 	move.b  (a0)+,d5        			; read next byte
-@0  	move.b  1(a1,d1.w),d1
+.0  	move.b  1(a1,d1.w),d1
 	move.w  d1,d0
 	andi.w  #$F,d1          			; get palette index for pixel
 	andi.w  #$F0,d0
@@ -919,11 +919,11 @@ NemDec_WritePixelLoop:
 NemDec_InlineData:
 	subq.w  #6,d6           			; 6 bits needed to signal inline data
 	cmpi.w  #9,d6
-	bcc.s   @0
+	bcc.s   .0
 	addq.w  #8,d6
 	asl.w   #8,d5
 	move.b  (a0)+,d5
-@0  	subq.w  #7,d6           			; and 7 bits needed for the inline data itself
+.0  	subq.w  #7,d6           			; and 7 bits needed for the inline data itself
 	move.w  d5,d1
 	lsr.w   d6,d1           			; shift so that low bit of the code is in bit position 0
 	move.w  d1,d0
@@ -982,17 +982,17 @@ NemDec_WriteRowToRAM_XOR:
 NemDec4:
 	move.b  (a0)+,d0        			; read first byte
 
-@ChkEnd:cmpi.b  #$FF,d0         			; has the end of the code table description been reached?
-	bne.s   @NewPalIndex        			; if not, branch
+.ChkEnd:cmpi.b  #$FF,d0         			; has the end of the code table description been reached?
+	bne.s   .NewPalIndex        			; if not, branch
 	rts
 ; ---------------------------------------------------------------------------
 
-@NewPalIndex:
+.NewPalIndex:
 	move.w  d0,d7
 
-@ItemLoop:
+.ItemLoop:
 	move.b  (a0)+,d0        			; read next byte
-	bmi.s   @ChkEnd         			; ~~
+	bmi.s   .ChkEnd         			; ~~
 	move.b  d0,d1
 	andi.w  #$F,d7          			; get palette index
 	andi.w  #$70,d1         			; get repeat count for palette index
@@ -1003,14 +1003,14 @@ NemDec4:
 	or.w    d1,d7           			; combine with palette index and repeat count to form code table entry
 	moveq   #8,d1
 	sub.w   d0,d1           			; is the code 8 bits long?
-	bne.s   @ItemShortCode      			; if not, a bit of extra processing is needed
+	bne.s   .ItemShortCode      			; if not, a bit of extra processing is needed
 	move.b  (a0)+,d0        			; get code
 	add.w   d0,d0           			; each code gets a word-sized entry in the table
 	move.w  d7,(a1,d0.w)        			; store the entry for the code
-	bra.s   @ItemLoop       			; repeat
+	bra.s   .ItemLoop       			; repeat
 ; ---------------------------------------------------------------------------
 
-@ItemShortCode:
+.ItemShortCode:
 	move.b  (a0)+,d0        			; get code
 	lsl.w   d1,d0           			; shift so that high bit is in bit position 7
 	add.w   d0,d0           			; get index into code table
@@ -1019,10 +1019,10 @@ NemDec4:
 	subq.w  #1,d5           			; d5 = 2^d1 - 1
 	lea (a1,d0.w),a6        			; ~~
 
-@ItemShortCodeLoop:
+.ItemShortCodeLoop:
 	move.w  d7,(a6)+        			; ~~ store entry
-	dbf d5,@ItemShortCodeLoop   			; repeat for required number of entries
-	bra.s   @ItemLoop
+	dbf d5,.ItemShortCodeLoop   			; repeat for required number of entries
+	bra.s   .ItemLoop
 ; ---------------------------------------------------------------------------
 
 plcAdd:
@@ -1238,12 +1238,12 @@ PaletteCycle:
 	moveq   #0,d0
 	move.b  (curzone).w,d0
 	add.w   d0,d0
-	move.w  @levels(pc,d0.w),d0
-	jmp @levels(pc,d0.w)
+	move.w  .levels(pc,d0.w),d0
+	jmp .levels(pc,d0.w)
 ; ---------------------------------------------------------------------------
 
-@levels:    dc.w PalCycGHZ-@levels, PalCycLZ-@levels, PalCycMZ-@levels, PalCycSLZ-@levels
-	dc.w PalCycSYZ-@levels, PalCycSBZ-@levels, PalCycEnding-@levels
+.levels:    dc.w PalCycGHZ-.levels, PalCycLZ-.levels, PalCycMZ-.levels, PalCycSLZ-.levels
+	dc.w PalCycSYZ-.levels, PalCycSBZ-.levels, PalCycEnding-.levels
 ; ---------------------------------------------------------------------------
 
 PalCycTitle:
@@ -1573,10 +1573,10 @@ palSplash:  incbin "Splash/SPLASHPAL.bin"
 
 RandomNumber:
 	move.l  (RandomSeed).w,d1
-	bne.s   @noreset
+	bne.s   .noreset
 	move.l  #$2A6D365A,d1
 
-@noreset:
+.noreset:
 	move.l  d1,d0
 	asl.l   #2,d1
 	add.l   d0,d1
@@ -2147,9 +2147,9 @@ loc_29CE:
 
 loc_29DE:
 	cmpi.w  #$40,d0     	; Check for 0x40/64 (End of ASCII number area)
-	blt.s   @notText    	; If this is not an ASCII text character, branch
+	blt.s   .notText    	; If this is not an ASCII text character, branch
 	subq.w  #3,d0       	; Subtract an extra 3, to compensate for the
-@notText:			; missing characters in the font
+.notText:			; missing characters in the font
 	subi.w  #$30,d0     	; Subtract 0x33/51 (ASCII to S2 font)
 	add.w   d3,d0       	; combine character with VRAM setting
 	move.w  d0,(a6)     	; send to VRAM
@@ -3233,12 +3233,12 @@ loc_3E18:
 	moveq   #0,d0
 	move.b  (curzone).w,d0
 	add.w   d0,d0
-	move.w  @scroll(pc,d0.w),d0
-	jmp @scroll(pc,d0.w)
+	move.w  .scroll(pc,d0.w),d0
+	jmp .scroll(pc,d0.w)
 ; ---------------------------------------------------------------------------
 
-@scroll:    dc.w HScrollGHZ-@scroll, HScrollLZ-@scroll, HScrollMZ-@scroll, HScrollSLZ-@scroll
-	dc.w HScrollSYZ-@scroll, HScrollSBZ-@scroll, HScrollGHZ-@scroll
+.scroll:    dc.w HScrollGHZ-.scroll, HScrollLZ-.scroll, HScrollMZ-.scroll, HScrollSLZ-.scroll
+	dc.w HScrollSYZ-.scroll, HScrollSBZ-.scroll, HScrollGHZ-.scroll
 ; ---------------------------------------------------------------------------
 
 HScrollGHZ:
@@ -4612,9 +4612,9 @@ EventsMZ3:
 ApplySpeedSettings:
 	moveq   #0,d0               ; Quickly clear d0
 	tst.w   (ObjectsList+speedshoes).w  ; Does character have speedshoes?
-	beq.s   @noshoes            ; If not, branch
+	beq.s   .noshoes            ; If not, branch
 	addq.b  #6,d0               ; Quickly add 6 to d0
-@noshoes:
+.noshoes:
 	lea Speedsettings(pc,d0.w),a1   ; Load correct speed settings into a1
 	move.l  (a1)+,(a2)+         ; Set character's new top speed and acceleration
 	move.w  (a1),(a2)           ; Set character's deceleration
@@ -7380,13 +7380,13 @@ ObjCannonballExplode_Init:
 
 ObjCannonballExplode_Act:
 	subq.b  #1,anidelay(a0)
-	bpl.s   @disp
+	bpl.s   .disp
 	move.b  #9,anidelay(a0)
 	addq.b  #1,frame(a0)
 	cmpi.b  #4,frame(a0)
 	beq.w   ObjectDelete
 
-@disp:
+.disp:
 	bra.w   ObjectDisplay
 ; ---------------------------------------------------------------------------
 
@@ -7422,13 +7422,13 @@ ObjExplode_Init:
 
 ObjExplode_Act:
 	subq.b  #1,anidelay(a0)
-	bpl.s   @display
+	bpl.s   .display
 	move.b  #7,anidelay(a0)
 	addq.b  #1,frame(a0)
 	cmpi.b  #5,frame(a0)
 	beq.w   ObjectDelete
 
-@display:
+.display:
 	bra.w   ObjectDisplay
 ; ---------------------------------------------------------------------------
 
@@ -8725,8 +8725,8 @@ RunObjects:
 	lea (ObjectsList).w,a0
 	moveq   #$7F,d7
 	moveq   #0,d0
-	;cmpi.b #6,(ObjectsList+act).w
-	;bcc.s  loc_8560
+	cmpi.b 	#6,(ObjectsList+act).w
+	bcc.s  	loc_8560
 ; ---------------------------------------------------------------------------
 
 sub_8546:
@@ -8795,7 +8795,6 @@ ObjectFall:
 	ext.l	d0
 	asl.l	#8,d0		; convert to 16.16 fixed point
 	add.l	d0,x_pos(a0)	; add to x-position
-
 	move.w	y_vel(a0),d0	; load vertical speed
 	addi.w	#$38,y_vel(a0)	; increase vertical speed (apply gravity)
 	ext.l	d0
@@ -8809,7 +8808,6 @@ ObjectMove:
 	ext.l	d0
 	asl.l	#8,d0		; convert to 16.16 fixed point
 	add.l	d0,x_pos(a0)	; add to x-position
-
 	move.w	y_vel(a0),d0	; load vertical speed
 	ext.l	d0
 	asl.l	#8,d0		; convert to 16.16 fixed point
@@ -8850,9 +8848,9 @@ ObjectDeleteA1:
 	moveq   #0,d1
 	moveq   #$F,d0
 
-@clear:
+.clear:
 	move.l  d1,(a1)+
-	dbf d0,@clear
+	dbf d0,.clear
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -9127,19 +9125,19 @@ locret_89C4:
 ObjectChkOffscreen:
 	move.w  xpos(a0),d0
 	sub.w   (CameraX).w,d0
-	bmi.s   @offscreen
+	bmi.s   .offscreen
 	cmpi.w  #320,d0
-	bge.s   @offscreen
+	bge.s   .offscreen
 	move.w  ypos(a0),d1
 	sub.w   (CameraY).w,d1
-	bmi.s   @offscreen
+	bmi.s   .offscreen
 	cmpi.w  #224,d1
-	bge.s   @offscreen
+	bge.s   .offscreen
 	moveq   #0,d0
 	rts
 ; ---------------------------------------------------------------------------
 
-@offscreen:
+.offscreen:
 	moveq   #1,d0
 	rts
 ; ---------------------------------------------------------------------------
@@ -11918,11 +11916,11 @@ loc_AD42:
 ObjWaterfallSnd:
 	moveq   #0,d0
 	move.b  act(a0),d0
-	move.w  @act(pc,d0.w),d1
-	jmp @act(pc,d1.w)
+	move.w  .act(pc,d0.w),d1
+	jmp .act(pc,d1.w)
 ; ---------------------------------------------------------------------------
 
-@act:       dc.w ObjWaterfallSnd_Init-@act, ObjWaterfallSnd_Act-@act
+.act:       dc.w ObjWaterfallSnd_Init-.act, ObjWaterfallSnd_Act-.act
 ; ---------------------------------------------------------------------------
 
 ObjWaterfallSnd_Init:
@@ -11932,10 +11930,10 @@ ObjWaterfallSnd_Init:
 ObjWaterfallSnd_Act:
 	; this is to avoid overwriting any other sfx
 	tst.b   mQueue+2.w      ; check if any sound was queued
-	bne.s   @nosound        ; if was, skip
+	bne.s   .nosound        ; if was, skip
 	move.b  #sfx_Waterfall,mQueue+2.w; else, play this again
 
-@nosound:
+.nosound:
 	move.w  xpos(a0),d0
 	andi.w  #$FF80,d0
 	sub.w   (CameraXCoarse).w,d0
@@ -16359,10 +16357,10 @@ ObjSonic_LookUp:
 	sub.w	(unk_FFF72C).w,d0	; subtract zone's top bound from it
 	add.w	(unk_FFF73E).w,d0	; add default offset
 	cmpi.w	#$C8,d0			; is offset <= $C8?
-	ble.s	@skip			; if so, branch
+	ble.s	.notC8			; if so, branch
 	move.w	#$C8,d0			; set offset to $C8
 		
-@skip:
+.notC8:
 	cmp.w	(unk_FFF73E).w,d0
 	ble.s	loc_EAEA
 	addq.w  #2,(unk_FFF73E).w
@@ -16377,13 +16375,13 @@ ObjSonic_Duck:
 	sub.w	(unk_FFF72E).w,d0	; subtract zone's bottom bound from it (creating a negative number)
 	add.w	(unk_FFF73E).w,d0	; add default offset
 	cmpi.w	#8,d0			; is offset < 8?
-	blt.s	@set			; if so, branch
-	bgt.s	@skip			; if greater than 8, branch
+	blt.s	.set			; if so, branch
+	bgt.s	.not8			; if greater than 8, branch
 		
-@set:
+.set:
 	move.w	#8,d0	; set offset to 8
 		
-@skip:
+.not8:
 	cmp.w	(unk_FFF73E).w,d0
 	bge.s	loc_EAEA
 	subq.w  #2,(unk_FFF73E).w
@@ -16682,9 +16680,9 @@ ObjSonic_ChgJumpDirection:
 	neg.w   d1
 	cmp.w   d1,d0
 	bgt.s   loc_ED6E
-	add.w   d5,d0       ; +++ remove this frame's acceleration change
-	cmp.w   d1,d0       ; +++ compare speed with top speed
-	ble.s   loc_ED6E    ; +++ if speed was already greater than the maximum, branch
+	add.w   d5,d0       		; +++ remove this frame's acceleration change
+	cmp.w   d1,d0       		; +++ compare speed with top speed
+	ble.s   loc_ED6E    		; +++ if speed was already greater than the maximum, branch
 	move.w  d1,d0
 
 loc_ED6E:
@@ -16694,9 +16692,9 @@ loc_ED6E:
 	add.w   d5,d0
 	cmp.w   d6,d0
 	blt.s   ObjSonic_JumpMove
-	sub.w   d5,d0       ; +++ remove this frame's acceleration change
-	cmp.w   d6,d0       ; +++ compare speed with top speed
-	bge.s   ObjSonic_JumpMove   ; +++ if speed was already greater than the maximum, branch
+	sub.w   d5,d0       		; +++ remove this frame's acceleration change
+	cmp.w   d6,d0       		; +++ compare speed with top speed
+	bge.s   ObjSonic_JumpMove   	; +++ if speed was already greater than the maximum, branch
 	move.w  d6,d0
 
 ObjSonic_JumpMove:
