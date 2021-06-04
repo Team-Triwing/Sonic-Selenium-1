@@ -468,8 +468,8 @@ unk_FFF770:	rs.l 1
 unk_FFF774:	rs.l 1
 unk_FFF778:	rs.l 1
 unk_FFF77C:	rs.l 1
-SpecAngle:	rs.w 1
-SpecSpeed:	rs.w 1
+		rs.w 1
+		rs.w 1
 		rs.b 1
 		rs.b 1
 		rs.b 1

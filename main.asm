@@ -17262,7 +17262,7 @@ loc_F5FA:
 ObjSonic_DynTiles:          ; XREF: Obj01_Control; et al
 	moveq   #0,d0
 	move.b  frame(a0),d0    ; load frame number
-	cmp.b   (SonicLastDPLCID).w,d0
+	cmpi.b  (SonicLastDPLCID).w,d0
 	beq.s   locret_13C96
 	move.b  d0,(SonicLastDPLCID).w
 	lea (DynMapSonic).l,a2
@@ -19118,6 +19118,7 @@ loc_115C6:
 	lea xvel(a1),a1
 	dbf d1,loc_115C6
 	rts
+
 ; ---------------------------------------------------------------------------
 
 ObjHUD:
@@ -20202,8 +20203,8 @@ word_12484: dc.w (((plcSignPosts-word_12484-2)/6)-1)
 plcSignPosts:   dc.w (((plcFlash-plcSignPosts-2)/6)-1)
 	dc.l ArtSignPost
 	dc.w $D000
-	dc.l ArtFlash
-	dc.w $A820
+	dc.l ArtSpecialRing
+	dc.w $9D80
 	dc.l ArtFlash
 	dc.w $A820
 
@@ -20280,6 +20281,8 @@ ArtShield:  incbin "levels/shared/Shield/Shield.nem"
 ArtInvinStars:  incbin "levels/shared/Shield/Stars.nem"
 	even
 ArtFlash:   incbin "unsorted/flash.nem"
+	even
+ArtSpecialRing:	incbin "levels/shared/Big ring/Sprite.nem"
 	even
 byte_27400: incbin "unsorted/ghz flower stalk.nem"
 	even
