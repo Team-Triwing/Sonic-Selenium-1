@@ -17262,7 +17262,7 @@ loc_F5FA:
 ObjSonic_DynTiles:          ; XREF: Obj01_Control; et al
 	moveq   #0,d0
 	move.b  frame(a0),d0    ; load frame number
-	cmpi.b  (SonicLastDPLCID).w,d0
+	cmp.b  	(SonicLastDPLCID).w,d0
 	beq.s   locret_13C96
 	move.b  d0,(SonicLastDPLCID).w
 	lea (DynMapSonic).l,a2
