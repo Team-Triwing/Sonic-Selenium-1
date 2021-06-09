@@ -59,9 +59,9 @@ RomEndLoc:dc.l	EndOfROM-1             				; ROM region
 	dc.l $200000
 Notes:  dc.b 'I already know nobody is going to like this hack.   '
 	    ;'                                                    '
-	dc.b %1111          ; Region codes
-	dc.b 'Why even play? '
-	    ;'               '
+	dc.b 'U  '          ; Region codes
+	dc.b '             '
+	    ;'             '
 EndOfHeader:
 ; ---------------------------------------------------------------------------
 
@@ -167,6 +167,7 @@ initz80 z80prog 0
 endinit
 
 	dc.b $9F, $BF, $DF, $FF             	; PSG volumes (1, 2, 3 and 4)
+	even
 ; ---------------------------------------------------------------------------
 
 MainProgram:
