@@ -25,10 +25,6 @@
 ROM     section org(0)
 
 Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The compressor tool may ask you to increase the size...
-z80_ram:    equ $A00000
-z80_bus_request equ $A11100
-z80_reset:  equ $A11200
-Drvmem      equ SoundMemory
 
 	include "AMPS/lang.asm"
 	include "AMPS/code/macro.asm"
@@ -238,7 +234,7 @@ ScreensArray:
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
-	clrRAM  RAM_START,RAM_END
+	clrRAM  Drvmem
 	jsr LoadDualPCM
 	bsr.w   padInit
 	command	mus_Stop
@@ -419,14 +415,17 @@ locret_F3A:
 ; ---------------------------------------------------------------------------
 
 padInit:
+	z80Bus
 	moveq   #$40,d0
 	move.b  d0,(IO_A_CTRL).l
 	move.b  d0,(IO_B_CTRL).l
 	move.b  d0,(IO_C_CTRL).l
+	z80Start
 	rts
 ; ---------------------------------------------------------------------------
 
 padRead:
+	z80Bus
 	lea (padHeld1).w,a0
 	lea (IO_A_DATA).l,a1
 	bsr.s   sub_FDC
@@ -452,6 +451,7 @@ sub_FDC:
 	move.b	d0,(a0)+
 	and.b	d0,d1
 	move.b	d1,(a0)+
+	z80Start
 	rts
 ; ---------------------------------------------------------------------------
 

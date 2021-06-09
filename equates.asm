@@ -77,6 +77,16 @@ TMSS_SEGA	EQU	$A14000		; TMSS "SEGA" register
 TMSS_MODE	EQU	$A14100		; TMSS bus mode
 
 ; -------------------------------------------------------------------------
+; Z80
+; -------------------------------------------------------------------------
+
+Z80_RAM		EQU	$A00000			; Z80 RAM start
+Z80_END		EQU	$A02000			; Z80 RAM end
+Z80_BUS		EQU	$A11100			; Z80 bus request
+Z80_RESET	EQU	$A11200			; Z80 reset
+z80_bus_request equ Z80_BUS
+
+; -------------------------------------------------------------------------
 ; VDP
 ; -------------------------------------------------------------------------
 
@@ -279,9 +289,8 @@ byte_FFD600:	rs.b $40
 		rs.b $40
 LevelObjectsList:rs.b $1800
 ObjectsList_End:rs.b 0
-SoundMemory:	rs.b $500	; used for the sound driver
-SoundMemory_End:rs.b 0
-		rs.b $100
+Drvmem:		rs.b $600	; used for the sound driver
+Drvmem_End:	rs.b 0
 GameMode:	rs.b 1		; used for the screen modes
 		rs.b 1
 padHeldPlayer:	rs.b 1
