@@ -239,9 +239,6 @@ ChecksumError:
 	jsr LoadDualPCM
 	bsr.w   padInit
 	command	mus_Stop
-	move.b  (HW_VERSION).l,d0
-	andi.b  #$C0,d0
-	move.b  d0,(ConsoleRegion).w
 	sfx 	sfx_AirDing
 	Console.Run     ChecksumErr_ConsProg
 	even
@@ -269,6 +266,9 @@ ConsoleHandler:
 	bsr.w 	padRead
 	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
 	beq.w   loc_36A    			; if true, branch
+	move.b  (HW_VERSION).l,d0
+	andi.b  #$C0,d0
+	move.b  d0,(ConsoleRegion).w
 	pusha
 	jsr UpdateAMPS
 	popa
@@ -1840,6 +1840,8 @@ sTitle:
 	bsr.w   sub_47B0
 	moveq   #1,d0
 	bsr.w   palLoadFade
+	move.b  #4,(VintRoutine).w
+	vsync
 	music   mus_Title
 	clr.b   (EditModeFlag).w
 	move.w  #$178,(GlobalTimer).w

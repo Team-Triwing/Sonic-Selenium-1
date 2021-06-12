@@ -475,7 +475,7 @@ CatchUp_Exx:
 			exx					; 04	; switch registers
 
 Z80_Int2:	;ei
-		znop					; 04
+		;znop					; 04
 
 ; ---------------------------------------------------------------------------
 ; PCM 1
@@ -1340,10 +1340,10 @@ PCM_SetDAC:
 		ld	hl,04000h			; 10	; load YM2612 address port
 		ld	(hl),02Bh			; 10	; set YM2612 address
 		inc	l				; 04	; advance to data port
-	znop					; 04	; delay (MIGHT NOT NEED IT!)
+	;znop					; 04	; delay (MIGHT NOT NEED IT!)
 		ld	(hl),080h			; 10	; enable DAC (disable FM6)
 		zdec	l				; 04	; revert back to address port
-	znop					; 04	; delay (MIGHT NOT NEED IT!)
+	;znop					; 04	; delay (MIGHT NOT NEED IT!)
 		ld	(hl),02Ah			; 10	; restore YM address back to DAC
 		ex	de,hl				; 04	; restore hl
 
@@ -1365,10 +1365,10 @@ PCM_DisableDAC:
 		ld	hl,04000h			; 10	; load YM2612 address port
 		ld	(hl),02Bh			; 10	; set YM2612 address
 		inc	l				; 04	; advance to data port
-	znop					; 04	; delay (MIGHT NOT NEED IT!)
+	;znop					; 04	; delay (MIGHT NOT NEED IT!)
 		ld	(hl),000h			; 10	; disable DAC (enable FM6)
 		zdec	l				; 04	; revert back to address port
-	znop					; 04	; delay (MIGHT NOT NEED IT!)
+	;znop					; 04	; delay (MIGHT NOT NEED IT!)
 		ld	(hl),02Ah			; 10	; restore YM address back to DAC
 		ex	de,hl				; 04	; restore hl
 
