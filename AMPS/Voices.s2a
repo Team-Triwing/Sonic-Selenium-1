@@ -82,8 +82,8 @@ sPatNum = 0
 	; $08, $08, $08, $08,	$1F, $1F, $1F, $1F
 	; $00, $0A, $00, $0A,	$00, $00, $00, $0A
 	; $FF, $FF, $FF, $FF,	$55, $81, $33, $81
-	spAlgorithm	$07, Jump
-	spFeedback	$00
+	spAlgorithm	$05, Jump
+	spFeedback	$07
 	spDetune	$00, $00, $00, $00
 	spMultiple	$08, $08, $08, $08
 	spRateScale	$00, $00, $00, $00

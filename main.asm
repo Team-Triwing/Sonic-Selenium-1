@@ -1840,7 +1840,7 @@ sTitle:
 	bsr.w   sub_47B0
 	moveq   #1,d0
 	bsr.w   palLoadFade
-	move.b  #4,(VintRoutine).w
+	move.b  #2,(VintRoutine).w
 	vsync
 	music   mus_Title
 	clr.b   (EditModeFlag).w
@@ -1867,8 +1867,8 @@ loc_26AE:
 	move.w  (ObjectsList+xpos).w,d0
 	addq.w  #2,d0
 	move.w  d0,(ObjectsList+xpos).w
-	cmpi.w  #$1C00,d0
-	bcs.s   loc_26E4
+	cmpi.w  #$1B00,d0
+	blt.s   loc_26E4
 	clr.b   (GameMode).w
 	rts
 ; ---------------------------------------------------------------------------
@@ -1906,8 +1906,8 @@ LevelSelect:
 	move.w  (LevSelOption).w,d0
 	cmpi.w  #$13,d0
 	bne.s   LevSelLevCheckStart
-	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
-	beq.s   LevSelStartPress    		; if true, branch
+	btst    #JbS,(padPress1).w 		; is Start pressed?
+	bne.s   LevSelStartPress    		; if true, branch
 	btst  	#JbC,(padPress1).w 		; is C pressed?
 	bne.s   LevSelBCPress   		; if not, branch
 	btst  	#JbB,(padPress1).w 		; is B pressed?
@@ -2161,7 +2161,7 @@ loc_29DE:
 	blt.s   .notText    	; If this is not an ASCII text character, branch
 	subq.w  #3,d0       	; Subtract an extra 3, to compensate for the
 .notText:			; missing characters in the font
-	subi.w  #$30,d0     	; Subtract 0x33/51 (ASCII to S2 font)
+	subi.w  #$30,d0     	; Subtract 0x30/48 (ASCII to S2 font)
 	add.w   d3,d0       	; combine character with VRAM setting
 	move.w  d0,(a6)     	; send to VRAM
 	dbf     d2,loc_29CE

@@ -1,6 +1,6 @@
 Splash_Header:
 	sHeaderInit
-	sHeaderTempo	$01, $02
+	sHeaderTempo	$01, $03
 	sHeaderCh	$01, $03
 	sHeaderDAC	Splash_DAC1, 4, dGuitar1
 	sHeaderDAC	Splash_DAC2
