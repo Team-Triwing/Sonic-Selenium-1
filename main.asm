@@ -61,7 +61,6 @@ Notes:  dc.b 'I already know nobody is going to like this hack.   '
 	    ;'                                                    '
 	dc.b 'U  '          ; Region codes
 	dc.b '             '
-	    ;'             '
 EndOfHeader:
 ; ---------------------------------------------------------------------------
 
@@ -588,7 +587,7 @@ loadDMA macro &
 	endif
 	if UseVIntSafeDMA=1
 		move.w	sr,-(sp)		; Save current interrupt mask
-		di				; Mask off interrupts
+		move	#$2700,sr		; Mask off interrupts
 	endif
 	movea.w	r_DMA_Slot.w,a1
 	cmpa.w	#r_DMA_Slot,a1
@@ -622,7 +621,7 @@ QueueDMA:
 QueueDMATransfer:
 	if UseVIntSafeDMA=1
 		move.w	sr,-(sp)		; Save current interrupt mask
-		di				; Mask off interrupts
+		move	#$2700,sr		; Mask off interrupts
 	endif
 	movea.w	r_DMA_Slot.w,a1
 	cmpa.w	#r_DMA_Slot,a1
