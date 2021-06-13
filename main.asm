@@ -1968,7 +1968,7 @@ LevSelOrder:    dc.w 0,    1,    2
 	dc.w $300, $301, $302
 	dc.w $400, $401, $402
 	dc.w $500, $501,$502
-	dc.w $700, $700,$8000
+	dc.w $8000, $8000,$8000
 ; ---------------------------------------------------------------------------
 
 loc_27F8:
@@ -2169,7 +2169,7 @@ loc_29DE:
 ; ---------------------------------------------------------------------------
 
 LevelSelectText:
-	dc.b    'GREEN HILL         ACT 1'
+	dc.b    'BLOSSOM HILLS      ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
 	dc.b    'LABYRINTH          ACT 1'
@@ -2178,17 +2178,17 @@ LevelSelectText:
 	dc.b    'MARBLE             ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
-	dc.b    'STAR LIGHT         ACT 1'
+	dc.b    'STERNLEUCHTE       ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
-	dc.b    'SPARKLING          ACT 1'
+	dc.b    'SPARKELN           ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
-	dc.b    'CLOCK  ORK         ACT 1'
+	dc.b    'UHRENARBEIT        ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
-	dc.b    'SPECIAL STAGE           '
-	dc.b    'SOUND TEST              '
+	dc.b    'SPECIAL STAGE          X'
+	dc.b    'SOUND SELECT            '
 	even
 
 MusicList:  dc.b mus_GHZ, mus_LZ, mus_MZ, mus_SLZ, mus_SYZ, mus_SBZ
