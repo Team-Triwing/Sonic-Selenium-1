@@ -296,8 +296,13 @@ loc_B3C:
 	jsr off_B6A(pc,d0.w)
 
 loc_B58:
+        enable_ints			; enable interrupts (we can accept horizontal interrupts from now on)
+        tas    	(word_FFF644).w    	; set "SMPS running flag"
+        bne.s   VBla_Exit       	; if it was set already, don't call another instance of SMPS
+        jsr UpdateAMPS     		; run SMPS
+        clr.b   (word_FFF644).w       	; reset "SMPS running flag"
+VBla_Exit:      
 	addq.l  #1,(VintCounter).w
-	jsr UpdateAMPS
 	popa
 	rte
 ; ---------------------------------------------------------------------------

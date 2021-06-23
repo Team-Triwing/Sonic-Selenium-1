@@ -28,7 +28,7 @@ FEATURE_DACFMVOLENV =	0	; set to 1 to enable volume envelopes for FM & DAC chann
 FEATURE_UNDERWATER =	0	; set to 1 to enable underwater mode flag
 FEATURE_BACKUP =	1	; set to 1 to enable back-up channels. Used for the 1-up sound in Sonic 1, 2 and 3K
 FEATURE_BACKUPNOSFX =	1	; set to 1 to disable SFX while a song is backed up. Used for the 1-up sound
-FEATURE_FM6 =		1	; set to 1 to enable FM6 to be used in music
+FEATURE_FM6 =		0	; set to 1 to enable FM6 to be used in music
 FEATURE_SOUNDTEST =	0	; set to 1 to enable changes which make AMPS compatible with custom sound test
 ; ---------------------------------------------------------------------------
 
