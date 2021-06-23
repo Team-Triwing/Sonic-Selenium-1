@@ -834,20 +834,46 @@ loc_120E:
 	rts
 ; ---------------------------------------------------------------------------
 
-LoadPlaneMaps:
-	lea (VdpData).l,a6
-	move.l  #$800000,d4
+; ---------------------------------------------------------------------------------------------------------------------------------------------------------
+; Load a plane map
+; ---------------------------------------------------------------------------------------------------------------------------------------------------------
+; PARAMETERS:
+;	d0.l	- VDP command for writing the data to VRAM
+;	d1.w	- Width in tiles (minus 1)
+;	d2.w	- Height in tiles (minus 1)
+;	d3.w	- Base tile properties for each tile
+;	d6.l	- Delta value for drawing to the next row (only required for just LoadPlaneMap_Custom)
+;	a1.l	- Plane map address
+; ---------------------------------------------------------------------------------------------------------------------------------------------------------
+; RETURNS:
+;	Nothing
+; ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-loc_1222:
-	move.l  d0,4(a6)
-	move.w  d1,d3
+LoadPlaneMap:
+LoadPlaneMap_H64:
+		move.l	#$800000,d6			; For planes with 64 tile width
+		bra.s	LoadPlaneMap_Custom		; Load the map
 
-loc_1228:
-	move.w  (a1)+,(a6)
-	dbf d3,loc_1228
-	add.l   d4,d0
-	dbf d2,loc_1222
-	rts
+LoadPlaneMap_H32:
+		move.l	#$400000,d6			; For planes with 32 tile width
+		bra.s	LoadPlaneMap_Custom		; Load the map
+
+LoadPlaneMap_H128:
+		move.l	#$1000000,d6			; For planes with 128 tile width
+
+LoadPlaneMap_Custom:
+.RowLoop:
+		move.l	d0,VDP_CTRL			; Set VDP command
+		move.w	d1,d4				; Store width
+
+.TileLoop:
+		move.w	(a1)+,d5			; Get tile ID and properties
+		add.w	d3,d5				; Add base tile properties
+		move.w	d5,VDP_DATA			; Save in VRAM
+		dbf	d4,.TileLoop			; Loop until the row has been drawn
+		add.l	d6,d0				; Next row
+		dbf	d2,.RowLoop			; Loop until the plane has been drawn
+		rts
 ; ---------------------------------------------------------------------------
 
 ; ==============================================================================
@@ -1534,7 +1560,8 @@ loc_1AD4:
 	rts
 ; ---------------------------------------------------------------------------
 
-PaletteLoadTable:dc.l palSega
+PaletteLoadTable:
+	dc.l palSega
 	dc.w $FB00, $1F
 	dc.l palTitle
 	dc.w $FB00, $1F
@@ -1706,9 +1733,7 @@ sSega:
 	lea (MapSega).l,a0
 	move.w  #0,d0
 	bsr.w   EnigmaDec
-	copyTilemap (Chunks)&$FFFFFF,$C61C,$B,3
-	moveq   #0,d0
-	bsr.w   PalLoadFade
+	copyTilemap64 (Chunks)&$FFFFFF,$C61C,$B,3,0
 	move.w  #$28,(PalCycOffset).w
 	move.w  #3*60,(GlobalTimer).w
 	btst    #6,(ConsoleRegion).w
@@ -1718,6 +1743,8 @@ loc_2527:
 	move.w  (ModeReg2).w,d0
 	ori.b   #$40,d0
 	move.w  d0,(VdpCtrl).l
+	moveq   #0,d0
+	bsr.w   PalLoadFade
 	bsr.w   Pal_FadeTo
 	music   mus_SEGA
 
@@ -1748,6 +1775,10 @@ SplashScreen:
 	; initalize VDP
 	lea (VdpCtrl).l,a6
 	move.w  #$8004,(a6)
+	btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
+	beq.s   .noextendedres           		; if not, continue
+	move.w  #$8100|%01111100,(a6)
+.noextendedres:
 	move.w  #$8230,(a6)
 	move.w  #$8407,(a6)
 	move.w  #$8700,(a6)
@@ -1759,7 +1790,7 @@ SplashScreen:
 	lea     MapSplash.l,a0          		; load compressed mappings address
 	move.w  #$140,d0             			; prepare pattern index value to patch to mappings
 	bsr.w   EniDec     		       		; decompress and dump
-	copyTilemap (Chunks)&$FFFFFF,$C000,$27,$1E 	; flush mappings to VRAM
+	copyTilemap64 (Chunks)&$FFFFFF,$C000,$27,$1E,0 	; flush mappings to VRAM
 	move.l  #$68000000,($C00004).l    		; set vdp loc
 	lea     ArtSplash.l,a0           		; load background art
 	jsr     NemesisDec              		; run NemDec to decompress art for display
@@ -1819,7 +1850,12 @@ sTitle:
 	move.w  #$6000,d0
 	jsr TwimDec
 
-	copyTilemap	MapTitle,$C208,$21,$15
+	lea     ((Chunks)&$FFFFFF).l,a1
+	lea     MapTitle.l,a0
+	moveq   #0,d0
+	bsr.w   EniDec
+
+	copyTilemap64	(Chunks)&$FFFFFF,$C208,$21,$15,0
 
 	clr.w   (DebugRoutine).w
 	clr.w   (DemoMode).w
@@ -20268,7 +20304,7 @@ ArtSplash:  incbin "Splash/SPLASHART.bin"
 	even
 MapSplash:  incbin "Splash/SPLASHMAP.bin"
 	even
-MapTitle: 	incbin "unknown/18A62.unc"
+MapTitle: 	incbin "unknown/18A62.eni"
 	even
 ArtTitleMain:   incbin "screens/title/Main.twim"
 	even

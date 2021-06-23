@@ -141,12 +141,31 @@ locVRAM:	macro loc,controlport
 ; input: source, destination, width [cells], height [cells]
 ; ---------------------------------------------------------------------------
 
-copyTilemap:	macro source,loc,width,height
+copyTilemap64:	macro source,loc,width,height,baseprop
 		lea	(source).l,a1
 		move.l	#$40000000+((loc&$3FFF)<<16)+((loc&$C000)>>14),d0
 		moveq	#width,d1
 		moveq	#height,d2
-		bsr.w	LoadPlaneMaps
+		moveq	#baseprop,d3
+		bsr.w	LoadPlaneMap_H64
+		endm
+
+copyTilemap32:	macro source,loc,width,height,baseprop
+		lea	(source).l,a1
+		move.l	#$40000000+((loc&$3FFF)<<16)+((loc&$C000)>>14),d0
+		moveq	#width,d1
+		moveq	#height,d2
+		moveq	#baseprop,d3
+		bsr.w	LoadPlaneMap_H32
+		endm
+
+copyTilemap128:	macro source,loc,width,height,baseprop
+		lea	(source).l,a1
+		move.l	#$40000000+((loc&$3FFF)<<16)+((loc&$C000)>>14),d0
+		moveq	#width,d1
+		moveq	#height,d2
+		moveq	#baseprop,d3
+		bsr.w	LoadPlaneMap_H128
 		endm
 
 ; -------------------------------------------------------------------------
