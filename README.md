@@ -1,5 +1,5 @@
 # Sonic Selenium
-A hack based on [the MDDC disassembly of the Sonic 1 Prototype](https://github.com/Mega-Drive-Developers-Collective/Sonic-1-Prototype)
+A hack based on [the MDDC disassembly of the Sonic 1 Prototype](https://github.com/Mega-Drive-Developers-Collective/Sonic-1-Prototype), I quit working on it from demotivation.
 # Credits
 ## Creator
 * RepellantMold
@@ -17,5 +17,5 @@ A hack based on [the MDDC disassembly of the Sonic 1 Prototype](https://github.c
 * AuroraFields - AMPS
 * vladikcomper - Error handler (+ decoded instruction addition by AuroraFields)
 * MainMemory - SonLVL
-* Flamewing - Saxman compressor, and Enigma/Kosinski+/Saxman decompressors
+* Flamewing - Saxman compressor, and Enigma/Kosinski+/Saxman decompressor code
 * MarkeyJester - Twizzler compression
