@@ -695,5 +695,4 @@ mus_GotThroughAct	equ	MusOff_MSU+11
 mus_GameOver	equ	MusOff_MSU+12
 mus_Continue	equ	MusOff_MSU+13
 mus_Options	equ	MusOff_MSU+14
-mus_Splash	equ	MusOff_MSU+15
-mus_SEGA	equ	MusOff_MSU+16
+mus_SEGA	equ	MusOff_MSU+15
