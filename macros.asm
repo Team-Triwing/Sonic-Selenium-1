@@ -5,15 +5,44 @@ align		macro pos,num
 		dcb.b ((\pos)-(offset(*)%(\pos)))%(\pos),num
 	endif
 	endm
+
+waitmsu		macro
+.wait\@:
+	tst.b	MCD_STAT
+	bne.s	.wait\@
+	endm
 	
 ; Macro for playing a command
 command		macro id
-	move.b #id,mQueue.w
+	waitmsu
+		if id=Mus_FadeOut
+		move.w	#(MSUc_PAUSE|48),MCD_CMD
+		endif
+		if id=Mus_Stop
+		move.w	#(MSUc_PAUSE|0),MCD_CMD
+		endif
+		if id=Mus_Pause
+		move.w	#(MSUc_PAUSE|0),MCD_CMD
+		endif
+		if id=Mus_Unpause
+		move.w	#MSUc_RESUME,MCD_CMD
+		endif
+		if id=mus_Reset
+		move.w	#(MSUc_VOLUME|255),MCD_CMD
+		move.w	#MSUc_RESUME,MCD_CMD
+		endif
+	addq.b	#1,MCD_CMD_CK ; Increment command clock
 	endm
 
 ; Macro for playing music
-music		macro id
-	move.b #id,mQueue+1.w
+music		macro id, loop
+	waitmsu
+	if \loop=0
+	move.w	#(MSUc_PLAY|\id),MCD_CMD ; send cmd: play track
+	else
+	move.w	#(MSUc_PLAYLOOP|\id),MCD_CMD ; send cmd: play track, loop
+	endif
+	addq.b	#1,MCD_CMD_CK ; Increment command clock
 	endm
 
 ; Macro for playing sound effect
@@ -35,7 +64,7 @@ enable_ints:	macro
 		
 vsync:			macro
 		enable_ints
-@wait\@:tst.b	(VintRoutine).w
+@wait\@:	tst.b	(VintRoutine).w
 		bne.s	@wait\@
 		endm
 
@@ -172,17 +201,15 @@ copyTilemap128:	macro source,loc,width,height,baseprop
 ; Push all registers to the stack
 ; -------------------------------------------------------------------------
 
-pusha macro
+pusha macros
 		movem.l	d0-a6,-(sp)			; Push registers
-	endm
 
 ; -------------------------------------------------------------------------
 ; Pop all registers from the stack
 ; -------------------------------------------------------------------------
 
-popa macro
+popa macros
 		movem.l	(sp)+,d0-a6			; Pop registers
-	endm
 
 ; -------------------------------------------------------------------------
 ; Pad RS to even address
@@ -201,8 +228,7 @@ rsEven macro
 ;		  (not required if [saddr]_end exists)
 ; -------------------------------------------------------------------------
 	
-clrRAM macro &
-	saddr, eaddr
+clrRAM macro saddr, eaddr
 	
 	local	endaddr
 	if narg<2
@@ -296,8 +322,7 @@ z80Reset macros
 ;		  (If left blank, this just uses VDP_CTRL instead)
 ; -------------------------------------------------------------------------
 
-waitDMA macro &
-	ctrl
+waitDMA macro ctrl
 
 .Wait\@:
 	if narg>0
@@ -328,8 +353,7 @@ VDMA		EQU	%100111			; VDP DMA
 
 ; -------------------------------------------------------------------------
 
-vdpCmd macro &
-	ins, addr, type, rwd, end, end2
+vdpCmd macro ins, addr, type, rwd, end, end2
 	
 	if narg=5
 		\ins	#((((V\type&V\rwd)&3)<<30)|((\addr&$3FFF)<<16)|(((V\type&V\rwd)&$FC)<<2)|((\addr&$C000)>>14)), \end
@@ -354,8 +378,7 @@ vdpCmd macro &
 ;		  (If left blank, this just uses VDP_CTRL instead)
 ; -------------------------------------------------------------------------
 
-dma68k macro &
-	src, dest, len, type, ctrl
+dma68k macro src, dest, len, type, ctrl
 
 	if narg>4
 		move.l	#$94009300|((((\len)/2)&$FF00)<<8)|(((\len)/2)&$FF),(\ctrl)
@@ -387,8 +410,7 @@ dma68k macro &
 ;		  (If left blank, this just uses VDP_CTRL instead)
 ; -------------------------------------------------------------------------
 
-dmaFill macro &
-	byte, addr, len, ctrl
+dmaFill macro byte, addr, len, ctrl
 
 	if narg>3
 		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),(\ctrl)
@@ -418,8 +440,7 @@ dmaFill macro &
 ;		  (If left blank, this just uses the address instead)
 ; -------------------------------------------------------------------------
 
-dmaCopy macro &
-	src, dest, len, ctrl
+dmaCopy macro src, dest, len, ctrl
 	
 	if narg>3
 		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),(\ctrl)
