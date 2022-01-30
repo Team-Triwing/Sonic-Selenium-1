@@ -779,15 +779,17 @@ c = c+DMAEntry.len
 ; ---------------------------------------------------------------------------
 
 ClearScreen:
+	disable_ints
 	lea (VdpCtrl).l,a5
-	move.w  #$8F01,(a5)
+	move.w	#$8F01,(a5)
 	dmaFill	0,vram_fg,$FFF,a5
 	dmaFill	0,vram_bg,$FFF,a5
-	move.w  #$8F02,(a5)
-	clr.l   (dword_FFF616).w
-	clr.l   (dword_FFF61A).w
-	clrRAM  SprTableBuff
-	clrRAM  ScrollTable
+	move.w	#$8F02,(a5)
+	clr.l	(dword_FFF616).w
+	clr.l	(dword_FFF61A).w
+	clrRAM	SprTableBuff
+	clrRAM	ScrollTable
+	enable_ints
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -800,6 +802,7 @@ PauseGame:
 	beq.s   locret_120C
 
 loc_11CC:
+	disable_ints
 	st.b  	(PauseFlag).w
 	AMPS_MUSPAUSE
 
@@ -823,6 +826,7 @@ loc_11EE:
 loc_1206:
 	clr.b   (PauseFlag).w
 	AMPS_MUSUNPAUSE
+	enable_ints
 
 locret_120C:
 	rts
@@ -831,6 +835,7 @@ locret_120C:
 loc_120E:
 	st.b  	(PauseFlag).w
 	AMPS_MUSUNPAUSE
+	enable_ints
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -863,6 +868,7 @@ LoadPlaneMap_H128:
 
 LoadPlaneMap_Custom:
 .RowLoop:
+		disable_ints
 		move.l	d0,VDP_CTRL			; Set VDP command
 		move.w	d1,d4				; Store width
 
@@ -873,6 +879,7 @@ LoadPlaneMap_Custom:
 		dbf	d4,.TileLoop			; Loop until the row has been drawn
 		add.l	d6,d0				; Next row
 		dbf	d2,.RowLoop			; Loop until the plane has been drawn
+		enable_ints
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1267,8 +1274,6 @@ LoadArt_Loop:
 EnigmaDec:	include "compression/Enigma.asm"
 ; ---------------------------------------------------------------------------
 KosinskiPlusDec:include "compression/KosinskiPlus.asm"
-; ---------------------------------------------------------------------------
-SaxmanDec:	include "compression/Saxman.asm"
 ; ---------------------------------------------------------------------------
 TwizzlerDec:	include "compression/Twizzler.asm"
 ; ---------------------------------------------------------------------------
@@ -1922,6 +1927,9 @@ loc_26E4:
 	bsr.w   Pal_FadeFrom
 	bsr.w   ClearScreen
 	move.l  d0,(dword_FFF616).w
+	bsr.w   sub_292C
+	moveq   #2,d0
+	bsr.w   palLoadFade
 	lea (VdpData).l,a6
 	move.l  #$50000003,4(a6)
 	lea (ArtLSText).l,a5
@@ -1930,9 +1938,6 @@ loc_26E4:
 loc_25D8:
 	move.w  (a5)+,(a6)
 	dbf d1,loc_25D8
-	bsr.w   sub_292C
-	moveq   #2,d0
-	bsr.w   palLoadFade
 	music   mus_Options
 	bsr.w   Pal_FadeTo
 
@@ -17509,7 +17514,6 @@ loc_FB7A:
 
 locret_FB84:
 	rts
-; ---------------------------------------------------------------------------
 	dc.b $14, $14
 	dc.b $C, $14
 	dc.b $14, $C

@@ -25,14 +25,18 @@ sfx		macro id
 ; self-explanatory
 ; ---------------------------------------------------------------------------
 
-disable_ints:	macro
+disable_ints:	macros
 		move	#$2700,sr
-		endm
 
-enable_ints:	macro
+enable_ints:	macros
 		move	#$2300,sr
-		endm
-		
+
+disable_disp:	macros
+		andi.b	#%10111111,(VdpCtrl).l
+
+enable_disp:	macros
+		ori.b	#%01000000,(VdpCtrl).l
+
 vsync:			macro
 		enable_ints
 @wait\@:tst.b	(VintRoutine).w
@@ -172,17 +176,15 @@ copyTilemap128:	macro source,loc,width,height,baseprop
 ; Push all registers to the stack
 ; -------------------------------------------------------------------------
 
-pusha macro
+pusha macros
 		movem.l	d0-a6,-(sp)			; Push registers
-	endm
 
 ; -------------------------------------------------------------------------
 ; Pop all registers from the stack
 ; -------------------------------------------------------------------------
 
-popa macro
+popa macros
 		movem.l	(sp)+,d0-a6			; Pop registers
-	endm
 
 ; -------------------------------------------------------------------------
 ; Pad RS to even address
@@ -201,8 +203,7 @@ rsEven macro
 ;		  (not required if [saddr]_end exists)
 ; -------------------------------------------------------------------------
 	
-clrRAM macro &
-	saddr, eaddr
+clrRAM macro saddr, eaddr
 	
 	local	endaddr
 	if narg<2
@@ -296,8 +297,7 @@ z80Reset macros
 ;		  (If left blank, this just uses VDP_CTRL instead)
 ; -------------------------------------------------------------------------
 
-waitDMA macro &
-	ctrl
+waitDMA macro ctrl
 
 .Wait\@:
 	if narg>0
@@ -328,8 +328,7 @@ VDMA		EQU	%100111			; VDP DMA
 
 ; -------------------------------------------------------------------------
 
-vdpCmd macro &
-	ins, addr, type, rwd, end, end2
+vdpCmd macro ins, addr, type, rwd, end, end2
 	
 	if narg=5
 		\ins	#((((V\type&V\rwd)&3)<<30)|((\addr&$3FFF)<<16)|(((V\type&V\rwd)&$FC)<<2)|((\addr&$C000)>>14)), \end
@@ -354,8 +353,7 @@ vdpCmd macro &
 ;		  (If left blank, this just uses VDP_CTRL instead)
 ; -------------------------------------------------------------------------
 
-dma68k macro &
-	src, dest, len, type, ctrl
+dma68k macro src, dest, len, type, ctrl
 
 	if narg>4
 		move.l	#$94009300|((((\len)/2)&$FF00)<<8)|(((\len)/2)&$FF),(\ctrl)
@@ -387,8 +385,7 @@ dma68k macro &
 ;		  (If left blank, this just uses VDP_CTRL instead)
 ; -------------------------------------------------------------------------
 
-dmaFill macro &
-	byte, addr, len, ctrl
+dmaFill macro byte, addr, len, ctrl
 
 	if narg>3
 		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),(\ctrl)
@@ -418,8 +415,7 @@ dmaFill macro &
 ;		  (If left blank, this just uses the address instead)
 ; -------------------------------------------------------------------------
 
-dmaCopy macro &
-	src, dest, len, ctrl
+dmaCopy macro src, dest, len, ctrl
 	
 	if narg>3
 		move.l	#$94009300|((((\len)-1)&$FF00)<<8)|(((\len)-1)&$FF),(\ctrl)
