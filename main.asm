@@ -2214,7 +2214,7 @@ loc_29DE:
 ; ---------------------------------------------------------------------------
 
 LevelSelectText:
-	dc.b    'BLOSSOM HILLS      ACT 1'
+	dc.b    'GREEN HILLS        ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
 	dc.b    'LABYRINTH          ACT 1'
@@ -2223,13 +2223,13 @@ LevelSelectText:
 	dc.b    'MARBLE             ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
-	dc.b    'STERNLEUCHTE       ACT 1'
+	dc.b    'STAR LIGHT         ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
-	dc.b    'SPARKELN           ACT 1'
+	dc.b    'SPARKLING          ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
-	dc.b    'UHRENARBEIT        ACT 1'
+	dc.b    'CLOCK  ORK         ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
 	dc.b    'SPECIAL STAGE          X'
