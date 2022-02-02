@@ -54,14 +54,18 @@ sfx		macro id
 ; self-explanatory
 ; ---------------------------------------------------------------------------
 
-disable_ints:	macro
+disable_ints:	macros
 		move	#$2700,sr
-		endm
 
-enable_ints:	macro
+enable_ints:	macros
 		move	#$2300,sr
-		endm
-		
+
+disable_disp:	macros
+		andi.b	#%10111111,(VdpCtrl).l
+
+enable_disp:	macros
+		ori.b	#%01000000,(VdpCtrl).l
+
 vsync:			macro
 		enable_ints
 @wait\@:	tst.b	(VintRoutine).w
