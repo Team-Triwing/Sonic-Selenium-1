@@ -50,7 +50,7 @@ StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
 	dc.b '                                                '	; International name (placeholder for romfix)
 	dc.b 'GM XXXXXXXX-XX'               			; Serial code (placeholder for romfix)
 Checksum:dc.w 0                      				; Checksum
-	dc.b 'J               '             			; I/O support (3-button joypad)
+	dc.b 'JC              '             			; I/O support (3-button joypad)
 	dc.l StartOfROM
 RomEndLoc:dc.l	EndOfROM-1             				; ROM region
 	dc.l RAM_START, RAM_END           			; RAM region
@@ -1479,6 +1479,7 @@ FCI_NoRed:
 
 Pal_FadeFrom:
 	move.w  #$3F,(word_FFF626).w
+Pal_FadeFrom2:
 	move.w  #$14,d4
 
 loc_19DC:
@@ -1727,7 +1728,8 @@ AngleTable: incbin "unsorted/angletable.dat"
 sSega:
 	command mus_FadeOut
 	bsr.w   ClearPLC
-	bsr.w   Pal_FadeFrom
+	move.w  #$9F,(word_FFF626).w
+	bsr.w   Pal_FadeFrom2
 	clr.b   (DontIntMus).w
 
 	clrRAM  Chunks
@@ -1784,7 +1786,8 @@ loc_2544:
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
 SplashScreen:
-	bsr.w   Pal_FadeFrom          			; fade palette out
+	move.w  #$9F,(word_FFF626).w
+	bsr.w   Pal_FadeFrom2          			; fade palette out
 	bsr.w   ClearScreen           			; clear the plane mappings
 
 	; initalize VDP
