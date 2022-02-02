@@ -1756,10 +1756,6 @@ sSega:
 	copyTilemap64 (Chunks)&$FFFFFF,$C61C,$B,3,0
 	move.w  #$28,(PalCycOffset).w
 	move.w  #3*60,(GlobalTimer).w
-	btst    #6,(ConsoleRegion).w
-	beq.s   loc_2527
-	move.w  #3*50,(GlobalTimer).w
-loc_2527:
 	move.w  (ModeReg2).w,d0
 	ori.b   #$40,d0
 	move.w  d0,(VdpCtrl).l
@@ -1788,7 +1784,6 @@ loc_2544:
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
 SplashScreen:
-	command mus_FadeOut             		; set music ID to "fade music"
 	bsr.w   Pal_FadeFrom          			; fade palette out
 	bsr.w   ClearScreen           			; clear the plane mappings
 
@@ -1836,7 +1831,7 @@ Splash_GotoTitle:
 ; ---------------------------------------------------------------------------
 
 sTitle:
-	command mus_Stop
+	command mus_FadeOut
 	bsr.w   ClearPLC
 	bsr.w   Pal_FadeFrom
 	clr.b   (DontIntMus).w
