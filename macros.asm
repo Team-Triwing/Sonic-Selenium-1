@@ -19,10 +19,10 @@ command		macro id
 		move.w	#(MSUc_PAUSE|48),MCD_CMD
 		endif
 		if id=Mus_Stop
-		move.w	#(MSUc_PAUSE|0),MCD_CMD
+		move.w	#(MSUc_PAUSE|4),MCD_CMD
 		endif
 		if id=Mus_Pause
-		move.w	#(MSUc_PAUSE|0),MCD_CMD
+		move.w	#(MSUc_PAUSE|1),MCD_CMD
 		endif
 		if id=Mus_Unpause
 		move.w	#MSUc_RESUME,MCD_CMD

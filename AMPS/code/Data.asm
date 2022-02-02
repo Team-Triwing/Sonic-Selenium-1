@@ -4,52 +4,50 @@
 ; make it easier to debug built ROMS! If you would like easier
 ; assistance from Natsumi, please keep this section intact!
 ; ---------------------------------------------------------------------------
-	if DEBUG_BUILD=1
-	dc.b "AMPS-v2.1"		; ident str
+	;dc.b "AMPS-v2.1"		; ident str
 
-	if safe
-		dc.b "s"		; safe mode enabled
+	;if safe
+	;	dc.b "s"		; safe mode enabled
 
-	else
-		dc.b " "		; safe mode disabled
-	endif
+	;else
+	;	dc.b " "		; safe mode disabled
+	;endif
 
-	if FEATURE_FM6
-		dc.b "F6"		; FM6 enabled
-	endif
+	;if FEATURE_FM6
+	;	dc.b "F6"		; FM6 enabled
+	;endif
 
-	if FEATURE_SFX_MASTERVOL
-		dc.b "SM"		; sfx ignore master volume
-	endif
+	;if FEATURE_SFX_MASTERVOL
+	;	dc.b "SM"		; sfx ignore master volume
+	;endif
 
-	if FEATURE_UNDERWATER
-		dc.b "UW"		; underwater mode enabled
-	endif
+	;if FEATURE_UNDERWATER
+	;	dc.b "UW"		; underwater mode enabled
+	;endif
 
-	if FEATURE_MODULATION
-		dc.b "MO"		; modulation enabled
-	endif
+	;if FEATURE_MODULATION
+	;	dc.b "MO"		; modulation enabled
+	;endif
 
-	if FEATURE_DACFMVOLENV
-		dc.b "VE"		; FM & DAC volume envelope enabled
-	endif
+	;if FEATURE_DACFMVOLENV
+	;	dc.b "VE"		; FM & DAC volume envelope enabled
+	;endif
 
-	if FEATURE_MODENV
-		dc.b "ME"		; modulation envelope enabled
-	endif
+	;if FEATURE_MODENV
+	;	dc.b "ME"		; modulation envelope enabled
+	;endif
 
-	if FEATURE_PORTAMENTO
-		dc.b "PM"		; portamento enabled
-	endif
+	;if FEATURE_PORTAMENTO
+	;	dc.b "PM"		; portamento enabled
+	;endif
 
-	if FEATURE_BACKUP
-		dc.b "BA"		; backup enabled
-	endif
+	;if FEATURE_BACKUP
+	;	dc.b "BA"		; backup enabled
+	;endif
 
-	if FEATURE_SOUNDTEST
-		dc.b "ST"		; soundtest enabled
-	endif
-	endif
+	;if FEATURE_SOUNDTEST
+		;dc.b "ST"		; soundtest enabled
+	;endif
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Define music and SFX
@@ -220,7 +218,7 @@ ModEnvs_End:
 ; ---------------------------------------------------------------------------
 
 sfxaddr	incSFX				; include all sfx
-musaddr	incMus				; include all music
+musaddr	;incMus				; include all music
 musend
 ; ===========================================================================
 ; ---------------------------------------------------------------------------

@@ -65,6 +65,21 @@ EndOfHeader:
 ; ---------------------------------------------------------------------------
 
 GameInit:
+		btst	#$6,(HW_version).l ; Check for PAL or NTSC, 0=60Hz, 1=50Hz
+		bne.s	jmpLockout ; if !=0, branch to lockout
+
+		jsr     MSUMD_DRV
+		tst.b 	d0 ; if 1: no CD Hardware found
+		bne.s	jmpLockout ; if no, branch to lockout
+		move.w 	#(MSUc_VOLUME|255),MCD_CMD ; Set CD Volume to MAX
+		addq.b 	#1,MCD_CMD_CK ; Increment command clock
+
+		bra.s   msuOK ; skip jmpLockout
+
+jmpLockout:
+        jmp     msuLockout
+
+msuOK:
 	tst.l   ($A10008).l
 
 loc_20C:
@@ -1751,7 +1766,7 @@ loc_2527:
 	moveq   #0,d0
 	bsr.w   PalLoadFade
 	bsr.w   Pal_FadeTo
-	music   mus_SEGA
+	music   mus_SEGA, 0
 
 loc_2528:
 	move.b  #2,(VintRoutine).w
@@ -1802,11 +1817,10 @@ SplashScreen:
 	move.b  #$B,d0
 	bsr.w   PalLoadFade
 	bsr.w 	Pal_FadeTo          			; fade palette in
-	music   mus_Splash
 	move.w  #5*60,(GlobalTimer).w     		; set delay time (5 seconds on a 60hz system)
-	btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
-	beq.s   Splash_MainLoop           		; if not, continue
-	move.w  #5*50,(GlobalTimer).w     		; set delay time (5 seconds on a 50hz system)
+	;btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
+	;beq.s   Splash_MainLoop           		; if not, continue
+	;move.w  #5*50,(GlobalTimer).w     		; set delay time (5 seconds on a 50hz system)
  
 Splash_MainLoop:
 	move.b  #2,(VintRoutine).w       		; set V-blank routine to run
@@ -1887,7 +1901,7 @@ sTitle:
 	bsr.w   palLoadFade
 	move.b  #2,(VintRoutine).w
 	vsync
-	music   mus_Title
+	music   mus_Title, 0
 	clr.b   (EditModeFlag).w
 	move.w  #$178,(GlobalTimer).w
 	move.b  #$E,(byte_FFD040).w
@@ -1938,7 +1952,7 @@ loc_26E4:
 loc_25D8:
 	move.w  (a5)+,(a6)
 	dbf d1,loc_25D8
-	music   mus_Options
+	music   mus_Options, 1
 	bsr.w   Pal_FadeTo
 
 LevelSelect:
@@ -2244,7 +2258,7 @@ sLevel:
 	tst.b   (DontIntMus).w
 	bne.s   .notset
 	clr.b   (DontIntMus).w
-	music   mus_FadeOut
+	command	mus_FadeOut
 	bsr.w   ClearPLC
 .notset
 	bsr.w   Pal_FadeFrom
@@ -2305,9 +2319,11 @@ loc_2C6C:
 	lea (MusicList).l,a1
 	move.b  (a1,d0.w),d0
 	move.b	d0,SavedSong.w
-	move.b  d0,mQueue+1.w
+	addi.w	#MSUc_PLAYLOOP,d0
+	waitmsu
+	move.w	d0,MCD_CMD
+	addq.b	#1,MCD_CMD_CK
 MusicLoop:
-	command mus_ShoesOff   		; run the music at normal speed
 	clr.b   (DontIntMus).w
 	move.b  #$34,(byte_FFD080).w
 
@@ -4123,7 +4139,7 @@ loc_4A3E:
 	move.w  #$280,ypos(a1)
 
 loc_4A5E:
-	music   mus_Boss
+	music   mus_Boss, 1
 	move.b  #1,(unk_FFF7AA).w
 	addq.b  #2,(EventsRoutine).w
 	moveq   #$11,d0
@@ -7812,7 +7828,7 @@ CollectRing:
 loc_7D5E:
 	addq.b  #1,(Lives).w
 	addq.b  #1,(byte_FFFE1C).w
-	moveq   #mus_ExtraLife,d0
+	moveq   #sfx_Register,d0
 
 loc_7D6A:
 	move.b  d0,mQueue+2.w
@@ -8210,7 +8226,7 @@ loc_82B2:
 loc_82B8:
 	addq.b  #1,(Lives).w
 	addq.b  #1,(byte_FFFE1C).w
-	music   mus_ExtraLife
+	sfx	sfx_Register
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8221,7 +8237,6 @@ loc_82CA:
 	move.w  #$4B0,(ObjectsList+speedshoes).w
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	bsr.w   ApplySpeedSettings  ; Fetch Speed settings
-	command mus_ShoesOn
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8247,7 +8262,7 @@ loc_8314:
 	move.b  #3,(byte_FFD280+ani).w
 	move.b  #$38,(byte_FFD2C0).w
 	move.b  #4,(byte_FFD2C0+ani).w
-	music   mus_Invincibility
+	music   mus_Invincibility, 1
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8283,7 +8298,7 @@ loc_83A0:
 	move.b  #3,(byte_FFD280+ani).w
 	move.b  #$38,(byte_FFD2C0).w
 	move.b  #4,(byte_FFD2C0+ani).w
-	music   mus_Invincibility
+	music   mus_Invincibility, 1
 	move.b  #1,(byte_FFFE2C).w
 	move.b  #$38,(byte_FFD180).w
 	sfx     sfx_Shield
@@ -8291,7 +8306,6 @@ loc_83A0:
 	move.w  #$4B0,(ObjectsList+speedshoes).w
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	bsr.w   ApplySpeedSettings  ; Fetch Speed settings
-	command mus_ShoesOn
 locret_83A8:
 	rts
 ; ---------------------------------------------------------------------------
@@ -13449,7 +13463,7 @@ loc_C814:
 
 sub_C81C:
 	tst.b   (byte_FFD600).w
-	bne.s   locret_C880
+	bne.w   locret_C880
 	move.w  (unk_FFF72A).w,(unk_FFF728).w
 	clr.b   (byte_FFFE2D).w
 	clr.b   (byte_FFFE2C).w
@@ -13480,7 +13494,7 @@ loc_C862:
 	move.w  (Rings).w,d0
 	mulu.w  #$A,d0
 	move.w  d0,(word_FFFE56).w
-	music   mus_GotThroughAct
+	music   mus_GotThroughAct, 0
 
 locret_C880:
 	rts
@@ -15844,8 +15858,11 @@ loc_E8E8:
 	bne.s   loc_E91C
 	tst.b   (unk_FFF7AA).w
 	bne.s   loc_E916
-		move.b	SavedSong.w,d0
-	move.b  d0,mQueue+1.w
+	move.b	SavedSong.w,d0
+	waitmsu
+	addi.w	#MSUc_PLAYLOOP,d0
+	move.w	d0,MCD_CMD
+	addq.b	#1,MCD_CMD_CK
 
 loc_E916:
 	clr.b   (byte_FFFE2D).w
@@ -15862,7 +15879,6 @@ loc_E91C:
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	jsr     ApplySpeedSettings  ; Fetch Speed settings
 	clr.b   (byte_FFFE2E).w
-	command mus_ShoesOff
 ; ---------------------------------------------------------------------------
 
 locret_E950:
@@ -17020,7 +17036,7 @@ ObjSonic_GameOver:
 	move.b  #$39,(byte_FFD080).w
 	move.b  #$39,(byte_FFD0C0).w
 	move.b  #1,(byte_FFD0C0+$1A).w
-	music   mus_GameOver
+	music   mus_GameOver, 0
 	moveq   #3,d0
 	jmp (plcAdd).l
 ; ---------------------------------------------------------------------------
@@ -20736,6 +20752,12 @@ demoin_SLZ:
 demoin_SYZ:
 demoin_SBZ:
 demoin_SS:
+
+MSUMD_DRV:	incbin  "msu\msu-drv.bin"
+		even
+
+msuLockout:	incbin "msu\msuLockout.bin"
+		even
 	
 ; end of 'ROM'
 	include "AMPS/code/smps2asm.asm"
