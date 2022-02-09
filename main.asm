@@ -30,37 +30,37 @@ Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The c
 	include "AMPS/code/macro.asm"
 	include "error/debugger.asm"    
 ; ---------------------------------------------------------------------------
-StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
-	dc.l IllegalInstr, ZeroDiv, ChkInstr, TrapvInstr, PrivilegeViol
-	dc.l Trace, LineAEmu, LineFEmu, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, hint, ErrorTrap, vint, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap
-	dc.b 'SEGA Genesis    '             			; Console name
-	dc.b 'RPNTMLD         '             			; Copyright/release date (placeholder for romfix)
-	dc.b '                                                '	; Domestic name (placeholder for romfix)
-	dc.b '                                                '	; International name (placeholder for romfix)
-	dc.b 'GM XXXXXXXX-XX'               			; Serial code (placeholder for romfix)
-Checksum:dc.w 0                      				; Checksum
-	dc.b 'J               '             			; I/O support (3-button joypad)
-	dc.l StartOfROM
-RomEndLoc:dc.l	EndOfROM-1             				; ROM region
-	dc.l RAM_START, RAM_END           			; RAM region
-	dc.b "RA",$A0,$20
-	dc.l $200000
-	dc.l $200000
-Notes:  dc.b 'I already know nobody is going to like this hack.   '
-	    ;'                                                    '
-	dc.b 'U  '          ; Region codes
-	dc.b '             '
+StartOfROM:	dc.l	(StackPointer)&$FFFFFF,	GameInit,	BusErr,	AddressErr
+		dc.l	IllegalInstr,	ZeroDiv,	ChkInstr,	TrapvInstr,	PrivilegeViol
+		dc.l	Trace,	LineAEmu,	LineFEmu,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	hint,	ErrorTrap,	vint,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap
+		dc.b	'SEGA GENESIS    '             				; Console name
+		dc.b	'RPNTMLD         '             				; Copyright/release date (placeholder for romfix)
+		dc.b	'                                                '	; Domestic name (placeholder for romfix)
+		dc.b	'                                                '	; International name (placeholder for romfix)
+		dc.b	'GM XXXXXXXX-XX'					; Serial code (placeholder for romfix)
+Checksum:	dc.w	0							; Checksum
+		dc.b	'J               '					; I/O support (3-button joypad)
+		dc.l	StartOfROM
+RomEndLoc:	dc.l	EndOfROM-1						; ROM region
+		dc.l	RAM_START, RAM_END					; RAM region
+		dc.b	"RA",$A0,$20
+		dc.l	$200000
+		dc.l	$200000
+Notes:  	dc.b	'                                   Hi people, enjoy!'
+		;	'                                                    '
+		dc.b	' U '          ; Region codes
+		dc.b	'             '
 EndOfHeader:
 ; ---------------------------------------------------------------------------
 
@@ -531,8 +531,7 @@ UseVIntSafeDMA			EQU	0
 
 ; Like vdpComm, but starting from an address contained in a register
 
-vdpCommReg macro &
-	reg, type, rwd, clr
+vdpCommReg macro reg, type, rwd, clr
 
 	lsl.l	#2,\reg				; Move high bits into (word-swapped) position, accidentally moving everything else
     if ((v\type\&v\rwd\)&3)<>0
@@ -575,8 +574,7 @@ QueueSlotCount	EQU	(r_DMA_Slot-r_DMA_Queue)/DMAEntry.len
 
 ; -------------------------------------------------------------------------
 
-loadDMA macro &
-	src, length, dest
+loadDMA macro src, length, dest
 
 	if ((\src)&1)<>0
 		inform 2,"DMA queued from odd source $\$src\!"
