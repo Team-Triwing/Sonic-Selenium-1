@@ -5,16 +5,45 @@ align		macro pos,num
 		dcb.b ((\pos)-(offset(*)%(\pos)))%(\pos),num
 	endif
 	endm
+
+waitmsu		macro
+.wait\@:
+	tst.b	MCD_STAT
+	bne.s	.wait\@
+	endm
 	
 ; Macro for playing a command
 command		macro id
-		move.b	#id,mQueue.w
-		endm
+	waitmsu
+		if id=Mus_FadeOut
+		move.w	#(MSUc_PAUSE|48),MCD_CMD
+		endif
+		if id=Mus_Stop
+		move.w	#(MSUc_PAUSE|4),MCD_CMD
+		endif
+		if id=Mus_Pause
+		move.w	#(MSUc_PAUSE|1),MCD_CMD
+		endif
+		if id=Mus_Unpause
+		move.w	#MSUc_RESUME,MCD_CMD
+		endif
+		if id=mus_Reset
+		move.w	#(MSUc_VOLUME|255),MCD_CMD
+		move.w	#MSUc_RESUME,MCD_CMD
+		endif
+	addq.b	#1,MCD_CMD_CK ; Increment command clock
+	endm
 
 ; Macro for playing music
-music		macro id
-		move.b	#id,mQueue+1.w
-		endm
+music		macro id, loop
+	waitmsu
+	if \loop=0
+	move.w	#(MSUc_PLAY|\id),MCD_CMD ; send cmd: play track
+	else
+	move.w	#(MSUc_PLAYLOOP|\id),MCD_CMD ; send cmd: play track, loop
+	endif
+	addq.b	#1,MCD_CMD_CK ; Increment command clock
+	endm
 
 ; Macro for playing sound effect
 sfx		macro id
@@ -39,7 +68,7 @@ enable_disp:	macros
 
 vsync:			macro
 		enable_ints
-@wait\@:tst.b	(VintRoutine).w
+@wait\@:	tst.b	(VintRoutine).w
 		bne.s	@wait\@
 		endm
 
