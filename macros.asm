@@ -47,8 +47,8 @@ music		macro id, loop
 
 ; Macro for playing sound effect
 sfx		macro id
-	move.b #id,mQueue+2.w
-	endm
+		move.b	#id,mQueue+2.w
+		endm
 		
 ; ---------------------------------------------------------------------------
 ; self-explanatory
@@ -220,8 +220,8 @@ popa macros
 ; -------------------------------------------------------------------------
 
 rsEven macro
-	rs.b	__rs&1				; Align RS
-	endm
+		rs.b	__rs&1				; Align RS
+		endm
 
 ; -------------------------------------------------------------------------
 ; Clear a section of memory
@@ -233,7 +233,6 @@ rsEven macro
 ; -------------------------------------------------------------------------
 	
 clrRAM macro saddr, eaddr
-	
 	local	endaddr
 	if narg<2
 endaddr		EQUS	"\saddr\_end"		; Use [saddr]_end
@@ -261,7 +260,6 @@ clrsize		=	(\endaddr-\saddr)&$FFFFFF
 	elseif clrsize&1
 		move.b	d0,(a1)+		; Clear remaining byte of data
 	endif
-
 	endm
 
 ; -------------------------------------------------------------------------
@@ -269,7 +267,6 @@ clrsize		=	(\endaddr-\saddr)&$FFFFFF
 ; -------------------------------------------------------------------------
 
 z80Bus macros
-
 	move.w	#$100,Z80_BUS			; Request Z80 bus access
 
 ; -------------------------------------------------------------------------
@@ -277,10 +274,8 @@ z80Bus macros
 ; -------------------------------------------------------------------------
 
 z80Ack macro
-	
 	btst	#0,Z80_BUS			; Was the request acknowledged?
 	bne.s	*-8				; If not, wait
-
 	endm
 
 ; -------------------------------------------------------------------------
@@ -288,10 +283,8 @@ z80Ack macro
 ; -------------------------------------------------------------------------
 
 z80Stop macro
-
 	z80Bus					; Request Z80 bus access
 	z80Ack					; Wait for acknowledgement
-
 	endm
 
 ; -------------------------------------------------------------------------
@@ -299,7 +292,6 @@ z80Stop macro
 ; -------------------------------------------------------------------------
 
 z80Start macros
-
 	move.w	#0,Z80_BUS			; Release the bus
 
 ; -------------------------------------------------------------------------
@@ -307,7 +299,6 @@ z80Start macros
 ; -------------------------------------------------------------------------
 
 z80ResOff macros
-
 	move.w	#$100,Z80_RESET			; Cancel Z80 reset
 
 ; -------------------------------------------------------------------------
@@ -315,7 +306,6 @@ z80ResOff macros
 ; -------------------------------------------------------------------------
 
 z80Reset macros
-
 	move.w	#0,Z80_RESET			; Request Z80 reset
 	
 ; -------------------------------------------------------------------------
@@ -327,7 +317,6 @@ z80Reset macros
 ; -------------------------------------------------------------------------
 
 waitDMA macro ctrl
-
 .Wait\@:
 	if narg>0
 		move.w	(\ctrl),-(sp)	; Get VDP status
@@ -336,7 +325,6 @@ waitDMA macro ctrl
 	endif
 	andi.w	#2,(sp)+		; Is DMA active?
 	bne.s	.Wait\@			; If so, wait
-
 	endm
 
 ; -------------------------------------------------------------------------
@@ -358,7 +346,6 @@ VDMA		EQU	%100111			; VDP DMA
 ; -------------------------------------------------------------------------
 
 vdpCmd macro ins, addr, type, rwd, end, end2
-	
 	if narg=5
 		\ins	#((((V\type&V\rwd)&3)<<30)|((\addr&$3FFF)<<16)|(((V\type&V\rwd)&$FC)<<2)|((\addr&$C000)>>14)), \end
 	elseif narg>=6
@@ -366,7 +353,6 @@ vdpCmd macro ins, addr, type, rwd, end, end2
 	else
 		\ins	((((V\type&V\rwd)&3)<<30)|((\addr&$3FFF)<<16)|(((V\type&V\rwd)&$FC)<<2)|((\addr&$C000)>>14))
 	endif
-
 	endm
 
 

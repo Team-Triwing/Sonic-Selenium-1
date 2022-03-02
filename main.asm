@@ -98,13 +98,13 @@ loc_232:
 	moveq   #0,d0
 	movea.l d0,a6
 	move.l  a6,usp
-	moveq   #$17,d1
 
-loc_23C:
+	rept $18
 	move.b  (a5)+,d5
 	move.w  d5,(a4)
 	add.w   d7,d5
-	dbf d1,loc_23C
+	endr
+
 	move.l  #VRAM_ADDR_CMD,(a4)
 	move.w  d0,(a3)
 	move.w  d7,(a1)
@@ -127,22 +127,21 @@ loc_264:
 	dbf d6,loc_264
 	move.l  #$81048F02,(a4)
 	move.l  #CRAM_ADDR_CMD,(a4)
-	moveq   #$1F,d3
 
-loc_278:
+	rept $20
 	move.l  d0,(a3)
-	dbf d3,loc_278
+	endr
+
 	move.l  #VSRAM_ADDR_CMD,(a4)
-	moveq   #$13,d4
 
-loc_286:
+	rept $14
 	move.l  d0,(a3)
-	dbf d4,loc_286
-	moveq   #3,d5
+	endr
 
-loc_28E:
+	rept 4
 	move.b  (a5)+,$10(a3)
-	dbf d5,loc_28E
+	endr
+
 	move.w  d0,(a2)
 	movem.l (a6),d0-a6
 	disable_ints
@@ -445,7 +444,6 @@ padInit:
 ; ---------------------------------------------------------------------------
 
 padRead:
-	z80Bus
 	lea (padHeld1).w,a0
 	lea (IO_A_DATA).l,a1
 	bsr.s   sub_FDC
@@ -453,6 +451,7 @@ padRead:
 ; ---------------------------------------------------------------------------
 
 sub_FDC:
+	z80Bus
 	move.b	#0,(a1)
 	nop
 	nop
@@ -479,20 +478,20 @@ vdpInit:
 	lea (VdpCtrl).l,a0
 	lea (VdpData).l,a1
 	lea (vdpInitRegs).l,a2
-	moveq   #$12,d7
 
-loc_101E:
+	rept $13
 	move.w  (a2)+,(a0)
-	dbf d7,loc_101E
+	endr
+
 	move.w  (vdpInitRegs+2).l,d0
 	move.w  d0,(ModeReg2).w
 	moveq   #0,d0
 	move.l  #CRAM_ADDR_CMD,(VdpCtrl).l
-	moveq   #$3F,d7
 
-loc_103E:
+	rept $40
 	move.w  d0,(a1)
-	dbf d7,loc_103E
+	endr
+
 	clr.l   (dword_FFF616).w
 	clr.l   (dword_FFF61A).w
 	move.l  d1,-(sp)
@@ -546,8 +545,7 @@ UseVIntSafeDMA			EQU	0
 
 ; Like vdpComm, but starting from an address contained in a register
 
-vdpCommReg macro &
-	reg, type, rwd, clr
+vdpCommReg macro reg, type, rwd, clr
 
 	lsl.l	#2,\reg				; Move high bits into (word-swapped) position, accidentally moving everything else
     if ((v\type\&v\rwd\)&3)<>0
@@ -590,8 +588,7 @@ QueueSlotCount	EQU	(r_DMA_Slot-r_DMA_Queue)/DMAEntry.len
 
 ; -------------------------------------------------------------------------
 
-loadDMA macro &
-	src, length, dest
+loadDMA macro src, length, dest
 
 	if ((\src)&1)<>0
 		inform 2,"DMA queued from odd source $\$src\!"
@@ -1139,11 +1136,10 @@ loc_13CE:
 
 ClearPLC:
 	lea (plcList).w,a2
-	moveq   #$1F,d0
 
-loc_13DA:
+	rept $20
 	clr.l   (a2)+
-	dbf d0,loc_13DA
+	endr
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -1238,11 +1234,12 @@ locret_14D0:
 
 ShiftPLC:
 	lea (plcList).w,a0
-	moveq   #$15,d0
 
-loc_14D8:
+	rept $15
 	move.l  6(a0),(a0)+
-	dbf d0,loc_14D8
+	endr
+        clr.l	(a0)+	; clear the last cue to avoid overcopying it
+        clr.w	(a0)+	;
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -1282,15 +1279,18 @@ LoadArt_Loop:
 	rept 8
 	move.l  (a0)+,(a6) 	 	; transfer 1 full tile (32 bytes)
 	endr
-	dbf 	d0,LoadArt_Loop		; loop until d0 = 0
+	dbf	d0,LoadArt_Loop		; loop until d0 = 0
 	enable_ints		   	; enable interrupts
 	rts
 ; ---------------------------------------------------------------------------
 EnigmaDec:	include "compression/Enigma.asm"
+		even
 ; ---------------------------------------------------------------------------
 KosinskiPlusDec:include "compression/KosinskiPlus.asm"
+		even
 ; ---------------------------------------------------------------------------
 TwizzlerDec:	include "compression/Twizzler.asm"
+		even
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
@@ -17042,15 +17042,12 @@ ObjSonic_GameOver:
 loc_F380:
 	move.b  #$3C,$3A(a0)
 ; ---------------------------------------------------------------------------
-	move.b  (padPressPlayer).w,d0
-	andi.b  #J_B|J_C|J_A,d0
-	beq.s   locret_F3AE
-	andi.b  #$40,d0
-	bne.s   loc_F3B0
+	if safe=1
 	move.b  #0,ani(a0)
 	subq.b  #4,act(a0)
 	move.w  convex(a0),ypos(a0)
 	move.b  #$78,invulnerable(a0)
+	endif
 
 locret_F3AE:
 	rts
