@@ -20,4 +20,3 @@ Maybe I'll pick it up again someday, I don't know.
 * MainMemory - SonLVL
 * Flamewing - Saxman compressor, and Enigma/Kosinski+/Saxman decompressor code
 * MarkeyJester - Twizzler compression
-* Krikzz - MSU-MD driver

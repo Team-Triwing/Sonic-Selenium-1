@@ -46,7 +46,7 @@
 	;endif
 
 	;if FEATURE_SOUNDTEST
-		;dc.b "ST"		; soundtest enabled
+	;	dc.b "ST"		; soundtest enabled
 	;endif
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -61,6 +61,9 @@
 __mus =		MusOff
 
 MusicIndex:
+	ptrMusic GHZ, $07, LZ, $72, MZ, $73, SLZ, $26, SYZ, $15, SBZ, $08, FZ, $18
+	ptrMusic Boss, $12, SS, $00, Invincibility, $FF, Title, $00, GotThroughAct, $00, ExtraLife, $05
+	ptrMusic GameOver, $00, Continue, $00, Options, $00, Splash, $00, SEGA, $00
 
 MusCount =	__mus-MusOff		; number of installed music tracks
 SFXoff =	__mus			; first SFX ID
@@ -94,16 +97,31 @@ SFXlast =	__sfx
 
 __samp =	$80
 SampleList:
-	sample $0000, Stop, Stop				; 80 - Stop sample (DO NOT EDIT)
-	sample $0100, SonicClear, Stop				; 81 - Sonic (act results)
-	sample $0100, SonicHurt, Stop				; 82 - Sonic (when he gets hurt)
-	sample $0100, SonicDeath, Stop				; 83 - Sonic (when he dies)
-	sample $0100, SonicLife, Stop				; 84 - Sonic (extra life)
-	sample $0100, Lava, Lava				; 85 - Lava (loop)
-	sample $0100, DGSel, Stop				; 86 - "Select" (DGamer)
-	sample $0100, DGPop, Stop				; 87 - "Pop" (DGamer)
-	sample $0100, DGWoosh, Stop				; 88 - "Whoosh" (DGamer)
-	sample $0100, Congrats, Stop				; 89 - "Congratulations!" (MASATOG 2008 (DS))
+	sample $0000, Stop, Stop					; 80 - Stop sample (DO NOT EDIT)
+	sample $0100, Kick, Stop					; 81 - Kick
+	sample $0100, Snare, Stop					; 82 - Snare
+	sample $0100, Timpani, Stop, HiTimpani		; 83 - Hi Timpani
+	sample $00E6, Timpani, Stop, MidTimpani		; 84 - Timpani
+	sample $00C2, Timpani, Stop, LowTimpani		; 85 - Low Timpani
+	sample $00B6, Timpani, Stop, FloorTimpani	; 86 - Floor Timpani
+	sample $0100, Tom, Stop, HiTom				; 87 - Hi Tom
+	sample $00E6, Tom, Stop, MidTom				; 88 - Mid Tom
+	sample $00C2, Tom, Stop, LowTom				; 89 - Low Tom
+	sample $00B6, Tom, Stop, FloorTom			; 8A - Floor Tom
+	sample $0100, Sega, Stop					; 8B - SEGA screen
+	sample $0100, SonicClear, Stop				; 8C - Sonic (act results)
+	sample $0100, SonicHurt, Stop				; 8D - Sonic (when he gets hurt)
+	sample $0100, SonicDeath, Stop				; 8E - Sonic (when he dies)
+	sample $0100, SonicLife, Stop				; 8F - Sonic (extra life)
+	sample $0100, Lava, Lava					; 90 - Lava (loop)
+	sample $0100, Guitar1, Stop					; 91 - Power guitar chord 1
+	sample $0100, Guitar2, Stop					; 92 - Power guitar chord 2
+	sample $0100, Guitar3, Stop					; 93 - Power guitar chord 3
+	sample $0100, CrashCymbal, Stop				; 94 - Crash Cymbal
+	sample $0100, DGSel, Stop					; 95 - "Select" (DGamer)
+	sample $0100, DGPop, Stop					; 96 - "Pop" (DGamer)
+	sample $0100, DGWoosh, Stop					; 97 - "Whoosh" (DGamer)
+	sample $0100, Congrats, Stop				; 98 - "Congratulations!" (MASATOG 2008 (DS))
 	even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -218,7 +236,7 @@ ModEnvs_End:
 ; ---------------------------------------------------------------------------
 
 sfxaddr	incSFX				; include all sfx
-musaddr	;incMus				; include all music
+musaddr	incMus				; include all music
 musend
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -234,8 +252,10 @@ SWF_Stop:	dcb.b $8000-(2*Z80E_Read*(MaxPitch/$100)),$80
 SWFR_Stop:	dcb.b Z80E_Read*(MaxPitch/$100),$00
 ; ---------------------------------------------------------------------------
 
-	incSWF	SonicClear, SonicDeath, SonicHurt, SonicLife
-	incSWF	Lava, Congrats, DGSel, DGPop, DGWoosh
+	incSWF	Kick, Timpani, Snare, SonicClear, SonicDeath, SonicHurt, SonicLife
+	incSWF	Tom, Lava, Sega, CrashCymbal
+	incSWF	Guitar1, Guitar2, Guitar3
+	incSWF 	Congrats, DGSel, DGPop, DGWoosh
 	even
 	opt ae+				; enable automatic evens
 	list				; continue source listing

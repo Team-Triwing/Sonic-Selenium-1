@@ -30,56 +30,41 @@ Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The c
 	include "AMPS/code/macro.asm"
 	include "error/debugger.asm"    
 ; ---------------------------------------------------------------------------
-StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
-	dc.l IllegalInstr, ZeroDiv, ChkInstr, TrapvInstr, PrivilegeViol
-	dc.l Trace, LineAEmu, LineFEmu, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, hint, ErrorTrap, vint, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap
-	dc.b 'SEGA Genesis    '             			; Console name
-	dc.b 'RPNTMLD         '             			; Copyright/release date (placeholder for romfix)
-	dc.b '                                                '	; Domestic name (placeholder for romfix)
-	dc.b '                                                '	; International name (placeholder for romfix)
-	dc.b 'GM XXXXXXXX-XX'               			; Serial code (placeholder for romfix)
-Checksum:dc.w 0                      				; Checksum
-	dc.b 'JC              '             			; I/O support (3-button joypad)
-	dc.l StartOfROM
-RomEndLoc:dc.l	EndOfROM-1             				; ROM region
-	dc.l RAM_START, RAM_END           			; RAM region
-	dc.b "RA",$A0,$20
-	dc.l $200000
-	dc.l $200000
-Notes:  dc.b 'I already know nobody is going to like this hack.   '
-	    ;'                                                    '
-	dc.b 'U  '          ; Region codes
-	dc.b '             '
+StartOfROM:	dc.l	(StackPointer)&$FFFFFF,	GameInit,	BusErr,	AddressErr
+		dc.l	IllegalInstr,	ZeroDiv,	ChkInstr,	TrapvInstr,	PrivilegeViol
+		dc.l	Trace,	LineAEmu,	LineFEmu,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	hint,	ErrorTrap,	vint,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap
+		dc.b	'SEGA GENESIS    '             				; Console name
+		dc.b	'RPNTMLD         '             				; Copyright/release date (placeholder for romfix)
+		dc.b	'                                                '	; Domestic name (placeholder for romfix)
+		dc.b	'                                                '	; International name (placeholder for romfix)
+		dc.b	'GM XXXXXXXX-XX'					; Serial code (placeholder for romfix)
+Checksum:	dc.w	0							; Checksum
+		dc.b	'J               '					; I/O support (3-button joypad)
+		dc.l	StartOfROM
+RomEndLoc:	dc.l	EndOfROM-1						; ROM region
+		dc.l	RAM_START, RAM_END					; RAM region
+		dc.b	"RA",$A0,$20
+		dc.l	$200000
+		dc.l	$200000
+Notes:  	dc.b	'                                   Hi people, enjoy!'
+		;	'                                                    '
+		dc.b	' U '          ; Region codes
+		dc.b	'             '
 EndOfHeader:
 ; ---------------------------------------------------------------------------
 
 GameInit:
-		btst	#$6,(HW_version).l ; Check for PAL or NTSC, 0=60Hz, 1=50Hz
-		bne.s	jmpLockout ; if !=0, branch to lockout
-
-		jsr     MSUMD_DRV
-		tst.b 	d0 ; if 1: no CD Hardware found
-		bne.s	jmpLockout ; if no, branch to lockout
-		move.w 	#(MSUc_VOLUME|255),MCD_CMD ; Set CD Volume to MAX
-		addq.b 	#1,MCD_CMD_CK ; Increment command clock
-
-		bra.s   msuOK ; skip jmpLockout
-
-jmpLockout:
-        jmp     msuLockout
-
-msuOK:
 	tst.l   ($A10008).l
 
 loc_20C:
@@ -1479,7 +1464,6 @@ FCI_NoRed:
 
 Pal_FadeFrom:
 	move.w  #$3F,(word_FFF626).w
-Pal_FadeFrom2:
 	move.w  #$14,d4
 
 loc_19DC:
@@ -1728,8 +1712,7 @@ AngleTable: incbin "unsorted/angletable.dat"
 sSega:
 	command mus_FadeOut
 	bsr.w   ClearPLC
-	move.w  #$9F,(word_FFF626).w
-	bsr.w   Pal_FadeFrom2
+	bsr.w   Pal_FadeFrom
 	clr.b   (DontIntMus).w
 
 	clrRAM  Chunks
@@ -1758,13 +1741,17 @@ sSega:
 	copyTilemap64 (Chunks)&$FFFFFF,$C61C,$B,3,0
 	move.w  #$28,(PalCycOffset).w
 	move.w  #3*60,(GlobalTimer).w
+	btst    #6,(ConsoleRegion).w
+	beq.s   loc_2527
+	move.w  #3*50,(GlobalTimer).w
+loc_2527:
 	move.w  (ModeReg2).w,d0
 	ori.b   #$40,d0
 	move.w  d0,(VdpCtrl).l
 	moveq   #0,d0
 	bsr.w   PalLoadFade
 	bsr.w   Pal_FadeTo
-	music   mus_SEGA, 0
+	music   mus_SEGA
 
 loc_2528:
 	move.b  #2,(VintRoutine).w
@@ -1786,8 +1773,8 @@ loc_2544:
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
 SplashScreen:
-	move.w  #$9F,(word_FFF626).w
-	bsr.w   Pal_FadeFrom2          			; fade palette out
+	command mus_FadeOut             		; set music ID to "fade music"
+	bsr.w   Pal_FadeFrom          			; fade palette out
 	bsr.w   ClearScreen           			; clear the plane mappings
 
 	; initalize VDP
@@ -1815,10 +1802,11 @@ SplashScreen:
 	move.b  #$B,d0
 	bsr.w   PalLoadFade
 	bsr.w 	Pal_FadeTo          			; fade palette in
+	music   mus_Splash
 	move.w  #5*60,(GlobalTimer).w     		; set delay time (5 seconds on a 60hz system)
-	;btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
-	;beq.s   Splash_MainLoop           		; if not, continue
-	;move.w  #5*50,(GlobalTimer).w     		; set delay time (5 seconds on a 50hz system)
+	btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
+	beq.s   Splash_MainLoop           		; if not, continue
+	move.w  #5*50,(GlobalTimer).w     		; set delay time (5 seconds on a 50hz system)
  
 Splash_MainLoop:
 	move.b  #2,(VintRoutine).w       		; set V-blank routine to run
@@ -1834,7 +1822,7 @@ Splash_GotoTitle:
 ; ---------------------------------------------------------------------------
 
 sTitle:
-	command mus_FadeOut
+	command mus_Stop
 	bsr.w   ClearPLC
 	bsr.w   Pal_FadeFrom
 	clr.b   (DontIntMus).w
@@ -1899,7 +1887,7 @@ sTitle:
 	bsr.w   palLoadFade
 	move.b  #2,(VintRoutine).w
 	vsync
-	music   mus_Title, 0
+	music   mus_Title
 	clr.b   (EditModeFlag).w
 	move.w  #$178,(GlobalTimer).w
 	move.b  #$E,(byte_FFD040).w
@@ -1950,7 +1938,7 @@ loc_26E4:
 loc_25D8:
 	move.w  (a5)+,(a6)
 	dbf d1,loc_25D8
-	music   mus_Options, 1
+	music   mus_Options
 	bsr.w   Pal_FadeTo
 
 LevelSelect:
@@ -2256,7 +2244,7 @@ sLevel:
 	tst.b   (DontIntMus).w
 	bne.s   .notset
 	clr.b   (DontIntMus).w
-	command	mus_FadeOut
+	music   mus_FadeOut
 	bsr.w   ClearPLC
 .notset
 	bsr.w   Pal_FadeFrom
@@ -2317,11 +2305,9 @@ loc_2C6C:
 	lea (MusicList).l,a1
 	move.b  (a1,d0.w),d0
 	move.b	d0,SavedSong.w
-	addi.w	#MSUc_PLAYLOOP,d0
-	waitmsu
-	move.w	d0,MCD_CMD
-	addq.b	#1,MCD_CMD_CK
+	move.b  d0,mQueue+1.w
 MusicLoop:
+	command mus_ShoesOff   		; run the music at normal speed
 	clr.b   (DontIntMus).w
 	move.b  #$34,(byte_FFD080).w
 
@@ -4137,7 +4123,7 @@ loc_4A3E:
 	move.w  #$280,ypos(a1)
 
 loc_4A5E:
-	music   mus_Boss, 1
+	music   mus_Boss
 	move.b  #1,(unk_FFF7AA).w
 	addq.b  #2,(EventsRoutine).w
 	moveq   #$11,d0
@@ -7826,7 +7812,7 @@ CollectRing:
 loc_7D5E:
 	addq.b  #1,(Lives).w
 	addq.b  #1,(byte_FFFE1C).w
-	moveq   #sfx_Register,d0
+	moveq   #mus_ExtraLife,d0
 
 loc_7D6A:
 	move.b  d0,mQueue+2.w
@@ -8224,7 +8210,7 @@ loc_82B2:
 loc_82B8:
 	addq.b  #1,(Lives).w
 	addq.b  #1,(byte_FFFE1C).w
-	sfx	sfx_Register
+	music   mus_ExtraLife
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8235,6 +8221,7 @@ loc_82CA:
 	move.w  #$4B0,(ObjectsList+speedshoes).w
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	bsr.w   ApplySpeedSettings  ; Fetch Speed settings
+	command mus_ShoesOn
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8260,7 +8247,7 @@ loc_8314:
 	move.b  #3,(byte_FFD280+ani).w
 	move.b  #$38,(byte_FFD2C0).w
 	move.b  #4,(byte_FFD2C0+ani).w
-	music   mus_Invincibility, 1
+	music   mus_Invincibility
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8296,7 +8283,7 @@ loc_83A0:
 	move.b  #3,(byte_FFD280+ani).w
 	move.b  #$38,(byte_FFD2C0).w
 	move.b  #4,(byte_FFD2C0+ani).w
-	music   mus_Invincibility, 1
+	music   mus_Invincibility
 	move.b  #1,(byte_FFFE2C).w
 	move.b  #$38,(byte_FFD180).w
 	sfx     sfx_Shield
@@ -8304,6 +8291,7 @@ loc_83A0:
 	move.w  #$4B0,(ObjectsList+speedshoes).w
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	bsr.w   ApplySpeedSettings  ; Fetch Speed settings
+	command mus_ShoesOn
 locret_83A8:
 	rts
 ; ---------------------------------------------------------------------------
@@ -13461,7 +13449,7 @@ loc_C814:
 
 sub_C81C:
 	tst.b   (byte_FFD600).w
-	bne.w   locret_C880
+	bne.s   locret_C880
 	move.w  (unk_FFF72A).w,(unk_FFF728).w
 	clr.b   (byte_FFFE2D).w
 	clr.b   (byte_FFFE2C).w
@@ -13492,7 +13480,7 @@ loc_C862:
 	move.w  (Rings).w,d0
 	mulu.w  #$A,d0
 	move.w  d0,(word_FFFE56).w
-	music   mus_GotThroughAct, 0
+	music   mus_GotThroughAct
 
 locret_C880:
 	rts
@@ -15856,11 +15844,8 @@ loc_E8E8:
 	bne.s   loc_E91C
 	tst.b   (unk_FFF7AA).w
 	bne.s   loc_E916
-	move.b	SavedSong.w,d0
-	waitmsu
-	addi.w	#MSUc_PLAYLOOP,d0
-	move.w	d0,MCD_CMD
-	addq.b	#1,MCD_CMD_CK
+		move.b	SavedSong.w,d0
+	move.b  d0,mQueue+1.w
 
 loc_E916:
 	clr.b   (byte_FFFE2D).w
@@ -15877,6 +15862,7 @@ loc_E91C:
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	jsr     ApplySpeedSettings  ; Fetch Speed settings
 	clr.b   (byte_FFFE2E).w
+	command mus_ShoesOff
 ; ---------------------------------------------------------------------------
 
 locret_E950:
@@ -17034,7 +17020,7 @@ ObjSonic_GameOver:
 	move.b  #$39,(byte_FFD080).w
 	move.b  #$39,(byte_FFD0C0).w
 	move.b  #1,(byte_FFD0C0+$1A).w
-	music   mus_GameOver, 0
+	music   mus_GameOver
 	moveq   #3,d0
 	jmp (plcAdd).l
 ; ---------------------------------------------------------------------------
@@ -20747,12 +20733,6 @@ demoin_SLZ:
 demoin_SYZ:
 demoin_SBZ:
 demoin_SS:
-
-MSUMD_DRV:	incbin  "msu\msu-drv.bin"
-		even
-
-msuLockout:	incbin "msu\msuLockout.bin"
-		even
 	
 ; end of 'ROM'
 	include "AMPS/code/smps2asm.asm"
