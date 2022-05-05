@@ -1,6 +1,5 @@
 # Sonic Selenium
 A hack based on [the MDDC disassembly of the Sonic 1 Prototype](https://github.com/Mega-Drive-Developers-Collective/Sonic-1-Prototype), I (RepellantMold) quit working on it from demotivation in 2021.
-Maybe I'll pick it up again someday, I don't know.
 # Credits
 ## Creator
 * RepellantMold
