@@ -317,7 +317,6 @@ off_B6A:    dc.w nullsub_3-off_B6A, loc_B7E-off_B6A, sub_B90-off_B6A, sub_BAA-of
 loc_B7E:
 	bsr.w   sub_E78
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_B8E
 
 locret_B8E:
 	rts
@@ -328,7 +327,6 @@ sub_B90:
 	bsr.w   sub_43B6
 	bsr.w   sub_1438
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_BA8
 
 locret_BA8:
 	rts
@@ -351,7 +349,6 @@ loc_C7A:
 	jsr UpdateHUD
 	bsr.w   loc_1454
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_CBA
 
 locret_CBA:
 	rts
@@ -366,7 +363,6 @@ loc_CBC:
 
 loc_D7A:
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_D86
 
 locret_D86:
 	rts
@@ -1275,6 +1271,9 @@ KosinskiPlusDec:include "compression/KosinskiPlus.asm"
 		even
 ; ---------------------------------------------------------------------------
 TwizzlerDec:	include "compression/Twizzler.asm"
+		even
+; ---------------------------------------------------------------------------
+ZX0Dec:		include "compression/unzx0_68000.S"
 		even
 ; ---------------------------------------------------------------------------
 
@@ -11323,7 +11322,7 @@ loc_A7F2:
 ; ---------------------------------------------------------------------------
 
 loc_A81C:
-	move.b  #1,(LevelRestart).w
+	st.b	(LevelRestart).w
 
 loc_A822:
 	bra.w   ObjectDisplay
