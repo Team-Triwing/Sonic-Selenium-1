@@ -1291,6 +1291,9 @@ KosinskiPlusDec:include "compression/KosinskiPlus.asm"
 ; ---------------------------------------------------------------------------
 TwizzlerDec:	include "compression/Twizzler.asm"
 		even
+
+		include "compression/unzx0_68000.S"
+		even
 ; ---------------------------------------------------------------------------
 
 PaletteCycle:
