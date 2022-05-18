@@ -2278,6 +2278,10 @@ loc_2C0A:
 	;beq.s   .cont           ; if not, continue
 	;move.w  #$8100|%01111100,(a6)
 ;.cont
+	cmpi.b	#1,(curzone)
+	bne.s	.cont2
+	move.w	#VDPREG_MODE4|GFXMODE_320x224_SH,(VdpCtrl).l
+.cont2:
 	clrRAM  ObjectsList
 	lea (CameraX).w,a1
 	moveq   #0,d0
@@ -2306,7 +2310,7 @@ loc_2C6C:
 	move.b	d0,SavedSong.w
 	move.b  d0,mQueue+1.w
 MusicLoop:
-	command mus_ShoesOff   		; run the music at normal speed
+	command mus_ShoesOff		; run the music at normal speed
 	clr.b   (DontIntMus).w
 	move.b  #$34,(byte_FFD080).w
 
