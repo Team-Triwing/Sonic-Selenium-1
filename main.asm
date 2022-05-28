@@ -8460,29 +8460,48 @@ ObjectMove:
 ; ---------------------------------------------------------------------------
 
 ObjectDisplay:
-	lea     (DisplayLists).w,a1
-	adda.w  priority(a0),a1
-	cmpi.w  #$7E,(a1)
-	bcc.s   return_16510
-	addq.w  #2,(a1)
-	adda.w  (a1),a1
-	move.w  a0,(a1)
+	lea	(DisplayLists).w,a1
+	moveq	#0,d0
+	move.b	priority(a0),d0
+	add.w	d0,d0
+	move.w	PriorityId(pc,d0.w),d0     ; get values
+	adda.w	d0,a1
+	cmpi.w	#$7E,(a1)
+	bcc.s	.return
+	addq.w	#2,(a1)
+	adda.w	(a1),a1
+	move.w	a0,(a1)
 
-return_16510:
+.return:
 	rts
 ; ---------------------------------------------------------------------------
 
 ObjectDisplayA1:
-	lea     (DisplayLists).w,a2
-	adda.w  priority(a1),a2
-	cmpi.w  #$7E,(a2)
-	bcc.s   return_1652E
-	addq.w  #2,(a2)
-	adda.w  (a2),a2
-	move.w  a1,(a2)
+	lea	(DisplayLists).w,a2
+	moveq	#0,d0
+	move.b	priority(a1),d0
+	add.w	d0,d0
+	move.w	PriorityId(pc,d0.w),d0     ; get values
+	adda.w	d0,a2
+	cmpi.w	#$7E,(a2)
+	bcc.s	.return2
+	addq.w	#2,(a2)
+	adda.w	(a2),a2
+	move.w	a1,(a2)
 
-return_1652E:
+.return2:
 	rts
+
+
+PriorityId:    dc.w  0
+               dc.w  $80
+               dc.w  $100
+               dc.w  $180
+               dc.w  $200
+               dc.w  $280
+               dc.w  $300
+               dc.w  $380
+               even
 ; ---------------------------------------------------------------------------
 
 ObjectDelete:
