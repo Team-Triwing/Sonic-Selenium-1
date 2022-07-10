@@ -5,4 +5,3 @@ wine "AMPS\Dual PCM Compress.exe" "AMPS\.z80" "AMPS\.z80.dat" "Sonic_Selenium_1.
 ./error/convsym out.lst Sonic_Selenium_1.gen -input asm68k_lst -inopt "/localSign=. /localJoin=. /ignoreMacroDefs+ /ignoreMacroExp- /addMacrosAsOpcodes+ /processLocals+" -a
 ./tools/romfix -t "Sonic Selenium" -d -r 00 -s 050104RM -z Sonic_Selenium_1.gen
 #rm -f out.log
-pause
