@@ -16511,6 +16511,7 @@ ObjSonic_Jump:
 	bclr    #5,status(a0)
 	addq.l  #4,sp
 	move.b  #1,jumping(a0)
+	clr.w	$3E(a0)
 	sfx     sfx_Jump
 	move.b  #$13,yrad(a0)
 	move.b  #9,xrad(a0)
