@@ -200,36 +200,44 @@ CS_Finish:
 	cmp.w 	(Checksum).w,d4 	; does the checksum match?
 	bne.s 	CheckSumError 		; if not, branch
 
+	move.b  (HW_VERSION).l,d0
+	andi.b  #$C0,d0
+	move.b  d0,(ConsoleRegion).w	
+
 loc_36A:
-	command	mus_Stop
+	command	Mus_Stop
 	clrRAM  RAM_START,RAM_END
-	jsr InitDMAQueue
 	bsr.w   vdpInit
 	bsr.w   padInit
 	jsr LoadDualPCM
-	clr.b   (GameMode).w
+	move.b	#id_sSega,(GameMode).w
 
 ScreensLoop:
-	move.b  (HW_VERSION).l,d0
-	andi.b  #$C0,d0
-	move.b  d0,(ConsoleRegion).w
+	moveq	#0,d0
 	move.b  (GameMode).w,d0
-	andi.w  #$7C,d0
+	lsl.w	#2,d0
 	movea.l ScreensArray(pc,d0.w),a0
-	jsr (a0)
+	jsr	(a0)
 	bra.s   ScreensLoop
 ; ---------------------------------------------------------------------------
 
+gmptr:	macro
+	id_\1:	equ (*-ScreensArray)/4
+	dc.l	\1
+	endm
+
 ScreensArray:
-	dc.l    sSega
+	gmptr	sSega
 ; ---------------------------------------------------------------------------
-	dc.l    sTitle
+	gmptr	sTitle
 ; ---------------------------------------------------------------------------
-	dc.l    sLevel
+	gmptr	sDemo
 ; ---------------------------------------------------------------------------
-	dc.l    sLevel
+	gmptr	sLevel
 ; ---------------------------------------------------------------------------
-	dc.l    sSpecial
+	gmptr	sSpecial
+; ---------------------------------------------------------------------------
+	gmptr	SplashScreen
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
@@ -333,7 +341,7 @@ locret_BA8:
 ; ---------------------------------------------------------------------------
 
 sub_BB0:
-	cmpi.b  #$10,(GameMode).w
+	cmpi.b  #id_sSpecial,(GameMode).w
 	beq.w   loc_CBC
 
 loc_BBA:
@@ -461,7 +469,7 @@ vdpInit:
 	lea (vdpInitRegs).l,a2
 
 	rept $13
-	move.w  (a2)+,(a0)
+	move.w  (a2)+,4(a1)
 	endr
 
 	move.w  (vdpInitRegs+2).l,d0
@@ -476,12 +484,12 @@ vdpInit:
 	clr.l   (dword_FFF616).w
 	clr.l   (dword_FFF61A).w
 	move.l  d1,-(sp)
-	lea (VdpCtrl).l,a5
-	move.w  #$8F01,(a5)
-	dmaFill	0,0,$FFFF,a5
-	move.w  #$8F02,(a5)
+	;lea (VdpCtrl).l,a5
+	move.w  #$8F01,(a0)
+	dmaFill	0,0,$FFFF,a0
+	move.w  #$8F02,(a0)
 	move.l  (sp)+,d1
-	rts
+	jmp InitDMAQueue
 ; ---------------------------------------------------------------------------
 
 vdpInitRegs:
@@ -804,7 +812,7 @@ loc_11D2:
 	vsync
 	btst    #JbA,(padPress1).w
 	beq.s   loc_11EE
-	move.b  #4,(GameMode).w
+	move.b  #id_sTitle,(GameMode).w
 	bra.s   loc_1206
 ; ---------------------------------------------------------------------------
 
@@ -1726,9 +1734,7 @@ sSega:
 	move.w  #$8700,(a6)
 	move.w  #$8B00,(a6)
 	move.w  #$8100|%10000001,(a6)
-	move.w  (ModeReg2).w,d0
-	andi.b  #$BF,d0
-	move.w  d0,(VdpCtrl).l
+	disable_disp
 	bsr.w   ClearScreen
 	lea (ArtSega).l,a0
 	move.w  #0,d0
@@ -1744,9 +1750,7 @@ sSega:
 	beq.s   loc_2527
 	move.w  #3*50,(GlobalTimer).w
 loc_2527:
-	move.w  (ModeReg2).w,d0
-	ori.b   #$40,d0
-	move.w  d0,(VdpCtrl).l
+	enable_disp
 	moveq   #0,d0
 	bsr.w   PalLoadFade
 	bsr.w   Pal_FadeTo
@@ -1762,6 +1766,8 @@ loc_2528:
 	beq.s   loc_2528
 
 loc_2544:
+	move.b	#id_SplashScreen,(GameMode).w
+	rts
 
 ; ---------------------------------------------------------------------------
 ; ============================================================================================
@@ -1795,7 +1801,7 @@ SplashScreen:
 	move.w  #$140,d0             			; prepare pattern index value to patch to mappings
 	bsr.w   EniDec     		       		; decompress and dump
 	copyTilemap64 (Chunks)&$FFFFFF,$C000,$27,$1E,0 	; flush mappings to VRAM
-	move.l  #$68000000,($C00004).l    		; set vdp loc
+	move.l  #$68000000,(a6)		    		; set vdp loc
 	lea     ArtSplash.l,a0           		; load background art
 	jsr     NemesisDec              		; run NemDec to decompress art for display
 	move.b  #$B,d0
@@ -1816,7 +1822,7 @@ Splash_MainLoop:
 	bne.s   Splash_MainLoop          		; if not, branch
  
 Splash_GotoTitle:
-	move.b  #4,(GameMode).w      			; set the screen mode to Title Screen
+	move.b  #id_sTitle,(GameMode).w      		; set the screen mode to Title Screen
 	rts                     			; return
 ; ---------------------------------------------------------------------------
 
@@ -1835,9 +1841,7 @@ sTitle:
 	move.w  #$8B03,(a6)
 	move.w  #$8720,(a6)
 	move.w  #$8C00|%10000001,(a6)
-	move.w  (ModeReg2).w,d0
-	andi.b  #$BF,d0
-	move.w  d0,(VdpCtrl).l
+	disable_disp
 	bsr.w   ClearScreen
 
 	clrRAM  ScrollBuffer
@@ -1895,9 +1899,7 @@ sTitle:
 	move.b  #2,(byte_FFD0C0+frame).w
 	moveq   #0,d0
 	bsr.w   plcReplace
-	move.w  (ModeReg2).w,d0
-	ori.b   #$40,d0
-	move.w  d0,(VdpCtrl).l
+	enable_disp
 	bsr.w   Pal_FadeTo
 
 loc_26AE:
@@ -1924,11 +1926,13 @@ loc_26E4:
 	beq.s   loc_26AE
 	sfx     sfx_Woosh
 	bsr.w   Pal_FadeFrom
+	disable_disp
 	bsr.w   ClearScreen
 	move.l  d0,(dword_FFF616).w
 	bsr.w   sub_292C
 	moveq   #2,d0
 	bsr.w   palLoadFade
+
 	lea (VdpData).l,a6
 	move.l  #$50000003,4(a6)
 	lea (ArtLSText).l,a5
@@ -1937,6 +1941,8 @@ loc_26E4:
 loc_25D8:
 	move.w  (a5)+,(a6)
 	dbf d1,loc_25D8
+	enable_disp
+
 	music   mus_Options
 	bsr.w   Pal_FadeTo
 
@@ -1959,15 +1965,15 @@ LevelSelect:
 	bra.s   LevelSelect
 ; ===========================================================================
 LevSelLevCheckStart:
-	andi.b  #J_S,(padPress1).w 		; is Start pressed?
-	beq.s   LevelSelect    			; if not, branch
-	bra.s   loc_2780
+	andi.b	#J_S,(padPress1).w 		; is Start pressed?
+	beq.s	LevelSelect    			; if not, branch
+	bra.s	loc_2780
 	
 LevSelBCPress:
-	move.w  (LevSelSound).w,d0
+	move.w	(LevSelSound).w,d0
 
 loc_277A:
-	move.b d0,mQueue+1.w
+	move.b	d0,mQueue+1.w
 	bra.s   LevelSelect
 	
 LevSelStartPress:               		; XREF: LevelSelect
@@ -1983,7 +1989,7 @@ loc_2780:
 	bmi.s   LevelSelect
 	cmpi.w  #$700,d0
 	bne.s   loc_2796
-	move.b  #$10,(GameMode).w
+	move.b  #id_sSpecial,(GameMode).w
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -1997,7 +2003,7 @@ loc_27A6:
 	move.w  d0,(curzone).w
 
 loc_27AA:
-	move.b  #$C,(GameMode).w
+	move.b  #id_sLevel,(GameMode).w
 	move.b  #3,(Lives).w
 	moveq   #0,d0
 	move.w  d0,(Rings).w
@@ -2049,10 +2055,10 @@ loc_282C:
 
 loc_2860:
 	move.w  #1,(DemoMode).w
-	move.b  #8,(GameMode).w
+	move.b  #id_sDemo,(GameMode).w
 	cmpi.w  #$600,d0
 	bne.s   loc_2878
-	move.b  #$10,(GameMode).w
+	move.b  #id_sSpecial,(GameMode).w
 
 loc_2878:
 	move.b  #3,(Lives).w
@@ -2213,7 +2219,7 @@ loc_29DE:
 ; ---------------------------------------------------------------------------
 
 LevelSelectText:
-	dc.b    'GREEN HILLS        ACT 1'
+	dc.b    'GREEN HILL         ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
 	dc.b    'LABYRINTH          ACT 1'
@@ -2240,6 +2246,7 @@ MusicList:  dc.b mus_GHZ, mus_LZ, mus_MZ, mus_SLZ, mus_SYZ, mus_SBZ
 ; ---------------------------------------------------------------------------
 
 sLevel:
+sDemo:
 	tst.b   (DontIntMus).w
 	bne.s   .notset
 	clr.b   (DontIntMus).w
@@ -2247,6 +2254,7 @@ sLevel:
 	bsr.w   ClearPLC
 .notset
 	bsr.w   Pal_FadeFrom
+	disable_disp
 	move.l  #$70000002,($C00004).l
 	lea ArtTitleCards,a0
 	move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
@@ -2312,6 +2320,7 @@ loc_2C6C:
 MusicLoop:
 	command mus_ShoesOff		; run the music at normal speed
 	clr.b   (DontIntMus).w
+	enable_disp
 	move.b  #$34,(byte_FFD080).w
 
 loc_2C92:
@@ -2395,9 +2404,9 @@ sLevelLoop:
 	bsr.w   oscUpdate
 	bsr.w   UpdateTimers
 	bsr.w   LoadSignpostPLC
-	cmpi.b  #8,(GameMode).w
+	cmpi.b  #id_sDemo,(GameMode).w
 	beq.s   loc_2E66
-	cmpi.b  #$C,(GameMode).w
+	cmpi.b  #id_sLevel,(GameMode).w
 	beq.s   sLevelLoop
 	rts
 ; ---------------------------------------------------------------------------
@@ -2407,14 +2416,14 @@ loc_2E66:
 	bne.s   loc_2E84
 	tst.w   (GlobalTimer).w
 	beq.s   loc_2E84
-	cmpi.b  #8,(GameMode).w
+	cmpi.b  #id_sDemo,(GameMode).w
 	beq.s   sLevelLoop
 	clr.b   (GameMode).w
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_2E84:
-	cmpi.b  #8,(GameMode).w
+	cmpi.b  #id_sDemo,(GameMode).w
 	bne.s   loc_2E92
 	clr.b   (GameMode).w
 
@@ -2908,7 +2917,7 @@ HScrollGHZ:
 	move.w  #$6F,d1
 	sub.w   d4,d1
 	move.w  (CameraX).w,d0
-	cmpi.b  #4,(GameMode).w ; is the screen mode the title screen?
+	cmpi.b  #id_sTitle,(GameMode).w ; is the screen mode the title screen?
 	bne.s   loc_3EA8    ; if not, branch
 	moveq   #0,d0       ; prevent the emblem from moving
 
@@ -11211,7 +11220,7 @@ loc_A6B8:
 ; ---------------------------------------------------------------------------
 
 loc_A6D6:
-	move.b  #0,(GameMode).w
+	move.b  #id_sSega,(GameMode).w
 
 loc_A6DC:
 	bra.w   ObjectDisplay
@@ -17494,7 +17503,7 @@ ObjEntryRingBeta_RmvSonic:
 ObjEntryRingBeta_LoadSonic:
 	subq.b  #1,$30(a0)
 	bne.s   ObjEntryRingBeta_Wait
-	move.b  #$10,(GameMode).w
+	move.b  #id_sSpecial,(GameMode).w
 ; ---------------------------------------------------------------------------
 
 ObjEntryRingBeta_Wait:
@@ -18849,7 +18858,7 @@ ObjCredits_Main:             ; XREF: ObjCredits_Index
 	move.b  #0,render(a0)
 	move.b  #16,xpix(a0)
 	move.w  #0,prio(a0)
-	cmpi.b  #4,(GameMode).w ; is the scene  number 04 (title screen)?
+	cmpi.b  #id_sTitle,(GameMode).w ; is the scene  number 04 (title screen)?
 	jne     ObjectDisplay       ; if not, branch
 	move.w  #$A6,tile(a0)
 	move.b  #$A,frame(a0)           ; display "SONIC TEAM PRESENTS"

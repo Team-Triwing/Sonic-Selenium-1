@@ -31,16 +31,22 @@ disable_ints:	macros
 enable_ints:	macros
 		move	#$2300,sr
 
-disable_disp:	macros
-		andi.b	#%10111111,(VdpCtrl).l
+disable_disp:	macro
+		move.w	(ModeReg2).w,d0				; $81xx
+		andi.b	#$BF,d0					; clear bit 6
+		move.w	d0,(VdpCtrl).l
+		endm
 
-enable_disp:	macros
-		ori.b	#%01000000,(VdpCtrl).l
+enable_disp:	macro
+		move.w	(ModeReg2).w,d0				; $81xx
+		ori.b	#$40,d0					; set bit 6
+		move.w	d0,(VdpCtrl).l
+		endm
 
 vsync:			macro
 		enable_ints
-@wait\@:tst.b	(VintRoutine).w
-		bne.s	@wait\@
+.wait\@:	tst.b	(VintRoutine).w
+		bne.s	.wait\@
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -50,13 +56,13 @@ vsync:			macro
 jhi:		macro loc
 		bls.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jcc:		macro loc
 		bcs.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jhs:		macro loc
@@ -66,13 +72,13 @@ jhs:		macro loc
 jls:		macro loc
 		bhi.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jcs:		macro loc
 		bcc.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jlo:		macro loc
@@ -82,49 +88,49 @@ jlo:		macro loc
 jeq:		macro loc
 		bne.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jne:		macro loc
 		beq.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jgt:		macro loc
 		ble.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jge:		macro loc
 		blt.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jle:		macro loc
 		bgt.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jlt:		macro loc
 		bge.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jpl:		macro loc
 		bmi.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 jmi:		macro loc
 		bpl.s	.nojump\@
 		jmp	loc
-	.nojump\@:
+.nojump\@:
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -212,7 +218,7 @@ endaddr		EQUS	"\eaddr"		; Use eaddr
 	endif
 clrsize		=	(\endaddr-\saddr)&$FFFFFF
 
-	moveq	#0,d0
+	;moveq	#0,d0
 
 	if (((\saddr)&$8000)&((\saddr)<0))=0	; Optimize setting saddr to a1
 		lea	\saddr,a1
@@ -223,7 +229,7 @@ clrsize		=	(\endaddr-\saddr)&$FFFFFF
 	move.w	#clrsize>>2-1,d1
 
 .Clear\@:
-	move.l	d0,(a1)+			; Clear data
+	clr.l	(a1)+			; Clear data
 	dbf	d1,.Clear\@			; Loop until data is cleared
 
 	if clrsize&2
