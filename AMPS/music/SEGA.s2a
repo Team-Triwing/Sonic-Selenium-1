@@ -1,0 +1,10 @@
+	sHeaderInit
+	sHeaderTempo	$02, $05
+	sHeaderCh	$00, $00
+	sHeaderDAC	SEGA_DAC1
+	sHeaderDAC	SEGA_DAC2, $00, dSega
+
+SEGA_DAC2:
+	dc.b	nC4, $7F
+SEGA_DAC1:
+	sStop 

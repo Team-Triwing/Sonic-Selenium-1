@@ -30,56 +30,41 @@ Z80_Space = $8D4            ; The amount of space reserved for Z80 driver. The c
 	include "AMPS/code/macro.asm"
 	include "error/debugger.asm"    
 ; ---------------------------------------------------------------------------
-StartOfROM:     dc.l (StackPointer)&$FFFFFF, GameInit, BusErr, AddressErr
-	dc.l IllegalInstr, ZeroDiv, ChkInstr, TrapvInstr, PrivilegeViol
-	dc.l Trace, LineAEmu, LineFEmu, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorException
-	dc.l ErrorException, ErrorException, ErrorException, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, hint, ErrorTrap, vint, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
-	dc.l ErrorTrap, ErrorTrap
-	dc.b 'SEGA Genesis    '             			; Console name
-	dc.b 'RPNTMLD         '             			; Copyright/release date (placeholder for romfix)
-	dc.b '                                                '	; Domestic name (placeholder for romfix)
-	dc.b '                                                '	; International name (placeholder for romfix)
-	dc.b 'GM XXXXXXXX-XX'               			; Serial code (placeholder for romfix)
-Checksum:dc.w 0                      				; Checksum
-	dc.b 'JC              '             			; I/O support (3-button joypad)
-	dc.l StartOfROM
-RomEndLoc:dc.l	EndOfROM-1             				; ROM region
-	dc.l RAM_START, RAM_END           			; RAM region
-	dc.b "RA",$A0,$20
-	dc.l $200000
-	dc.l $200000
-Notes:  dc.b 'I already know nobody is going to like this hack.   '
-	    ;'                                                    '
-	dc.b 'U  '          ; Region codes
-	dc.b '             '
+StartOfROM:	dc.l	(StackPointer)&$FFFFFF,	GameInit,	BusErr,	AddressErr
+		dc.l	IllegalInstr,	ZeroDiv,	ChkInstr,	TrapvInstr,	PrivilegeViol
+		dc.l	Trace,	LineAEmu,	LineFEmu,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorException
+		dc.l	ErrorException,	ErrorException,	ErrorException,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	hint,	ErrorTrap,	vint,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
+		dc.l	ErrorTrap,	ErrorTrap
+		dc.b	'SEGA GENESIS    '             				; Console name
+		dc.b	'RPNTMLD         '             				; Copyright/release date (placeholder for romfix)
+		dc.b	'                                                '	; Domestic name (placeholder for romfix)
+		dc.b	'                                                '	; International name (placeholder for romfix)
+		dc.b	'GM XXXXXXXX-XX'					; Serial code (placeholder for romfix)
+Checksum:	dc.w	0							; Checksum
+		dc.b	'J               '					; I/O support (3-button joypad)
+		dc.l	StartOfROM
+RomEndLoc:	dc.l	EndOfROM-1						; ROM region
+		dc.l	RAM_START, RAM_END					; RAM region
+		dc.b	"RA",$A0,$20
+		dc.l	$200000
+		dc.l	$200000
+Notes:  	dc.b	'                                   Hi people, enjoy!'
+		;	'                                                    '
+		dc.b	' U '          ; Region codes
+		dc.b	'             '
 EndOfHeader:
 ; ---------------------------------------------------------------------------
 
 GameInit:
-		btst	#$6,(HW_version).l ; Check for PAL or NTSC, 0=60Hz, 1=50Hz
-		bne.s	jmpLockout ; if !=0, branch to lockout
-
-		jsr     MSUMD_DRV
-		tst.b 	d0 ; if 1: no CD Hardware found
-		bne.s	jmpLockout ; if no, branch to lockout
-		move.w 	#(MSUc_VOLUME|255),MCD_CMD ; Set CD Volume to MAX
-		addq.b 	#1,MCD_CMD_CK ; Increment command clock
-
-		bra.s   msuOK ; skip jmpLockout
-
-jmpLockout:
-        jmp     msuLockout
-
-msuOK:
 	tst.l   ($A10008).l
 
 loc_20C:
@@ -215,36 +200,44 @@ CS_Finish:
 	cmp.w 	(Checksum).w,d4 	; does the checksum match?
 	bne.s 	CheckSumError 		; if not, branch
 
+	move.b  (HW_VERSION).l,d0
+	andi.b  #$C0,d0
+	move.b  d0,(ConsoleRegion).w	
+
 loc_36A:
-	command	mus_Stop
+	command	Mus_Stop
 	clrRAM  RAM_START,RAM_END
-	jsr InitDMAQueue
 	bsr.w   vdpInit
 	bsr.w   padInit
 	jsr LoadDualPCM
-	clr.b   (GameMode).w
+	move.b	#id_sSega,(GameMode).w
 
 ScreensLoop:
-	move.b  (HW_VERSION).l,d0
-	andi.b  #$C0,d0
-	move.b  d0,(ConsoleRegion).w
+	moveq	#0,d0
 	move.b  (GameMode).w,d0
-	andi.w  #$7C,d0
+	lsl.w	#2,d0
 	movea.l ScreensArray(pc,d0.w),a0
-	jsr (a0)
+	jsr	(a0)
 	bra.s   ScreensLoop
 ; ---------------------------------------------------------------------------
 
+gmptr:	macro
+	id_\1:	equ (*-ScreensArray)/4
+	dc.l	\1
+	endm
+
 ScreensArray:
-	dc.l    sSega
+	gmptr	sSega
 ; ---------------------------------------------------------------------------
-	dc.l    sTitle
+	gmptr	sTitle
 ; ---------------------------------------------------------------------------
-	dc.l    sLevel
+	gmptr	sDemo
 ; ---------------------------------------------------------------------------
-	dc.l    sLevel
+	gmptr	sLevel
 ; ---------------------------------------------------------------------------
-	dc.l    sSpecial
+	gmptr	sSpecial
+; ---------------------------------------------------------------------------
+	gmptr	SplashScreen
 ; ---------------------------------------------------------------------------
 
 ChecksumError:
@@ -332,7 +325,6 @@ off_B6A:    dc.w nullsub_3-off_B6A, loc_B7E-off_B6A, sub_B90-off_B6A, sub_BAA-of
 loc_B7E:
 	bsr.w   sub_E78
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_B8E
 
 locret_B8E:
 	rts
@@ -343,14 +335,13 @@ sub_B90:
 	bsr.w   sub_43B6
 	bsr.w   sub_1438
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_BA8
 
 locret_BA8:
 	rts
 ; ---------------------------------------------------------------------------
 
 sub_BB0:
-	cmpi.b  #$10,(GameMode).w
+	cmpi.b  #id_sSpecial,(GameMode).w
 	beq.w   loc_CBC
 
 loc_BBA:
@@ -366,7 +357,6 @@ loc_C7A:
 	jsr UpdateHUD
 	bsr.w   loc_1454
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_CBA
 
 locret_CBA:
 	rts
@@ -381,7 +371,6 @@ loc_CBC:
 
 loc_D7A:
 	subq.w  #1,(GlobalTimer).w
-	bpl.w   locret_D86
 
 locret_D86:
 	rts
@@ -480,7 +469,7 @@ vdpInit:
 	lea (vdpInitRegs).l,a2
 
 	rept $13
-	move.w  (a2)+,(a0)
+	move.w  (a2)+,4(a1)
 	endr
 
 	move.w  (vdpInitRegs+2).l,d0
@@ -495,12 +484,12 @@ vdpInit:
 	clr.l   (dword_FFF616).w
 	clr.l   (dword_FFF61A).w
 	move.l  d1,-(sp)
-	lea (VdpCtrl).l,a5
-	move.w  #$8F01,(a5)
-	dmaFill	0,0,$FFFF,a5
-	move.w  #$8F02,(a5)
+	;lea (VdpCtrl).l,a5
+	move.w  #$8F01,(a0)
+	dmaFill	0,0,$FFFF,a0
+	move.w  #$8F02,(a0)
 	move.l  (sp)+,d1
-	rts
+	jmp InitDMAQueue
 ; ---------------------------------------------------------------------------
 
 vdpInitRegs:
@@ -823,7 +812,7 @@ loc_11D2:
 	vsync
 	btst    #JbA,(padPress1).w
 	beq.s   loc_11EE
-	move.b  #4,(GameMode).w
+	move.b  #id_sTitle,(GameMode).w
 	bra.s   loc_1206
 ; ---------------------------------------------------------------------------
 
@@ -1295,6 +1284,9 @@ TwizzlerDec:	include "compression/Twizzler.asm"
 		include "compression/unzx0_68000.S"
 		even
 ; ---------------------------------------------------------------------------
+ZX0Dec:		include "compression/unzx0_68000.S"
+		even
+; ---------------------------------------------------------------------------
 
 PaletteCycle:
 	moveq   #0,d2
@@ -1482,7 +1474,6 @@ FCI_NoRed:
 
 Pal_FadeFrom:
 	move.w  #$3F,(word_FFF626).w
-Pal_FadeFrom2:
 	move.w  #$14,d4
 
 loc_19DC:
@@ -1656,12 +1647,11 @@ RandomNumber:
 ; ---------------------------------------------------------------------------
 
 GetSine:
-	andi.w  #$FF,d0
-	add.w   d0,d0
-	addi.w  #$80,d0
-	move.w  SineTable(pc,d0.w),d1
-	subi.w  #$80,d0
-	move.w  SineTable(pc,d0.w),d0
+	andi.w	#$FF,d0
+	addq.w	#8,d0
+	add.w	d0,d0
+	move.w	SineTable+($40*2)-16(pc,d0.w),d1
+	move.w	SineTable-16(pc,d0.w),d0
 	rts
 ; ---------------------------------------------------------------------------
 SineTable:  incbin "unsorted/sinetable.dat"
@@ -1731,8 +1721,7 @@ AngleTable: incbin "unsorted/angletable.dat"
 sSega:
 	command mus_FadeOut
 	bsr.w   ClearPLC
-	move.w  #$9F,(word_FFF626).w
-	bsr.w   Pal_FadeFrom2
+	bsr.w   Pal_FadeFrom
 	clr.b   (DontIntMus).w
 
 	clrRAM  Chunks
@@ -1747,9 +1736,7 @@ sSega:
 	move.w  #$8700,(a6)
 	move.w  #$8B00,(a6)
 	move.w  #$8100|%10000001,(a6)
-	move.w  (ModeReg2).w,d0
-	andi.b  #$BF,d0
-	move.w  d0,(VdpCtrl).l
+	disable_disp
 	bsr.w   ClearScreen
 	lea (ArtSega).l,a0
 	move.w  #0,d0
@@ -1761,13 +1748,15 @@ sSega:
 	copyTilemap64 (Chunks)&$FFFFFF,$C61C,$B,3,0
 	move.w  #$28,(PalCycOffset).w
 	move.w  #3*60,(GlobalTimer).w
-	move.w  (ModeReg2).w,d0
-	ori.b   #$40,d0
-	move.w  d0,(VdpCtrl).l
+	btst    #6,(ConsoleRegion).w
+	beq.s   loc_2527
+	move.w  #3*50,(GlobalTimer).w
+loc_2527:
+	enable_disp
 	moveq   #0,d0
 	bsr.w   PalLoadFade
 	bsr.w   Pal_FadeTo
-	music   mus_SEGA, 0
+	music   mus_SEGA
 
 loc_2528:
 	move.b  #2,(VintRoutine).w
@@ -1779,6 +1768,8 @@ loc_2528:
 	beq.s   loc_2528
 
 loc_2544:
+	move.b	#id_SplashScreen,(GameMode).w
+	rts
 
 ; ---------------------------------------------------------------------------
 ; ============================================================================================
@@ -1789,8 +1780,8 @@ loc_2544:
 ; Ported to Sonic 1 Hivebrain 2005 Thanks to ProjectFM
 ; ============================================================================================
 SplashScreen:
-	move.w  #$9F,(word_FFF626).w
-	bsr.w   Pal_FadeFrom2          			; fade palette out
+	command mus_FadeOut             		; set music ID to "fade music"
+	bsr.w   Pal_FadeFrom          			; fade palette out
 	bsr.w   ClearScreen           			; clear the plane mappings
 
 	; initalize VDP
@@ -1812,16 +1803,17 @@ SplashScreen:
 	move.w  #$140,d0             			; prepare pattern index value to patch to mappings
 	bsr.w   EniDec     		       		; decompress and dump
 	copyTilemap64 (Chunks)&$FFFFFF,$C000,$27,$1E,0 	; flush mappings to VRAM
-	move.l  #$68000000,($C00004).l    		; set vdp loc
+	move.l  #$68000000,(a6)		    		; set vdp loc
 	lea     ArtSplash.l,a0           		; load background art
 	jsr     NemesisDec              		; run NemDec to decompress art for display
 	move.b  #$B,d0
 	bsr.w   PalLoadFade
 	bsr.w 	Pal_FadeTo          			; fade palette in
+	music   mus_Splash
 	move.w  #5*60,(GlobalTimer).w     		; set delay time (5 seconds on a 60hz system)
-	;btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
-	;beq.s   Splash_MainLoop           		; if not, continue
-	;move.w  #5*50,(GlobalTimer).w     		; set delay time (5 seconds on a 50hz system)
+	btst    #6,(ConsoleRegion).w    		; is this a PAL machine?
+	beq.s   Splash_MainLoop           		; if not, continue
+	move.w  #5*50,(GlobalTimer).w     		; set delay time (5 seconds on a 50hz system)
  
 Splash_MainLoop:
 	move.b  #2,(VintRoutine).w       		; set V-blank routine to run
@@ -1832,12 +1824,12 @@ Splash_MainLoop:
 	bne.s   Splash_MainLoop          		; if not, branch
  
 Splash_GotoTitle:
-	move.b  #4,(GameMode).w      			; set the screen mode to Title Screen
+	move.b  #id_sTitle,(GameMode).w      		; set the screen mode to Title Screen
 	rts                     			; return
 ; ---------------------------------------------------------------------------
 
 sTitle:
-	command mus_FadeOut
+	command mus_Stop
 	bsr.w   ClearPLC
 	bsr.w   Pal_FadeFrom
 	clr.b   (DontIntMus).w
@@ -1851,9 +1843,7 @@ sTitle:
 	move.w  #$8B03,(a6)
 	move.w  #$8720,(a6)
 	move.w  #$8C00|%10000001,(a6)
-	move.w  (ModeReg2).w,d0
-	andi.b  #$BF,d0
-	move.w  d0,(VdpCtrl).l
+	disable_disp
 	bsr.w   ClearScreen
 
 	clrRAM  ScrollBuffer
@@ -1902,7 +1892,7 @@ sTitle:
 	bsr.w   palLoadFade
 	move.b  #2,(VintRoutine).w
 	vsync
-	music   mus_Title, 0
+	music   mus_Title
 	clr.b   (EditModeFlag).w
 	move.w  #$178,(GlobalTimer).w
 	move.b  #$E,(byte_FFD040).w
@@ -1911,9 +1901,7 @@ sTitle:
 	move.b  #2,(byte_FFD0C0+frame).w
 	moveq   #0,d0
 	bsr.w   plcReplace
-	move.w  (ModeReg2).w,d0
-	ori.b   #$40,d0
-	move.w  d0,(VdpCtrl).l
+	enable_disp
 	bsr.w   Pal_FadeTo
 
 loc_26AE:
@@ -1940,11 +1928,12 @@ loc_26E4:
 	beq.s   loc_26AE
 	sfx     sfx_Woosh
 	bsr.w   Pal_FadeFrom
+	disable_disp
 	bsr.w   ClearScreen
-	move.l  d0,(dword_FFF616).w
-	bsr.w   sub_292C
+	clr.l	(dword_FFF616).w
 	moveq   #2,d0
 	bsr.w   palLoadFade
+
 	lea (VdpData).l,a6
 	move.l  #$50000003,4(a6)
 	lea (ArtLSText).l,a5
@@ -1953,7 +1942,11 @@ loc_26E4:
 loc_25D8:
 	move.w  (a5)+,(a6)
 	dbf d1,loc_25D8
-	music   mus_Options, 1
+
+	bsr.w   sub_292C
+
+	music   mus_Options
+	enable_disp
 	bsr.w   Pal_FadeTo
 
 LevelSelect:
@@ -1975,15 +1968,15 @@ LevelSelect:
 	bra.s   LevelSelect
 ; ===========================================================================
 LevSelLevCheckStart:
-	andi.b  #J_S,(padPress1).w 		; is Start pressed?
-	beq.s   LevelSelect    			; if not, branch
-	bra.s   loc_2780
+	andi.b	#J_S,(padPress1).w 		; is Start pressed?
+	beq.s	LevelSelect    			; if not, branch
+	bra.s	loc_2780
 	
 LevSelBCPress:
-	move.w  (LevSelSound).w,d0
+	move.w	(LevSelSound).w,d0
 
 loc_277A:
-	move.b d0,mQueue+1.w
+	move.b	d0,mQueue+1.w
 	bra.s   LevelSelect
 	
 LevSelStartPress:               		; XREF: LevelSelect
@@ -1999,7 +1992,7 @@ loc_2780:
 	bmi.s   LevelSelect
 	cmpi.w  #$700,d0
 	bne.s   loc_2796
-	move.b  #$10,(GameMode).w
+	move.b  #id_sSpecial,(GameMode).w
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -2013,7 +2006,7 @@ loc_27A6:
 	move.w  d0,(curzone).w
 
 loc_27AA:
-	move.b  #$C,(GameMode).w
+	move.b  #id_sLevel,(GameMode).w
 	move.b  #3,(Lives).w
 	moveq   #0,d0
 	move.w  d0,(Rings).w
@@ -2065,10 +2058,10 @@ loc_282C:
 
 loc_2860:
 	move.w  #1,(DemoMode).w
-	move.b  #8,(GameMode).w
+	move.b  #id_sDemo,(GameMode).w
 	cmpi.w  #$600,d0
 	bne.s   loc_2878
-	move.b  #$10,(GameMode).w
+	move.b  #id_sSpecial,(GameMode).w
 
 loc_2878:
 	move.b  #3,(Lives).w
@@ -2229,7 +2222,7 @@ loc_29DE:
 ; ---------------------------------------------------------------------------
 
 LevelSelectText:
-	dc.b    'GREEN HILLS        ACT 1'
+	dc.b    'GREEN HILL         ACT 1'
 	dc.b    '                   ACT 2'
 	dc.b    '                   ACT 3'
 	dc.b    'LABYRINTH          ACT 1'
@@ -2256,13 +2249,15 @@ MusicList:  dc.b mus_GHZ, mus_LZ, mus_MZ, mus_SLZ, mus_SYZ, mus_SBZ
 ; ---------------------------------------------------------------------------
 
 sLevel:
+sDemo:
 	tst.b   (DontIntMus).w
 	bne.s   .notset
 	clr.b   (DontIntMus).w
-	command	mus_FadeOut
+	music   mus_FadeOut
 	bsr.w   ClearPLC
 .notset
 	bsr.w   Pal_FadeFrom
+	disable_disp
 	move.l  #$70000002,($C00004).l
 	lea ArtTitleCards,a0
 	move.l  #((ArtTitleCards_End-ArtTitleCards)/32)-1,d0
@@ -2294,6 +2289,10 @@ loc_2C0A:
 	;beq.s   .cont           ; if not, continue
 	;move.w  #$8100|%01111100,(a6)
 ;.cont
+	cmpi.b	#1,(curzone)
+	bne.s	.cont2
+	move.w	#VDPREG_MODE4|GFXMODE_320x224_SH,(VdpCtrl).l
+.cont2:
 	clrRAM  ObjectsList
 	lea (CameraX).w,a1
 	moveq   #0,d0
@@ -2320,12 +2319,11 @@ loc_2C6C:
 	lea (MusicList).l,a1
 	move.b  (a1,d0.w),d0
 	move.b	d0,SavedSong.w
-	addi.w	#MSUc_PLAYLOOP,d0
-	waitmsu
-	move.w	d0,MCD_CMD
-	addq.b	#1,MCD_CMD_CK
+	move.b  d0,mQueue+1.w
 MusicLoop:
+	command mus_ShoesOff		; run the music at normal speed
 	clr.b   (DontIntMus).w
+	enable_disp
 	move.b  #$34,(byte_FFD080).w
 
 loc_2C92:
@@ -2409,9 +2407,9 @@ sLevelLoop:
 	bsr.w   oscUpdate
 	bsr.w   UpdateTimers
 	bsr.w   LoadSignpostPLC
-	cmpi.b  #8,(GameMode).w
+	cmpi.b  #id_sDemo,(GameMode).w
 	beq.s   loc_2E66
-	cmpi.b  #$C,(GameMode).w
+	cmpi.b  #id_sLevel,(GameMode).w
 	beq.s   sLevelLoop
 	rts
 ; ---------------------------------------------------------------------------
@@ -2421,14 +2419,14 @@ loc_2E66:
 	bne.s   loc_2E84
 	tst.w   (GlobalTimer).w
 	beq.s   loc_2E84
-	cmpi.b  #8,(GameMode).w
+	cmpi.b  #id_sDemo,(GameMode).w
 	beq.s   sLevelLoop
 	clr.b   (GameMode).w
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_2E84:
-	cmpi.b  #8,(GameMode).w
+	cmpi.b  #id_sDemo,(GameMode).w
 	bne.s   loc_2E92
 	clr.b   (GameMode).w
 
@@ -2501,8 +2499,8 @@ oscInitTable:   dc.w $7C, $80, 0, $80, 0, $80, 0, $80, 0, $80, 0, $80
 ; ---------------------------------------------------------------------------
 
 oscUpdate:
-	;cmpi.b #6,(ObjectsList+act).w
-	;bcc.s  locret_340C
+	cmpi.b #6,(ObjectsList+act).w
+	bcc.s  locret_340C
 	lea (oscValues).w,a1
 	lea (oscUpdateTable).l,a2
 	move.w  (a1)+,d3
@@ -2686,18 +2684,18 @@ loc_3B08:
 ; ---------------------------------------------------------------------------
 
 LevelBoundArray:
-	dc.w 4, 0, $24BF, 0, $300, $60
-	dc.w 4, 0, $1EBF, 0, $300, $60
-	dc.w 4, 0, $2960, 0, $300, $60
-	dc.w 4, 0, $2FFF, 0, $320, $60
-	dc.w 4, 0, $17BF, 0, $720, $60
-	dc.w 4, 0, $EBF, 0, $720, $60
-	dc.w 4, 0, $1EBF, 0, $720, $60
-	dc.w 4, 0, $1EBF, 0, $720, $60
-	dc.w 4, 0, $17BF, 0, $1D0, $60
-	dc.w 4, 0, $1BBF, 0, $520, $60
-	dc.w 4, 0, $163F, 0, $720, $60
-	dc.w 4, 0, $16BF, 0, $720, $60
+	dc.w 4, 0, $24BF, 0, $300, $60	; GHZ1
+	dc.w 4, 0, $1EBF, 0, $300, $60	; GHZ2
+	dc.w 4, 0, $2960, 0, $300, $60	; GHZ3
+	dc.w 4, 0, $2FFF, 0, $320, $60	; GHZ4
+	dc.w 4, 0, $17BF, 0, $720, $60	; LZ1
+	dc.w 4, 0, $EBF, 0, $720, $60	; LZ2
+	dc.w 4, 0, $1EBF, 0, $720, $60	; LZ3
+	dc.w 4, 0, $1EBF, 0, $720, $60	; LZ4
+	dc.w 4, 0, $17BF, 0, $1D0, $60	; MZ1
+	dc.w 4, 0, $1BBF, 0, $520, $60	; MZ2
+	dc.w 4, 0, $163F, 0, $720, $60	; MZ3
+	dc.w 4, 0, $16BF, 0, $720, $60	; MZ4
 	dc.w 4, 0, $1EBF, 0, $640, $60
 	dc.w 4, 0, $20BF, 0, $640, $60
 	dc.w 4, 0, $1EBF, 0, $6C0, $60
@@ -2922,7 +2920,7 @@ HScrollGHZ:
 	move.w  #$6F,d1
 	sub.w   d4,d1
 	move.w  (CameraX).w,d0
-	cmpi.b  #4,(GameMode).w ; is the screen mode the title screen?
+	cmpi.b  #id_sTitle,(GameMode).w ; is the screen mode the title screen?
 	bne.s   loc_3EA8    ; if not, branch
 	moveq   #0,d0       ; prevent the emblem from moving
 
@@ -3974,13 +3972,6 @@ locret_48B8:
 
 LoadLayout:
 	lea (Layout).w,a3
-	move.w  #$1FF,d1
-	moveq   #0,d0
-
-loc_48C4:
-	move.l  d0,(a3)+
-	dbf d1,loc_48C4
-	lea (Layout).w,a3
 	moveq   #0,d1
 	bsr.w   sub_48DA
 	lea ((Layout+$40)).w,a3
@@ -4065,9 +4056,11 @@ off_497C:   dc.w EventsGHZ1-off_497C, EventsGHZ2-off_497C, EventsGHZ3-off_497C, 
 
 EventsGHZ1:
 	move.w  #$300,(unk_FFF726).w
+	move.w  #$300,(unk_FFF72E).w
 	cmpi.w  #$1780,(CameraX).w
 	ble.s   locret_4996
 	move.w  #$400,(unk_FFF726).w
+	move.w  #$400,(unk_FFF72E).w
 
 locret_4996:
 	rts
@@ -4140,7 +4133,7 @@ loc_4A3E:
 	move.w  #$280,ypos(a1)
 
 loc_4A5E:
-	music   mus_Boss, 1
+	music   mus_Boss
 	move.b  #1,(unk_FFF7AA).w
 	addq.b  #2,(EventsRoutine).w
 	moveq   #$11,d0
@@ -7829,7 +7822,7 @@ CollectRing:
 loc_7D5E:
 	addq.b  #1,(Lives).w
 	addq.b  #1,(byte_FFFE1C).w
-	moveq   #sfx_Register,d0
+	moveq   #mus_ExtraLife,d0
 
 loc_7D6A:
 	move.b  d0,mQueue+2.w
@@ -8227,7 +8220,7 @@ loc_82B2:
 loc_82B8:
 	addq.b  #1,(Lives).w
 	addq.b  #1,(byte_FFFE1C).w
-	sfx	sfx_Register
+	music   mus_ExtraLife
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8238,6 +8231,7 @@ loc_82CA:
 	move.w  #$4B0,(ObjectsList+speedshoes).w
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	bsr.w   ApplySpeedSettings  ; Fetch Speed settings
+	command mus_ShoesOn
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8263,7 +8257,7 @@ loc_8314:
 	move.b  #3,(byte_FFD280+ani).w
 	move.b  #$38,(byte_FFD2C0).w
 	move.b  #4,(byte_FFD2C0+ani).w
-	music   mus_Invincibility, 1
+	music   mus_Invincibility
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -8299,7 +8293,7 @@ loc_83A0:
 	move.b  #3,(byte_FFD280+ani).w
 	move.b  #$38,(byte_FFD2C0).w
 	move.b  #4,(byte_FFD2C0+ani).w
-	music   mus_Invincibility, 1
+	music   mus_Invincibility
 	move.b  #1,(byte_FFFE2C).w
 	move.b  #$38,(byte_FFD180).w
 	sfx     sfx_Shield
@@ -8307,6 +8301,7 @@ loc_83A0:
 	move.w  #$4B0,(ObjectsList+speedshoes).w
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	bsr.w   ApplySpeedSettings  ; Fetch Speed settings
+	command mus_ShoesOn
 locret_83A8:
 	rts
 ; ---------------------------------------------------------------------------
@@ -8447,54 +8442,63 @@ AllObjects: dc.l ObjSonic, Obj_SSResults, Obj_SSResCE, Obj04, Obj05, Ojb06, Obj0
 ; ---------------------------------------------------------------------------
 
 ObjectFall:
-	move.w	x_vel(a0),d0	; load horizontal speed
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,x_pos(a0)	; add to x-position
-	move.w	y_vel(a0),d0	; load vertical speed
-	addi.w	#$38,y_vel(a0)	; increase vertical speed (apply gravity)
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,y_pos(a0)	; add to y-position
-	rts
-; ---------------------------------------------------------------------------
-
+		addi.w	#$38,yvel(a0)		; increase vertical speed (apply gravity)
 ObjectMove:
-	move.w	x_vel(a0),d0	; load horizontal speed
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,x_pos(a0)	; add to x-position
-	move.w	y_vel(a0),d0	; load vertical speed
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,y_pos(a0)	; add to y-position
-	rts
+		lea	xvel(a0),a5		; 6 bytes 12(3/0) 
+		move.l	(a5),d0			; 2 bytes 12(3/0) 
+		move.w	d0,d1			; 2 bytes 4(1/0) 
+		swap	d0			; 2 bytes 4(1/0) 
+		ext.l	d1			; 2 bytes 4(1/0) 
+		asl.l	#8,d1			; 4 bytes 8(1/0) + 2n(0/0) where n is shift or rotate count
+		add.l	d1,-(a5)		; 2 bytes 22(3/2) 
+
+		ext.l	d0			; 2 bytes 4(1/0) 
+		asl.l	#8,d0			; 4 bytes 8(1/0) + 2n(0/0) where n is shift or rotate count
+		add.l	d0,-(a5)		; 2 bytes 22(3/2) 
+		rts	
 ; ---------------------------------------------------------------------------
 
 ObjectDisplay:
-	lea     (DisplayLists).w,a1
-	adda.w  priority(a0),a1
-	cmpi.w  #$7E,(a1)
-	bcc.s   return_16510
-	addq.w  #2,(a1)
-	adda.w  (a1),a1
-	move.w  a0,(a1)
+	moveq	#0,d0
+	move.b	priority(a0),d0
+	add.w	d0,d0
+	movea.w	PriorityId(pc,d0.w),a1	; get values
+	move.w	(a1),d0			; get amount of time of loop
+	cmp.w	#$7E,d0
+	bhs.s	.return
+	addq.w	#2,d0
+	move.w	d0,(a1)
+	move.w	a0,(a1,d0.w)
 
-return_16510:
+.return:
 	rts
 ; ---------------------------------------------------------------------------
 
 ObjectDisplayA1:
-	lea     (DisplayLists).w,a2
-	adda.w  priority(a1),a2
-	cmpi.w  #$7E,(a2)
-	bcc.s   return_1652E
-	addq.w  #2,(a2)
-	adda.w  (a2),a2
-	move.w  a1,(a2)
+	moveq	#0,d0
+	move.b	priority(a1),d0
+	add.w	d0,d0
+	movea.w	PriorityId(pc,d0.w),a2	; get values
+	move.w	(a2),d0			; get amount of time of loop
+	cmp.w	#$7E,d0
+	bhs.s	.return2
+	addq.w	#2,d0
+	move.w	d0,(a2)
+	move.w	a1,(a2,d0.w)
 
-return_1652E:
+.return2:
 	rts
+
+
+PriorityId:	dc.w	0+DisplayLists
+		dc.w	$80+DisplayLists
+		dc.w	$100+DisplayLists
+		dc.w	$180+DisplayLists
+		dc.w	$200+DisplayLists
+		dc.w	$280+DisplayLists
+		dc.w	$300+DisplayLists
+		dc.w	$380+DisplayLists
+		even
 ; ---------------------------------------------------------------------------
 
 ObjectDelete:
@@ -11204,7 +11208,7 @@ loc_A6B8:
 ; ---------------------------------------------------------------------------
 
 loc_A6D6:
-	move.b  #0,(GameMode).w
+	move.b  #id_sSega,(GameMode).w
 
 loc_A6DC:
 	bra.w   ObjectDisplay
@@ -11338,7 +11342,7 @@ loc_A7F2:
 ; ---------------------------------------------------------------------------
 
 loc_A81C:
-	move.b  #1,(LevelRestart).w
+	st.b	(LevelRestart).w
 
 loc_A822:
 	bra.w   ObjectDisplay
@@ -13464,7 +13468,7 @@ loc_C814:
 
 sub_C81C:
 	tst.b   (byte_FFD600).w
-	bne.w   locret_C880
+	bne.s   locret_C880
 	move.w  (unk_FFF72A).w,(unk_FFF728).w
 	clr.b   (byte_FFFE2D).w
 	clr.b   (byte_FFFE2C).w
@@ -13495,7 +13499,7 @@ loc_C862:
 	move.w  (Rings).w,d0
 	mulu.w  #$A,d0
 	move.w  d0,(word_FFFE56).w
-	music   mus_GotThroughAct, 0
+	music   mus_GotThroughAct
 
 locret_C880:
 	rts
@@ -15859,11 +15863,8 @@ loc_E8E8:
 	bne.s   loc_E91C
 	tst.b   (unk_FFF7AA).w
 	bne.s   loc_E916
-	move.b	SavedSong.w,d0
-	waitmsu
-	addi.w	#MSUc_PLAYLOOP,d0
-	move.w	d0,MCD_CMD
-	addq.b	#1,MCD_CMD_CK
+		move.b	SavedSong.w,d0
+	move.b  d0,mQueue+1.w
 
 loc_E916:
 	clr.b   (byte_FFFE2D).w
@@ -15880,6 +15881,7 @@ loc_E91C:
 	lea     (PlayerTopSpeed).w,a2   ; Load PlayerTopSpeed into a2
 	jsr     ApplySpeedSettings  ; Fetch Speed settings
 	clr.b   (byte_FFFE2E).w
+	command mus_ShoesOff
 ; ---------------------------------------------------------------------------
 
 locret_E950:
@@ -15912,6 +15914,10 @@ sub_E98E:
 	bsr.w   ObjSonic_JumpHeight
 	bsr.w   ObjSonic_ChgJumpDirection
 	bsr.w   ObjSonic_LevelBound
+	cmp.w   #$FC8,y_vel(a0)   ; check if Sonic's Y speed is lower than this value
+	ble.s   .skipline1        ; if yes, branch
+	move.w  #$FC8,y_vel(a0)   ; alter Sonic's Y speed
+.skipline1:	
 	bsr.w   ObjectFall
 	bsr.w   ObjSonic_JumpAngle
 	bra.w   ObjSonic_Floor
@@ -15931,6 +15937,10 @@ loc_E9C6:
 	bsr.w   ObjSonic_JumpHeight
 	bsr.w   ObjSonic_ChgJumpDirection
 	bsr.w   ObjSonic_LevelBound
+	cmp.w   #$FC8,y_vel(a0)   ; check if Sonic's Y speed is lower than this value
+	ble.s   .skipline2        ; if yes, branch
+	move.w  #$FC8,y_vel(a0)   ; alter Sonic's Y speed
+.skipline2:
 	bsr.w   ObjectFall
 	bsr.w   ObjSonic_JumpAngle
 	bra.w   ObjSonic_Floor
@@ -16506,6 +16516,7 @@ ObjSonic_Jump:
 	bclr    #5,status(a0)
 	addq.l  #4,sp
 	move.b  #1,jumping(a0)
+	clr.w	$3E(a0)
 	sfx     sfx_Jump
 	move.b  #$13,yrad(a0)
 	move.b  #9,xrad(a0)
@@ -17037,7 +17048,7 @@ ObjSonic_GameOver:
 	move.b  #$39,(byte_FFD080).w
 	move.b  #$39,(byte_FFD0C0).w
 	move.b  #1,(byte_FFD0C0+$1A).w
-	music   mus_GameOver, 0
+	music   mus_GameOver
 	moveq   #3,d0
 	jmp (plcAdd).l
 ; ---------------------------------------------------------------------------
@@ -17488,7 +17499,7 @@ ObjEntryRingBeta_RmvSonic:
 ObjEntryRingBeta_LoadSonic:
 	subq.b  #1,$30(a0)
 	bne.s   ObjEntryRingBeta_Wait
-	move.b  #$10,(GameMode).w
+	move.b  #id_sSpecial,(GameMode).w
 ; ---------------------------------------------------------------------------
 
 ObjEntryRingBeta_Wait:
@@ -18843,7 +18854,7 @@ ObjCredits_Main:             ; XREF: ObjCredits_Index
 	move.b  #0,render(a0)
 	move.b  #16,xpix(a0)
 	move.w  #0,prio(a0)
-	cmpi.b  #4,(GameMode).w ; is the scene  number 04 (title screen)?
+	cmpi.b  #id_sTitle,(GameMode).w ; is the scene  number 04 (title screen)?
 	jne     ObjectDisplay       ; if not, branch
 	move.w  #$A6,tile(a0)
 	move.b  #$A,frame(a0)           ; display "SONIC TEAM PRESENTS"
@@ -20750,12 +20761,6 @@ demoin_SLZ:
 demoin_SYZ:
 demoin_SBZ:
 demoin_SS:
-
-MSUMD_DRV:	incbin  "msu\msu-drv.bin"
-		even
-
-msuLockout:	incbin "msu\msuLockout.bin"
-		even
 	
 ; end of 'ROM'
 	include "AMPS/code/smps2asm.asm"

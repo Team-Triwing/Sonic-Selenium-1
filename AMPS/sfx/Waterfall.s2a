@@ -1,7 +1,7 @@
 	sHeaderInitSFX
 	sHeaderPrio	$40
 	sHeaderCh	$01
-	sHeaderSFX	$80, ctFM4, .FM4, $00, $10
+	sHeaderSFX	$80, ctFM5, .FM4, $00, $10
 
 .FM4	sVoice		pArrowFire
 	dc.b nG6, $04

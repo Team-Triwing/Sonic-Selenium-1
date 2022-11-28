@@ -63,7 +63,7 @@ long	equ		3
 
 ; Plain control flags: no arguments following
 endl	equ		$E0				; "End of line": flag for line break
-cr	equ		$E6				; "Carriage return": jump to the beginning of the line
+cr		equ		$E6				; "Carriage return": jump to the beginning of the line
 pal0	equ		$E8				; use palette line #0
 pal1	equ		$EA				; use palette line #1
 pal2	equ		$EC				; use palette line #2
@@ -84,11 +84,7 @@ setx	equ		$FA				; set x-position
 RaiseError &
 	macro	string, console_program, opts
 
-	if safe=0
 	pea		ConsoleHandler(pc)
-	else
-	pea		*(pc)
-	endif
 	RaiseError2 \_
 	endm
 
