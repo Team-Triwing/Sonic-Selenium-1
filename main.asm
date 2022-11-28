@@ -1644,12 +1644,11 @@ RandomNumber:
 ; ---------------------------------------------------------------------------
 
 GetSine:
-	andi.w  #$FF,d0
-	add.w   d0,d0
-	addi.w  #$80,d0
-	move.w  SineTable(pc,d0.w),d1
-	subi.w  #$80,d0
-	move.w  SineTable(pc,d0.w),d0
+	andi.w	#$FF,d0
+	addq.w	#8,d0
+	add.w	d0,d0
+	move.w	SineTable+($40*2)-16(pc,d0.w),d1
+	move.w	SineTable-16(pc,d0.w),d0
 	rts
 ; ---------------------------------------------------------------------------
 SineTable:  incbin "unsorted/sinetable.dat"
@@ -1928,8 +1927,7 @@ loc_26E4:
 	bsr.w   Pal_FadeFrom
 	disable_disp
 	bsr.w   ClearScreen
-	move.l  d0,(dword_FFF616).w
-	bsr.w   sub_292C
+	clr.l	(dword_FFF616).w
 	moveq   #2,d0
 	bsr.w   palLoadFade
 
@@ -1941,9 +1939,11 @@ loc_26E4:
 loc_25D8:
 	move.w  (a5)+,(a6)
 	dbf d1,loc_25D8
-	enable_disp
+
+	bsr.w   sub_292C
 
 	music   mus_Options
+	enable_disp
 	bsr.w   Pal_FadeTo
 
 LevelSelect:
@@ -2496,8 +2496,8 @@ oscInitTable:   dc.w $7C, $80, 0, $80, 0, $80, 0, $80, 0, $80, 0, $80
 ; ---------------------------------------------------------------------------
 
 oscUpdate:
-	;cmpi.b #6,(ObjectsList+act).w
-	;bcc.s  locret_340C
+	cmpi.b #6,(ObjectsList+act).w
+	bcc.s  locret_340C
 	lea (oscValues).w,a1
 	lea (oscUpdateTable).l,a2
 	move.w  (a1)+,d3
@@ -2681,18 +2681,18 @@ loc_3B08:
 ; ---------------------------------------------------------------------------
 
 LevelBoundArray:
-	dc.w 4, 0, $24BF, 0, $300, $60
-	dc.w 4, 0, $1EBF, 0, $300, $60
-	dc.w 4, 0, $2960, 0, $300, $60
-	dc.w 4, 0, $2FFF, 0, $320, $60
-	dc.w 4, 0, $17BF, 0, $720, $60
-	dc.w 4, 0, $EBF, 0, $720, $60
-	dc.w 4, 0, $1EBF, 0, $720, $60
-	dc.w 4, 0, $1EBF, 0, $720, $60
-	dc.w 4, 0, $17BF, 0, $1D0, $60
-	dc.w 4, 0, $1BBF, 0, $520, $60
-	dc.w 4, 0, $163F, 0, $720, $60
-	dc.w 4, 0, $16BF, 0, $720, $60
+	dc.w 4, 0, $24BF, 0, $300, $60	; GHZ1
+	dc.w 4, 0, $1EBF, 0, $300, $60	; GHZ2
+	dc.w 4, 0, $2960, 0, $300, $60	; GHZ3
+	dc.w 4, 0, $2FFF, 0, $320, $60	; GHZ4
+	dc.w 4, 0, $17BF, 0, $720, $60	; LZ1
+	dc.w 4, 0, $EBF, 0, $720, $60	; LZ2
+	dc.w 4, 0, $1EBF, 0, $720, $60	; LZ3
+	dc.w 4, 0, $1EBF, 0, $720, $60	; LZ4
+	dc.w 4, 0, $17BF, 0, $1D0, $60	; MZ1
+	dc.w 4, 0, $1BBF, 0, $520, $60	; MZ2
+	dc.w 4, 0, $163F, 0, $720, $60	; MZ3
+	dc.w 4, 0, $16BF, 0, $720, $60	; MZ4
 	dc.w 4, 0, $1EBF, 0, $640, $60
 	dc.w 4, 0, $20BF, 0, $640, $60
 	dc.w 4, 0, $1EBF, 0, $6C0, $60
@@ -3969,13 +3969,6 @@ locret_48B8:
 
 LoadLayout:
 	lea (Layout).w,a3
-	move.w  #$1FF,d1
-	moveq   #0,d0
-
-loc_48C4:
-	move.l  d0,(a3)+
-	dbf d1,loc_48C4
-	lea (Layout).w,a3
 	moveq   #0,d1
 	bsr.w   sub_48DA
 	lea ((Layout+$40)).w,a3
@@ -4060,9 +4053,11 @@ off_497C:   dc.w EventsGHZ1-off_497C, EventsGHZ2-off_497C, EventsGHZ3-off_497C, 
 
 EventsGHZ1:
 	move.w  #$300,(unk_FFF726).w
+	move.w  #$300,(unk_FFF72E).w
 	cmpi.w  #$1780,(CameraX).w
 	ble.s   locret_4996
 	move.w  #$400,(unk_FFF726).w
+	move.w  #$400,(unk_FFF72E).w
 
 locret_4996:
 	rts
@@ -8444,73 +8439,63 @@ AllObjects: dc.l ObjSonic, Obj_SSResults, Obj_SSResCE, Obj04, Obj05, Ojb06, Obj0
 ; ---------------------------------------------------------------------------
 
 ObjectFall:
-	move.w	x_vel(a0),d0	; load horizontal speed
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,x_pos(a0)	; add to x-position
-	move.w	y_vel(a0),d0	; load vertical speed
-	addi.w	#$38,y_vel(a0)	; increase vertical speed (apply gravity)
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,y_pos(a0)	; add to y-position
-	rts
-; ---------------------------------------------------------------------------
-
+		addi.w	#$38,yvel(a0)		; increase vertical speed (apply gravity)
 ObjectMove:
-	move.w	x_vel(a0),d0	; load horizontal speed
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,x_pos(a0)	; add to x-position
-	move.w	y_vel(a0),d0	; load vertical speed
-	ext.l	d0
-	asl.l	#8,d0		; convert to 16.16 fixed point
-	add.l	d0,y_pos(a0)	; add to y-position
-	rts
+		lea	xvel(a0),a5		; 6 bytes 12(3/0) 
+		move.l	(a5),d0			; 2 bytes 12(3/0) 
+		move.w	d0,d1			; 2 bytes 4(1/0) 
+		swap	d0			; 2 bytes 4(1/0) 
+		ext.l	d1			; 2 bytes 4(1/0) 
+		asl.l	#8,d1			; 4 bytes 8(1/0) + 2n(0/0) where n is shift or rotate count
+		add.l	d1,-(a5)		; 2 bytes 22(3/2) 
+
+		ext.l	d0			; 2 bytes 4(1/0) 
+		asl.l	#8,d0			; 4 bytes 8(1/0) + 2n(0/0) where n is shift or rotate count
+		add.l	d0,-(a5)		; 2 bytes 22(3/2) 
+		rts	
 ; ---------------------------------------------------------------------------
 
 ObjectDisplay:
-	lea	(DisplayLists).w,a1
 	moveq	#0,d0
 	move.b	priority(a0),d0
 	add.w	d0,d0
-	move.w	PriorityId(pc,d0.w),d0     ; get values
-	adda.w	d0,a1
-	cmpi.w	#$7E,(a1)
-	bcc.s	.return
-	addq.w	#2,(a1)
-	adda.w	(a1),a1
-	move.w	a0,(a1)
+	movea.w	PriorityId(pc,d0.w),a1	; get values
+	move.w	(a1),d0			; get amount of time of loop
+	cmp.w	#$7E,d0
+	bhs.s	.return
+	addq.w	#2,d0
+	move.w	d0,(a1)
+	move.w	a0,(a1,d0.w)
 
 .return:
 	rts
 ; ---------------------------------------------------------------------------
 
 ObjectDisplayA1:
-	lea	(DisplayLists).w,a2
 	moveq	#0,d0
 	move.b	priority(a1),d0
 	add.w	d0,d0
-	move.w	PriorityId(pc,d0.w),d0     ; get values
-	adda.w	d0,a2
-	cmpi.w	#$7E,(a2)
-	bcc.s	.return2
-	addq.w	#2,(a2)
-	adda.w	(a2),a2
-	move.w	a1,(a2)
+	movea.w	PriorityId(pc,d0.w),a2	; get values
+	move.w	(a2),d0			; get amount of time of loop
+	cmp.w	#$7E,d0
+	bhs.s	.return2
+	addq.w	#2,d0
+	move.w	d0,(a2)
+	move.w	a1,(a2,d0.w)
 
 .return2:
 	rts
 
 
-PriorityId:    dc.w  0
-               dc.w  $80
-               dc.w  $100
-               dc.w  $180
-               dc.w  $200
-               dc.w  $280
-               dc.w  $300
-               dc.w  $380
-               even
+PriorityId:	dc.w	0+DisplayLists
+		dc.w	$80+DisplayLists
+		dc.w	$100+DisplayLists
+		dc.w	$180+DisplayLists
+		dc.w	$200+DisplayLists
+		dc.w	$280+DisplayLists
+		dc.w	$300+DisplayLists
+		dc.w	$380+DisplayLists
+		even
 ; ---------------------------------------------------------------------------
 
 ObjectDelete:
@@ -15926,6 +15911,10 @@ sub_E98E:
 	bsr.w   ObjSonic_JumpHeight
 	bsr.w   ObjSonic_ChgJumpDirection
 	bsr.w   ObjSonic_LevelBound
+	cmp.w   #$FC8,y_vel(a0)   ; check if Sonic's Y speed is lower than this value
+	ble.s   .skipline1        ; if yes, branch
+	move.w  #$FC8,y_vel(a0)   ; alter Sonic's Y speed
+.skipline1:	
 	bsr.w   ObjectFall
 	bsr.w   ObjSonic_JumpAngle
 	bra.w   ObjSonic_Floor
@@ -15945,6 +15934,10 @@ loc_E9C6:
 	bsr.w   ObjSonic_JumpHeight
 	bsr.w   ObjSonic_ChgJumpDirection
 	bsr.w   ObjSonic_LevelBound
+	cmp.w   #$FC8,y_vel(a0)   ; check if Sonic's Y speed is lower than this value
+	ble.s   .skipline2        ; if yes, branch
+	move.w  #$FC8,y_vel(a0)   ; alter Sonic's Y speed
+.skipline2:
 	bsr.w   ObjectFall
 	bsr.w   ObjSonic_JumpAngle
 	bra.w   ObjSonic_Floor
