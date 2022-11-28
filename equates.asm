@@ -656,3 +656,43 @@ RAM_END2:	rs.b 0
 
 r_DMA_Queue equ SonicArtBuf
 r_DMA_Slot	equ	SonicArtBuf_End
+
+; MSU-MD vars
+HW_version		equ	$A10001			; hardware version in low nibble
+							; bit 6 is PAL (50Hz) if set, NTSC (60Hz) if clear
+							; region flags in bits 7 and 6:
+							;         USA NTSC = $80
+							;         Asia PAL = $C0
+							;         Japan NTSC = $00
+							;         Europe PAL = $C0
+MCD_STAT		equ	$A12020			; 0-ready, 1-init, 2-cmd busy
+MCD_CMD			equ	$A12010
+MCD_ARG			equ	$A12011
+MCD_CMD_CK		equ	$A1201F
+v_LAST_MSU		equ	$FFF60E
+MSUc_PLAY		equ	$1100			; Arguments: track (1 - 99, decimal)
+MSUc_PLAYLOOP		equ	$1200			; Same arguments as above
+MSUc_PAUSE		equ	$1300			; Arguments: 1/75th of a second
+MSUc_RESUME		equ	$1400			; No arguments
+MSUc_VOLUME		equ	$1500			; Arguments: volume (0 - 255, decimal)
+MSUc_NOSEEK		equ	$1600			; Arguments: 0 = on, 1 = off, seek time emulation switch
+MSUc_PLAYOF		equ	$1A00			; Arguments: #1; track #2; offset in sectors from the start
+
+; Replacing the original music
+MusOff_MSU	equ	1
+mus_GHZ	equ	MusOff_MSU
+mus_LZ	equ	MusOff_MSU+1
+mus_MZ	equ	MusOff_MSU+2
+mus_SLZ	equ	MusOff_MSU+3
+mus_SYZ	equ	MusOff_MSU+4
+mus_SBZ	equ	MusOff_MSU+5
+mus_FZ	equ	MusOff_MSU+6
+mus_Boss	equ	MusOff_MSU+7
+mus_SS	equ	MusOff_MSU+8
+mus_Invincibility	equ	MusOff_MSU+9
+mus_Title	equ	MusOff_MSU+10
+mus_GotThroughAct	equ	MusOff_MSU+11
+mus_GameOver	equ	MusOff_MSU+12
+mus_Continue	equ	MusOff_MSU+13
+mus_Options	equ	MusOff_MSU+14
+mus_SEGA	equ	MusOff_MSU+15

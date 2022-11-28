@@ -1,4 +1,2 @@
 # Auto detect text files and perform LF normalization
-build.bat text eol=crlf
-build.sh text eol=lf
 * text=auto

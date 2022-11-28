@@ -5,16 +5,45 @@ align		macro pos,num
 		dcb.b ((\pos)-(offset(*)%(\pos)))%(\pos),num
 	endif
 	endm
+
+waitmsu		macro
+.wait\@:
+	tst.b	MCD_STAT
+	bne.s	.wait\@
+	endm
 	
 ; Macro for playing a command
 command		macro id
-		move.b	#id,mQueue.w
-		endm
+	waitmsu
+		if id=Mus_FadeOut
+		move.w	#(MSUc_PAUSE|48),MCD_CMD
+		endif
+		if id=Mus_Stop
+		move.w	#(MSUc_PAUSE|4),MCD_CMD
+		endif
+		if id=Mus_Pause
+		move.w	#(MSUc_PAUSE|1),MCD_CMD
+		endif
+		if id=Mus_Unpause
+		move.w	#MSUc_RESUME,MCD_CMD
+		endif
+		if id=mus_Reset
+		move.w	#(MSUc_VOLUME|255),MCD_CMD
+		move.w	#MSUc_RESUME,MCD_CMD
+		endif
+	addq.b	#1,MCD_CMD_CK ; Increment command clock
+	endm
 
 ; Macro for playing music
-music		macro id
-		move.b	#id,mQueue+1.w
-		endm
+music		macro id, loop
+	waitmsu
+	if \loop=0
+	move.w	#(MSUc_PLAY|\id),MCD_CMD ; send cmd: play track
+	else
+	move.w	#(MSUc_PLAYLOOP|\id),MCD_CMD ; send cmd: play track, loop
+	endif
+	addq.b	#1,MCD_CMD_CK ; Increment command clock
+	endm
 
 ; Macro for playing sound effect
 sfx		macro id
@@ -31,22 +60,16 @@ disable_ints:	macros
 enable_ints:	macros
 		move	#$2300,sr
 
-disable_disp:	macro
-		move.w	(ModeReg2).w,d0				; $81xx
-		andi.b	#$BF,d0					; clear bit 6
-		move.w	d0,(VdpCtrl).l
-		endm
+disable_disp:	macros
+		andi.b	#%10111111,(VdpCtrl).l
 
-enable_disp:	macro
-		move.w	(ModeReg2).w,d0				; $81xx
-		ori.b	#$40,d0					; set bit 6
-		move.w	d0,(VdpCtrl).l
-		endm
+enable_disp:	macros
+		ori.b	#%01000000,(VdpCtrl).l
 
 vsync:			macro
 		enable_ints
-.wait\@:	tst.b	(VintRoutine).w
-		bne.s	.wait\@
+@wait\@:	tst.b	(VintRoutine).w
+		bne.s	@wait\@
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -56,13 +79,13 @@ vsync:			macro
 jhi:		macro loc
 		bls.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jcc:		macro loc
 		bcs.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jhs:		macro loc
@@ -72,13 +95,13 @@ jhs:		macro loc
 jls:		macro loc
 		bhi.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jcs:		macro loc
 		bcc.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jlo:		macro loc
@@ -88,49 +111,49 @@ jlo:		macro loc
 jeq:		macro loc
 		bne.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jne:		macro loc
 		beq.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jgt:		macro loc
 		ble.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jge:		macro loc
 		blt.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jle:		macro loc
 		bgt.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jlt:		macro loc
 		bge.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jpl:		macro loc
 		bmi.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 jmi:		macro loc
 		bpl.s	.nojump\@
 		jmp	loc
-.nojump\@:
+	.nojump\@:
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -218,7 +241,7 @@ endaddr		EQUS	"\eaddr"		; Use eaddr
 	endif
 clrsize		=	(\endaddr-\saddr)&$FFFFFF
 
-	;moveq	#0,d0
+	moveq	#0,d0
 
 	if (((\saddr)&$8000)&((\saddr)<0))=0	; Optimize setting saddr to a1
 		lea	\saddr,a1
@@ -229,7 +252,7 @@ clrsize		=	(\endaddr-\saddr)&$FFFFFF
 	move.w	#clrsize>>2-1,d1
 
 .Clear\@:
-	clr.l	(a1)+			; Clear data
+	move.l	d0,(a1)+			; Clear data
 	dbf	d1,.Clear\@			; Loop until data is cleared
 
 	if clrsize&2
