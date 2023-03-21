@@ -44,7 +44,7 @@ StartOfROM:	dc.l	(StackPointer)&$FFFFFF,	GameInit,	BusErr,	AddressErr
 		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
 		dc.l	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap,	ErrorTrap
 		dc.l	ErrorTrap,	ErrorTrap
-		dc.b	'SEGA GENESIS    '             				; Console name
+SEGAString:	dc.b	'SEGA GENESIS    '             				; Console name
 		dc.b	'RPNTMLD         '             				; Copyright/release date (placeholder for romfix)
 		dc.b	'                                                '	; Domestic name (placeholder for romfix)
 		dc.b	'                                                '	; International name (placeholder for romfix)
@@ -65,164 +65,188 @@ EndOfHeader:
 ; ---------------------------------------------------------------------------
 
 GameInit:
-	tst.l   ($A10008).l
+	lea	SetupValues(pc),a0				; load setup array
+	move.w	(a0)+,sr				; disable interrupts during setup; they will be reenabled by the Sega Screen
+	movem.l (a0)+,a1-a3/a5/a6			; Z80 RAM start, work RAM start, Z80 bus request register, VDP data port, VDP control port
+	movem.w (a0)+,d1/d2				; first VDP register value ($8004), VDP register increment/value for Z80 stop and reset release ($100)
+	moveq	#SetupVDP_end-SetupVDP-1,d5		; VDP registers loop counter
+	moveq	#0,d4					; DMA fill/memory clear/Z80 stop bit test value
+	movea.l d4,a4					; clear a4
+	move.l	a4,usp					; clear user stack pointer
 
-loc_20C:
-	bne.w   MainProgram
-	tst.w   ($A1000C).l
-	bne.s   loc_20C
-	lea InitValues(pc),a5
-	movem.l (a5)+,d5-a4
-	move.w  -$1100(a1),d0
-	andi.w  #$F00,d0
-	beq.s   loc_232
-	move.l  #'SEGA',$2F00(a1)
+	tst.w	IO_C_CTRL-1-Z80_BUS(a3) ; was this a soft reset?
+	bne.s	.wait_dma				; if so, skip setting region and the TMSS check
 
-loc_232:
-	move.w  (a4),d0
-	moveq   #0,d0
-	movea.l d0,a6
-	move.l  a6,usp
+	move.b	HW_VERSION-Z80_BUS(a3),d6	; load hardware version
+	move.b	d6,d3					; copy to d3 for checking revision (d6 will be used later to set region and speed)
+	andi.b	#$F,d3					; get only hardware version ID
+	beq.s	.wait_dma				; if Model 1 VA4 or earlier (ID = 0), branch
+	move.l	SEGAString,TMSS_SEGA-Z80_BUS(a3) ; satisfy the TMSS
+   
+.wait_dma:
+	move.w	(a6),ccr				; copy status register to CCR, clearing the VDP write latch and setting the overflow flag if a DMA is in progress
+	bvs.s	.wait_dma				; if a DMA was in progress during a soft reset, wait until it is finished
+   
+.loop_vdp:
+	move.w	d2,(a6)					; set VDP register
+	add.w	d1,d2					; advance register ID
+	move.b	(a0)+,d2				; load next register value
+	dbf	d5,.loop_vdp				; repeat for all registers ; final value loaded will be used later to initialize I/0 ports
+   
+	move.l	(a0)+,(a6)				; set DMA fill destination
+	move.w	d4,(a5)					; set DMA fill value (0000), clearing the VRAM
+			
+	tst.w	IO_C_CTRL-1-Z80_BUS(a3) ; was this a soft reset?
+	bne.s	.clear_every_reset			; if so, skip clearing RAM addresses $FE00-$FFFF
+   
+	movea.l	(a0),a4					; $FFFFFE00	  (increment will happen later)
+	move.w	4(a0),d5				; repeat times
+	
+.loop_ram1:
+	move.l	d4,(a4)+
+	dbf	d5,.loop_ram1				; clear RAM ($FE00-$FFFF)
 
-	rept $18
-	move.b  (a5)+,d5
-	move.w  d5,(a4)
-	add.w   d7,d5
-	endr
+.clear_every_reset:
+	addq	#6,a0					; advance to next position in setup array
+	move.w	(a0)+,d5				; repeat times
+	
+.loop_ram2:
+	move.l	d4,(a2)+				; a2 = start of 68K RAM
+	dbf	d5,.loop_ram2				; clear RAM ($0000-$FDFF)
 
-	move.l  #VRAM_ADDR_CMD,(a4)
-	move.w  d0,(a3)
-	move.w  d7,(a1)
-	move.w  d7,(a2)
+	move.w	d1,(a3)					; stop the Z80 (we will clear the VSRAM and CRAM while waiting for it to stop)
+	move.w	d1,Z80_RESET-Z80_BUS(a3)	; ensure Z80 reset is not set
 
-loc_252:
-	btst    d0,(a1)
-	bne.s   loc_252
-	moveq   #endinit-initz80-1,d2
+	move.w	(a0)+,(a6)				; set VDP increment to 2
 
-loc_258:
-	move.b  (a5)+,(a0)+
-	dbf d2,loc_258
-	move.w  d0,(a2)
-	move.w  d0,(a1)
-	move.w  d7,(a2)
+	move.l	(a0)+,(a6)				; set VDP to VSRAM write
+	moveq	#$13,d5					; set repeat times
+	
+.loop_vsram:
+	move.l	d4,(a5)					; clear 4 bytes of VSRAM
+	dbf	d5,.loop_vsram				; repeat until entire VSRAM has been cleared
 
-loc_264:
-	move.l  d0,-(a6)
-	dbf d6,loc_264
-	move.l  #$81048F02,(a4)
-	move.l  #CRAM_ADDR_CMD,(a4)
+	move.l	(a0)+,(a6)				; set VDP to CRAM write
+	moveq	#$1F,d5					; set repeat times
+	
+.loop_cram:
+	move.l	d4,(a5)					; clear two palette entries
+	dbf	d5,.loop_cram				; repeat until entire CRAM has been cleared
 
-	rept $20
-	move.l  d0,(a3)
-	endr
+.waitz80:
+	btst	d4,(a3)					; has the Z80 stopped?
+	bne.s	.waitz80				; if not, branch
 
-	move.l  #VSRAM_ADDR_CMD,(a4)
+	move.w	#$2000-1,d5				; size of remaining Z80 ram
+	
+.clear_Z80_ram:
+	move.b	d4,(a1)+				; clear the the Z80 RAM
+	dbf	d5,.clear_Z80_ram
 
-	rept $14
-	move.l  d0,(a3)
-	endr
+	moveq	#4-1,d5					; set number of PSG channels to mute
+.psg_loop:
+	move.b	(a0)+,$C00011-VDP_DATA(a6)	; set the PSG channel volume to null (no sound)
+	dbf	d5,.psg_loop				; repeat for all channels
 
-	rept 4
-	move.b  (a5)+,$10(a3)
-	endr
+	tst.w	IO_C_CTRL-1-Z80_BUS(a3) ; was this a soft reset?
+	bne.w	.set_vdp_buffer				; if so, skip the checksum check and setting the region variable
 
-	move.w  d0,(a2)
-	movem.l (a6),d0-a6
-	disable_ints
-	bra.s   MainProgram
+ 
+	andi.b	#$C0,d6					; get region and speed settings
+	move.b	d6,(ConsoleRegion).w			; set in RAM
+		
+.set_vdp_buffer:
+	move.w	d4,d5					; clear d5	
+	move.b	SetupVDP(pc),d4				; get first entry of SetupVDP
+	ori.w	#$8100,d4				; make it a valid command word ($8134)
+	move.w	d4,(ModeReg2).w			; save to buffer for later use
+	move.w	#$8A00+(224-1),(word_FFF624).w		; horizontal interrupt every 224th scanline
+
+;.load_dac_driver:			
+	movem.w	d1/d2/d4,-(sp)
+	move.l	a3,-(sp)
+		
+	jsr	LoadDualPCM
+	
+	jsr	InitDMAQueue	
+		
+	move.l	(sp)+,a3
+	movem.w	(sp)+,d1/d2/d4				; restore registers
+		
+	move.w	d4,Z80_RESET-Z80_BUS(a3)	; reset Z80
+
+	move.b	d2,IO_A_CTRL-Z80_BUS(a3) ; initialise port 1
+	move.b	d2,IO_B_CTRL-Z80_BUS(a3) ; initialise port 2
+	move.b	d2,IO_C_CTRL-Z80_BUS(a3) ; initialise port e
+
+	move.w	d1,Z80_RESET-Z80_BUS(a3)	; release Z80 reset
+	move.w	d4,(a3)					; start the Z80
+
+	move.b	#id_sSega,(GameMode).w			; set Game Mode to Sega Screen
+	bra.s	ScreensLoop				; continue to main program
+
+SetupValues:
+	dc.w	$2700					; disable interrupts
+	dc.l	Z80_RAM
+	dc.l	$FFFF0000				; ram_start
+	dc.l 	Z80_BUS
+	dc.l	VDP_DATA
+	dc.l	VDP_CTRL
+
+	dc.w	$100					; VDP Reg increment value & opposite initialisation flag for Z80
+	dc.w	$8004					; $8004; normal color mode, horizontal interrupts disabled
+SetupVDP:
+	dc.b	$8134&$FF				; $8134; mode 5, NTSC, vertical interrupts and DMA enabled 
+	dc.b	($8200+($C000>>10))&$FF			; $8230; foreground nametable starts at $C000
+	dc.b	($8300+($A000>>10))&$FF			; $8328; window nametable starts at $A000
+	dc.b	($8400+($E000>>13))&$FF			; $8407; background nametable starts at $E000
+	dc.b	($8500+($F800>>9))&$FF			; $857C; sprite attribute table starts at $F800
+	dc.b	$8600&$FF				; $8600; unused (high bit of sprite attribute table for 128KB VRAM)
+	dc.b	$8700&$FF				; $8700; background colour (palette line 0 color 0)
+	dc.b	$8800&$FF				; $8800; unused (mode 4 hscroll register)
+	dc.b	$8900&$FF				; $8900; unused (mode 4 vscroll register)
+	dc.b	($8A00+0)&$FF				; $8A00; horizontal interrupt register (set to 0 for now)
+	dc.b	$8B00&$FF				; $8B00; full-screen vertical/horizontal scrolling
+	dc.b	$8C81&$FF				; $8C81; H40 display mode
+	dc.b	($8D00+(vram_hscroll>>10))&$FF		; $8D3F; hscroll table starts at $FC00
+	dc.b	$8E00&$FF				; $8E00: unused (high bits of fg and bg nametable addresses for 128KB VRAM)
+	dc.b	($8F00+1)&$FF				; $8F01; VDP increment size (will be changed to 2 later)
+	dc.b	$9001&$FF				; 
+	dc.b	$9100&$FF				; $9100; unused (window horizontal position)
+	dc.b	$9200&$FF				; $9200; unused (window vertical position)
+
+	dc.w	$FFFF					; $93FF/$94FF - DMA length
+	dc.w	0					; VDP $9500/9600 - DMA source
+	dc.b	$9780&$FF				; VDP $9780 - DMA fill VRAM
+
+	dc.b	$40					; I/O port initialization value
+   
+SetupVDP_end:
+
+	dc.l	VRAM_DMA_CMD				; DMA fill VRAM
+	dc.l	$FFFFFE00				; start of RAM only cleared on cold boot
+	dc.w	(($FFFFFFFF-$FFFFFE00+1)/4)-1		; loops to clear RAM cleared only on cold boot
+	dc.w	(($FFFFFE00&$FFFF)/4)-1			; loops to clear RAM cleared on all boots
+	dc.w	$8F00+2					; VDP increment
+	dc.l	VSRAM_ADDR_CMD				; VSRAM write mode
+	dc.l 	CRAM_ADDR_CMD				; CRAM write mode
+   
+   
+	dc.b	$9F,$BF,$DF,$FF				; PSG mute values (PSG 1 to 4) 
 ; ---------------------------------------------------------------------------
-
-InitValues: dc.l VDPREG_MODE1, $3FFF, $100
-	dc.l z80_ram                    ; Z80 RAM
-	dc.l z80_bus_request                    ; Z80 bus release
-	dc.l z80_reset                  ; Z80 reset
-	dc.l VdpData                    ; VDP data port
-	dc.l VdpCtrl                    ; VDP command port
-	dc.b %00110000, %11110100, $30, $3C, 7, $6C, 0, 0, 0, 0, $FF, 0, $81  ; VDP values
-	dc.b $37, 0, 1, 1, 0, 0, $FF, $FF, 0, 0, $80
-
-initz80 z80prog 0
-	di
-	im  1
-	ld  hl,YM_Buffer1           		; we need to clear from YM_Buffer1
-	ld  de,(YM_BufferEnd-YM_Buffer1)/8  	; to end of Z80 RAM, setting it to 0FFh
-
-.loop
-	ld  a,0FFh             			; load 0FFh to a
-	rept 8
-		ld  (hl),a          		; save a to address
-		inc hl          		; go to next address
-	endr
-
-	zdec    de             			; decrease loop counter
-	ld  a,d             			; load d to a
-	zor e               			; check if both d and e are 0
-	jrnz .loop          			; if no, clear more memoty
-.pc     jr  .pc             			; trap CPU execution
-	z80prog
-	even
-endinit
-
-	dc.b $9F, $BF, $DF, $FF             	; PSG volumes (1, 2, 3 and 4)
-	even
-; ---------------------------------------------------------------------------
-
-MainProgram:
-	waitDMA
-	btst    #6,(IO_C_CTRL).l
-
-DoChecksum:
-	movea.w #EndOfHeader,a0 	; prepare start address
-	move.l 	(RomEndLoc).w,d7 	; load size
-	sub.l 	a0,d7 			; minus start address
-	move.b 	d7,d5 			; copy end nybble
-	andi.w 	#$F,d5 			; get only the remaining nybble
-	lsr.l 	#4,d7 			; divide the size by 20
-	move.w 	d7,d6 			; load lower word size
-	swap 	d7 			; get upper word size
-	moveq 	#0,d4 			; clear d4
-
-CS_MainBlock:
-	rept 8
-	add.w 	(a0)+,d4 		; modular checksum (8 words)
-	endr
-	dbf 	d6,CS_MainBlock 	; repeat until all main block sections are done
-	dbf 	d7,CS_MainBlock 	; ''
-	subq.w 	#1,d5 			; decrease remaining nybble for dbf
-	bpl.s 	CS_Finish 		; if there is no remaining nybble, branch
-
-CS_Remains:
-	add.w 	(a0)+,d4 		; add remaining words
-	dbf 	d5,CS_Remains 		; repeat until the remaining words are done
-
-CS_Finish:
-	cmp.w 	(Checksum).w,d4 	; does the checksum match?
-	bne.s 	CheckSumError 		; if not, branch
-
-	move.b  (HW_VERSION).l,d0
-	andi.b  #$C0,d0
-	move.b  d0,(ConsoleRegion).w	
-
-loc_36A:
-	command	Mus_Stop
-	clrRAM  RAM_START,RAM_END
-	bsr.w   vdpInit
-	bsr.w   padInit
-	jsr LoadDualPCM
-	move.b	#id_sSega,(GameMode).w
 
 ScreensLoop:
 	moveq	#0,d0
 	move.b  (GameMode).w,d0
-	lsl.w	#2,d0
+	add.w	d0,d0
+	add.w	d0,d0
 	movea.l ScreensArray(pc,d0.w),a0
 	jsr	(a0)
 	bra.s   ScreensLoop
 ; ---------------------------------------------------------------------------
 
 gmptr:	macro
-	id_\1:	equ (*-ScreensArray)/4
+	id_\1:	equ (*-ScreensArray)>>2
 	dc.l	\1
 	endm
 
@@ -238,47 +262,6 @@ ScreensArray:
 	gmptr	sSpecial
 ; ---------------------------------------------------------------------------
 	gmptr	SplashScreen
-; ---------------------------------------------------------------------------
-
-ChecksumError:
-	clrRAM  Drvmem
-	jsr LoadDualPCM
-	bsr.w   padInit
-	command	mus_Stop
-	sfx 	sfx_AirDing
-	Console.Run     ChecksumErr_ConsProg
-	even
-
-ChecksumErr_ConsProg:
-	Console.SetXY   #7,#8
-	Console.WriteLine   "The checksum is %<pal1>incorrect!"
-	Console.BreakLine
-	Console.WriteLine   "%<pal0>Calculated Checksum: %<pal3>$%<.w d4>"
-	move.w  Checksum,d7
-	Console.WriteLine   "  %<pal0>Checksum in ROM: %<pal3>$%<.w d7>"
-	Console.BreakLine
-	Console.WriteLine   " %<pal0>Any error report sent"
-	Console.WriteLine   "might be %<pal1>harder %<pal0>to patch"
-	Console.WriteLine   "  with a %<pal1>bad %<pal0>checksum."
-	Console.WriteLine   "%<pal0>so redownloading the ROM"
-	Console.WriteLine   " is %<pal2>highly recommended."
-	Console.BreakLine
-	Console.WriteLine   "%<pal0>You can try and continue"
-	Console.WriteLine   "    by pressing %<pal3>START"
-	Console.WriteLine   "%<pal0>but it's %<pal1>not %<pal0>recommended."
-	rts
-
-ConsoleHandler:
-	bsr.w 	padRead
-	cmpi.b  #J_S,(padPress1).w 		; is Start pressed?
-	beq.w   loc_36A    			; if true, branch
-	move.b  (HW_VERSION).l,d0
-	andi.b  #$C0,d0
-	move.b  d0,(ConsoleRegion).w
-	pusha
-	jsr UpdateAMPS
-	popa
-	bra.s 	ConsoleHandler
 ; ---------------------------------------------------------------------------
 ArtText:    incbin "unsorted/debugtext.unc"
 	even
@@ -324,20 +307,14 @@ off_B6A:    dc.w nullsub_3-off_B6A, loc_B7E-off_B6A, sub_B90-off_B6A, sub_BAA-of
 
 loc_B7E:
 	bsr.w   sub_E78
-	subq.w  #1,(GlobalTimer).w
-
-locret_B8E:
-	rts
+	bra.w	loc_D7A
 ; ---------------------------------------------------------------------------
 
 sub_B90:
 	bsr.w   sub_E78
 	bsr.w   sub_43B6
 	bsr.w   sub_1438
-	subq.w  #1,(GlobalTimer).w
-
-locret_BA8:
-	rts
+	bra.w	loc_D7A
 ; ---------------------------------------------------------------------------
 
 sub_BB0:
@@ -353,13 +330,10 @@ loc_BBA:
 
 loc_C7A:
 	bsr.w   mapLevelLoad
-	jsr ZoneAnimTiles
-	jsr UpdateHUD
+	jsr	ZoneAnimTiles
+	jsr	UpdateHUD
 	bsr.w   loc_1454
-	subq.w  #1,(GlobalTimer).w
-
-locret_CBA:
-	rts
+	bra.w	loc_D7A
 ; ---------------------------------------------------------------------------
 
 loc_CBC:
@@ -370,6 +344,8 @@ loc_CBC:
 	pea (ProcessDMAQueue).l
 
 loc_D7A:
+	tst.w	(GlobalTimer).w
+	beq.s	locret_D86
 	subq.w  #1,(GlobalTimer).w
 
 locret_D86:
@@ -422,16 +398,6 @@ locret_F3A:
 	rte
 ; ---------------------------------------------------------------------------
 
-padInit:
-	z80Bus
-	moveq   #$40,d0
-	move.b  d0,(IO_A_CTRL).l
-	move.b  d0,(IO_B_CTRL).l
-	move.b  d0,(IO_C_CTRL).l
-	z80Start
-	rts
-; ---------------------------------------------------------------------------
-
 padRead:
 	lea (padHeld1).w,a0
 	lea (IO_A_DATA).l,a1
@@ -463,40 +429,6 @@ sub_FDC:
 	rts
 ; ---------------------------------------------------------------------------
 
-vdpInit:
-	lea (VdpCtrl).l,a0
-	lea (VdpData).l,a1
-	lea (vdpInitRegs).l,a2
-
-	rept $13
-	move.w  (a2)+,4(a1)
-	endr
-
-	move.w  (vdpInitRegs+2).l,d0
-	move.w  d0,(ModeReg2).w
-	moveq   #0,d0
-	move.l  #CRAM_ADDR_CMD,(VdpCtrl).l
-
-	rept $40
-	move.w  d0,(a1)
-	endr
-
-	clr.l   (dword_FFF616).w
-	clr.l   (dword_FFF61A).w
-	move.l  d1,-(sp)
-	;lea (VdpCtrl).l,a5
-	move.w  #$8F01,(a0)
-	dmaFill	0,0,$FFFF,a0
-	move.w  #$8F02,(a0)
-	move.l  (sp)+,d1
-	jmp InitDMAQueue
-; ---------------------------------------------------------------------------
-
-vdpInitRegs:
-	dc.w $8004, $8134, $8230, $8328, $8407
-	dc.w $857C, $8600, $8700, $8800, $8900
-	dc.w $8A00, $8B00, $8C81, $8D3F, $8E00
-	dc.w $8F02, $9001, $9100, $9200
 	
 ; -------------------------------------------------------------------------
 ; Add a DMA transfer command to the DMA queue

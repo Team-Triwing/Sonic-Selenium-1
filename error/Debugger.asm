@@ -84,8 +84,8 @@ setx	equ		$FA				; set x-position
 RaiseError &
 	macro	string, console_program, opts
 
-	pea		ConsoleHandler(pc)
 	RaiseError2 \_
+	stop	#$2700
 	endm
 
 RaiseError2 &
@@ -136,7 +136,7 @@ Console &
 		jsr		ErrorHandler.__extern__console_only
 		jsr		\1
 		if narg<=1		; HACK
-			pea	ConsoleHandler(pc)
+			stop	#$2700
 		endif
 
 	elseif strcmp("\0","setxy")
